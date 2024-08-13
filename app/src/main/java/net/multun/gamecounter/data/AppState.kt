@@ -37,6 +37,7 @@ interface AppState {
 
     fun addCounter(defaultValue: Int, name: String): CounterId
     fun removeCounter(counterId: CounterId)
+    fun getCounterName(counterId: CounterId): String?
 
     fun addPlayer(): PlayerId
     fun removePlayer(playerId: PlayerId)

@@ -167,6 +167,10 @@ class MemoryAppState @Inject constructor(appStateStorage: AppStateStorage) : App
         _counters.remove(counterId)
     }
 
+    override fun getCounterName(counterId: CounterId): String? {
+        return _counters[counterId]?.name
+    }
+
     override fun updatePlayerCounter(playerId: PlayerId, counterId: CounterId, difference: Int) {
         _players.computeIfPresent(playerId) { _, player ->
             val oldCounters = player.counters

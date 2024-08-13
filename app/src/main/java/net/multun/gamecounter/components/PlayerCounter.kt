@@ -24,6 +24,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,6 +37,11 @@ import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
+import net.multun.gamecounter.BoardViewModel
+import net.multun.gamecounter.data.CounterId
+import net.multun.gamecounter.data.MemoryAppState
+import net.multun.gamecounter.data.MockAppStateStorage
+import net.multun.gamecounter.data.PlayerId
 import java.util.Locale
 
 
@@ -69,42 +78,55 @@ fun AnimatedContentTransitionScope<Int?>.comboCounterAnimation(): ContentTransfo
 }
 
 @Composable
-fun PlayerCounter(color: Color, health: Int, delta: Int?, incr: () -> Unit, decr: () -> Unit, modifier: Modifier = Modifier) {
+fun PlayerCounter(viewModel: BoardViewModel, playerId: PlayerId, modifier: Modifier = Modifier) {
+    val playerState = viewModel.getPlayer(playerId) ?: return
+    val color = playerState.color
+    val selectedCounter by remember { derivedStateOf { playerState.selectedCounter } }
+    val counterValue = playerState.counters[selectedCounter]
+    val counterName = viewModel.getCounterName(selectedCounter)
+
     val constraintSet = ConstraintSet {
         val decr = createRefFor("decr")
         val incr = createRefFor("incr")
-        val counter = createRefFor("counter")
+        val counterValue = createRefFor("counterValue")
+        val counterName = createRefFor("counterName")
         val combo = createRefFor("combo")
 
-        createHorizontalChain(decr, counter, incr, chainStyle = ChainStyle.Spread)
+        createHorizontalChain(decr, counterValue, incr, chainStyle = ChainStyle.Spread)
 
-        for (centeredItem in listOf(decr, incr, counter)) {
+        for (centeredItem in listOf(decr, incr, counterValue)) {
             constrain(centeredItem) {
                 centerVerticallyTo(parent)
             }
         }
 
         constrain(combo) {
-            bottom.linkTo(counter.top)
-            end.linkTo(counter.end, margin = -(10.dp))
+            bottom.linkTo(counterValue.top)
+            end.linkTo(counterValue.end, margin = -(10.dp))
+        }
+
+        constrain(counterName) {
+            top.linkTo(counterValue.bottom)
+            centerHorizontallyTo(counterValue)
         }
     }
 
     Card(modifier = modifier, colors = CardDefaults.cardColors().copy(containerColor = color)) {
         ConstraintLayout(constraintSet, modifier = Modifier.fillMaxSize()) {
             // minus
-            CounterButton(onClick = decr, modifier = Modifier.layoutId("decr")) {
+            CounterButton(onClick = { viewModel.decrCount(playerId) }, modifier = Modifier.layoutId("decr")) {
                 Icon(Icons.Default.Remove, contentDescription = "Increase counter")
             }
 
             // counter
-            Text(text = "$health", fontSize = 10.em, modifier = Modifier.layoutId("counter"))
+            Text(text = "$counterValue", fontSize = 10.em, modifier = Modifier.layoutId("counterValue"))
+            Text(text = "$counterName", fontSize = 3.em, modifier = Modifier.layoutId("counterName"))
 
             // combo counter
             AnimatedContent(
                 label = "combo animation",
                 modifier = Modifier.layoutId("combo"),
-                targetState = delta,
+                targetState = viewModel.getCounterCombo(playerId, CounterId(0)),
                 transitionSpec = { comboCounterAnimation() },
             ) { targetCount ->
                 if (targetCount != null) {
@@ -114,7 +136,7 @@ fun PlayerCounter(color: Color, health: Int, delta: Int?, incr: () -> Unit, decr
             }
 
             // plus
-            CounterButton(onClick = incr, modifier = Modifier.layoutId("incr")) {
+            CounterButton(onClick = { viewModel.incrCount(playerId) }, modifier = Modifier.layoutId("incr")) {
                 Icon(Icons.Default.Add, contentDescription = "Increase counter")
             }
         }
@@ -124,5 +146,6 @@ fun PlayerCounter(color: Color, health: Int, delta: Int?, incr: () -> Unit, decr
 @Preview
 @Composable
 fun PlayerCounterTest() {
-    PlayerCounter(color = Color(0xFFD1C4E9), health = 10, delta = 3, incr = {}, decr = {})
+    val viewModel by remember { mutableStateOf(BoardViewModel(MemoryAppState(MockAppStateStorage()))) }
+    PlayerCounter(viewModel, PlayerId(0))
 }

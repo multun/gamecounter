@@ -50,6 +50,10 @@ class BoardViewModel @Inject constructor(val appState: AppState) : ViewModel() {
         return comboCounters[playerId]?.get(counterId)
     }
 
+    fun getCounterName(counterId: CounterId): String? {
+        return appState.getCounterName(counterId)
+    }
+
     val canAddPlayer get() = playerIds.size < 8
 
     private fun resetComboCounter(playerId: PlayerId, counterId: CounterId) {

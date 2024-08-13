@@ -93,19 +93,12 @@ fun PlayerCounterBoard(
         slotIndex, slotModifier ->
         val playerId = players[slotIndex]
         key(playerId) {
-            val playerState = viewModel.getPlayer(playerId)
-            if (playerState != null) {
-                PlayerCounter(
-                    modifier = slotModifier,
-                    health = playerState.counters.values.first(),
-                    delta = viewModel.getCounterCombo(playerId, CounterId(0)),
-                    color = playerState.color,
-                    incr = { viewModel.incrCount(playerId) },
-                    decr = { viewModel.decrCount(playerId) },
-                )
-            }
+            PlayerCounter(
+                viewModel,
+                playerId,
+                modifier = slotModifier,
+            )
         }
-
     }
 }
 
