@@ -1,13 +1,25 @@
 package net.multun.gamecounter.data
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.runtime.toMutableStateList
+import androidx.compose.runtime.toMutableStateMap
 import androidx.compose.ui.graphics.Color
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.mutate
+import kotlinx.collections.immutable.persistentHashMapOf
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,9 +29,27 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class MockDataStore @Inject constructor() : DataStore {
-    override var defaultHealth: Int = 42
-    override var players: PersistentList<PlayerState> = persistentListOf()
+class MockAppStateStorage @Inject constructor() : AppStateStorage {
+    override fun load(): AppStateSnapshot {
+        return AppStateSnapshot(
+            players = persistentListOf(Player(
+                id = PlayerId(0),
+                color = DEFAULT_PALETTE[0],
+                selectedCounter = CounterId(0),
+                counters = persistentMapOf(
+                    CounterId(0) to 42
+                ),
+            )),
+            counters = persistentListOf(Counter(
+                id = CounterId(0),
+                defaultValue = 10,
+                name = "hp",
+            )),
+        )
+    }
+
+    override fun save(appState: AppStateSnapshot) {
+    }
 }
 
 @Module
@@ -31,20 +61,21 @@ abstract class RepositoryModule {
 
     @Singleton
     @Binds
-    abstract fun bindDataStore(repository: MockDataStore): DataStore
+    abstract fun bindAppStateStorage(repository: MockAppStateStorage): AppStateStorage
 }
 
 @Singleton
-class MemoryAppState @Inject constructor(val dataStore: DataStore) : AppState {
-    override var defaultHealth: Int = dataStore.defaultHealth
+class MemoryAppState @Inject constructor(appStateStorage: AppStateStorage) : AppState {
+    private var _nextPlayerId: Int
+    private var _nextCounterId: Int
+
+    private val _players: SnapshotStateMap<PlayerId, Player>
+    private val _counters: SnapshotStateMap<CounterId, Counter>
+    private val _playerOrder: SnapshotStateList<PlayerId>
+    private val _counterOrder: SnapshotStateList<CounterId>
 
     private fun usedColors(): Set<Color> {
-        val usedColors = mutableSetOf<Color>()
-        for (playerStateFlow in _players.values) {
-            val player = playerStateFlow.value ?: continue
-            usedColors.add(player.color)
-        }
-        return usedColors
+        return _players.values.map { it.color }.toSet()
     }
 
     private fun unusedPaletteColor(): Color {
@@ -57,71 +88,107 @@ class MemoryAppState @Inject constructor(val dataStore: DataStore) : AppState {
         return Color.LightGray
     }
 
-    private var _nextPlayerId: Int
-    private val _players: MutableMap<PlayerId, MutableStateFlow<PlayerState?>> = mutableMapOf()
-    private val _playerOrder: MutableStateFlow<PersistentList<PlayerId>>
-
     init {
+        val initialState = appStateStorage.load()
+
         _nextPlayerId = 0
-        val players = dataStore.players
-        for (player in players) {
+        for (player in initialState.players) {
             if (_nextPlayerId <= player.id.value)
                 _nextPlayerId = player.id.value + 1
-            _players[player.id] = MutableStateFlow(player)
         }
-        _playerOrder = MutableStateFlow(players.map { it.id }.toPersistentList())
+
+        _players = initialState.players.map { Pair(it.id, it) }.toMutableStateMap()
+        _playerOrder = initialState.players.map { it.id }.toMutableStateList()
+
+        _nextCounterId = 0
+        for (counter in initialState.counters) {
+            if (_nextCounterId <= counter.id.value)
+                _nextCounterId = counter.id.value + 1
+        }
+        _counters = initialState.counters.map { Pair(it.id, it) }.toMutableStateMap()
+        _counterOrder = initialState.counters.map { it.id }.toMutableStateList()
     }
 
     private fun allocatePlayerId(): PlayerId {
         return PlayerId(_nextPlayerId++)
     }
 
+    private fun allocateCounterId(): CounterId {
+        return CounterId(_nextCounterId++)
+    }
+
+    private fun getDefaultCounters(): PersistentMap<CounterId, Int> {
+        return _counters.values.associate { Pair(it.id, it.defaultValue) }.toPersistentMap()
+    }
+
+    override fun reset() {
+        Snapshot.withMutableSnapshot {
+            val defaultCounters = getDefaultCounters()
+            for (playerId in _players.keys) {
+                val newPlayer = _players[playerId]!!.copy(counters = defaultCounters)
+                _players[playerId] = newPlayer
+            }
+        }
+    }
     override fun addPlayer(): PlayerId {
         val playerId = allocatePlayerId()
-        val color = unusedPaletteColor()
-        val player = PlayerState(playerId, defaultHealth, color)
-        _players[playerId] = MutableStateFlow(player)
-        _playerOrder.update {
-            it.add(playerId)
+        Snapshot.withMutableSnapshot {
+            val color = unusedPaletteColor()
+            val player = Player(playerId, _counterOrder[0], getDefaultCounters(), color)
+            _players[playerId] = player
+            _playerOrder.add(playerId)
         }
         return playerId
     }
 
     override fun removePlayer(playerId: PlayerId) {
-        val playerState = _players.remove(playerId)!!
-        playerState.update { null }
-        _playerOrder.update {
-            it.remove(playerId)
+        Snapshot.withMutableSnapshot {
+            _players.remove(playerId)
+            _playerOrder.remove(playerId)
         }
     }
 
-    override fun reset() {
-        for (player in _players.values) {
-            player.update {
-                it?.copy(health = defaultHealth)
+    override fun getPlayerOrder(): List<PlayerId> {
+        return _playerOrder
+    }
+
+    override fun getPlayer(playerId: PlayerId): Player? {
+        return _players[playerId]
+    }
+
+    override fun addCounter(defaultValue: Int, name: String): CounterId {
+        val counterId = allocateCounterId()
+        val counter = Counter(counterId, defaultValue, name)
+        _counters[counterId] = counter
+        return counterId
+    }
+
+    override fun removeCounter(counterId: CounterId) {
+        _counters.remove(counterId)
+    }
+
+    override fun updatePlayerCounter(playerId: PlayerId, counterId: CounterId, difference: Int) {
+        _players.computeIfPresent(playerId) { _, player ->
+            val oldCounters = player.counters
+            val newCounters = oldCounters.mutate {
+                it.compute(counterId) {_, counterValue ->
+                    val oldValue = counterValue ?: _counters[counterId]!!.defaultValue
+                    oldValue + difference
+                }
             }
-        }
-    }
-
-    override fun watchPlayerOrder(): StateFlow<PersistentList<PlayerId>> {
-        return _playerOrder.asStateFlow()
-    }
-
-    override fun watchPlayer(playerId: PlayerId): StateFlow<PlayerState?> {
-        return _players[playerId]!!.asStateFlow()
-    }
-
-    override fun updatePlayerHealth(playerId: PlayerId, healthDelta: Int) {
-        _players[playerId]!!.update {
-            val oldPlayer = it!!
-            PlayerState(oldPlayer.id, oldPlayer.health + healthDelta, oldPlayer.color)
+            player.copy(counters = newCounters)
         }
     }
 
     override fun setPlayerColor(playerId: PlayerId, color: Color) {
-        _players[playerId]!!.update {
-            val oldPlayer = it!!
-            PlayerState(oldPlayer.id, oldPlayer.health, color)
+        _players.computeIfPresent(playerId) { _, player ->
+            player.copy(color = color)
+        }
+    }
+
+    override fun setPlayerSelectedCounter(playerId: PlayerId, selectedCounter: CounterId) {
+        _players.computeIfPresent(playerId) { _, player ->
+            player.copy(selectedCounter = selectedCounter)
         }
     }
 }

@@ -1,10 +1,8 @@
 package net.multun.gamecounter.data
 
 import androidx.compose.ui.graphics.Color
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.collections.immutable.PersistentMap
 
 
 @JvmInline
@@ -13,31 +11,51 @@ value class CounterId(val value: Int)
 @JvmInline
 value class PlayerId(val value: Int)
 
-data class PlayerState(
+data class Counter(
+    val id: CounterId,
+    val defaultValue: Int,
+    val name: String,
+)
+
+data class Player(
     val id: PlayerId,
-    val health: Int,
+    val selectedCounter: CounterId,
+    val counters: PersistentMap<CounterId, Int>,
     val color: Color,
 ) {
-    fun copy(health: Int = this.health, color: Color = this.color): PlayerState {
-        return PlayerState(id, health, color)
+    fun copy(
+        selectedCounter: CounterId = this.selectedCounter,
+        counters: PersistentMap<CounterId, Int> = this.counters,
+        color: Color = this.color,
+    ): Player {
+        return Player(id, selectedCounter, counters, color)
     }
 }
 
 interface AppState {
-    var defaultHealth: Int
+    fun reset()
+
+    fun addCounter(defaultValue: Int, name: String): CounterId
+    fun removeCounter(counterId: CounterId)
 
     fun addPlayer(): PlayerId
     fun removePlayer(playerId: PlayerId)
-    fun reset()
 
-    fun watchPlayerOrder(): StateFlow<PersistentList<PlayerId>>
-    fun watchPlayer(playerId: PlayerId): StateFlow<PlayerState?>
+    fun getPlayerOrder(): List<PlayerId>
+    fun getPlayer(playerId: PlayerId): Player?
 
-    fun updatePlayerHealth(playerId: PlayerId, healthDelta: Int)
+    fun updatePlayerCounter(playerId: PlayerId, counterId: CounterId, difference: Int)
     fun setPlayerColor(playerId: PlayerId, color: Color)
+    fun setPlayerSelectedCounter(playerId: PlayerId, selectedCounter: CounterId)
 }
 
-interface DataStore {
-    var defaultHealth: Int
-    var players: PersistentList<PlayerState>
+
+data class AppStateSnapshot(
+    val counters: PersistentList<Counter>,
+    val players: PersistentList<Player>,
+)
+
+interface AppStateStorage {
+    fun load(): AppStateSnapshot
+    fun save(appState: AppStateSnapshot)
 }

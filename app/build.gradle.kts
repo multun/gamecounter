@@ -55,6 +55,8 @@ dependencies {
     implementation(libs.kotlinx.collections.immutable)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.activity.compose)
     implementation(libs.hilt.android)
     implementation(platform(libs.androidx.compose.bom))
