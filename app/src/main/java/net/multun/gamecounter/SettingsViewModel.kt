@@ -11,6 +11,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import net.multun.gamecounter.datastore.CounterId
 import net.multun.gamecounter.datastore.AppStateRepository
 import javax.inject.Inject
@@ -25,10 +26,8 @@ data class SettingsUIState(
     val counters: ImmutableList<CounterUIState>,
 )
 
-private const val TAG = "SettingsViewModel"
-
 @HiltViewModel
-class SettingsViewModel @Inject constructor(repository: AppStateRepository) : ViewModel() {
+class SettingsViewModel @Inject constructor(private val repository: AppStateRepository) : ViewModel() {
     val settingsUIState = repository.appState.map { appState ->
         SettingsUIState(
             counters = appState.counters.map {
@@ -41,23 +40,39 @@ class SettingsViewModel @Inject constructor(repository: AppStateRepository) : Vi
         initialValue = SettingsUIState(counters = persistentListOf()),
     )
 
-    fun deleteCounter(counterId: CounterId) {
+    fun addCounter(counterName: String, defaultValue: Int) {
+        viewModelScope.launch {
+            repository.addCounter(defaultValue, counterName)
+        }
+    }
 
+    fun deleteCounter(counterId: CounterId) {
+        viewModelScope.launch {
+            repository.removeCounter(counterId)
+        }
     }
 
     fun moveCounterUp(counterId: CounterId) {
-
+        viewModelScope.launch {
+            repository.moveCounter(counterId, -1)
+        }
     }
 
     fun moveCounterDown(counterId: CounterId) {
-
+        viewModelScope.launch {
+            repository.moveCounter(counterId, 1)
+        }
     }
 
     fun setCounterName(counterId: CounterId, name: String) {
-
+        viewModelScope.launch {
+            repository.setCounterName(counterId, name)
+        }
     }
 
     fun setCounterDefaultValue(counterId: CounterId, defaultValue: Int) {
-
+        viewModelScope.launch {
+            repository.setCounterDefaultValue(counterId, defaultValue)
+        }
     }
 }

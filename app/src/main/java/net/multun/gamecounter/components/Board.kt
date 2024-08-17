@@ -71,7 +71,7 @@ fun Board(
             slotIndex, slotModifier ->
         val player = players[slotIndex]
         key(player.id) {
-            PlayerCounter(
+            PlayerCard(
                 player,
                 boardState.hasMultipleCounters,
                 viewModel,

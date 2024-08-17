@@ -19,34 +19,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ChipColors
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.InputChip
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -68,38 +51,6 @@ import net.multun.gamecounter.datastore.AppStateSerializer
 import java.io.File
 import java.util.Locale
 
-
-@Composable
-fun CounterButton(onClick: () -> Unit, modifier: Modifier = Modifier, content: @Composable RowScope.() -> Unit) {
-    OutlinedButton(onClick = onClick,
-        modifier = modifier.size(50.dp),  //avoid the oval shape
-        shape = CircleShape,
-        border = null,
-        contentPadding = PaddingValues(0.dp),  //avoid the little icon
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.DarkGray),
-        content = content,
-    )
-}
-
-fun AnimatedContentTransitionScope<Int?>.comboCounterAnimation(): ContentTransform {
-    val initial = initialState
-    val target = targetState
-    return if ( (initial != null && target != null && target > initial) || initial == null) {
-        // If the target number is larger, it slides up and fades in
-        // while the initial (smaller) number slides up and fades out.
-        slideInVertically { height -> height } + fadeIn() togetherWith
-                slideOutVertically { height -> -height } + fadeOut()
-    } else {
-        // If the target number is smaller, it slides down and fades in
-        // while the initial number slides down and fades out.
-        slideInVertically { height -> -height } + fadeIn() togetherWith
-                slideOutVertically { height -> height } + fadeOut()
-    }.using(
-        // Disable clipping since the faded slide-in/out should
-        // be displayed out of bounds.
-        SizeTransform(clip = false)
-    )
-}
 
 @Composable
 fun CounterSelector(
@@ -125,7 +76,7 @@ fun CounterSelector(
 }
 
 @Composable
-fun PlayerCounter(player: PlayerUIState, hasMultipleCounters: Boolean, viewModel: BoardViewModel, modifier: Modifier = Modifier) {
+fun PlayerCard(player: PlayerUIState, hasMultipleCounters: Boolean, viewModel: BoardViewModel, modifier: Modifier = Modifier) {
     val color = player.color
     val playerId = player.id
     val counterId = player.selectedCounter
@@ -206,6 +157,38 @@ private fun playerCounterLayout(): ConstraintSet {
     }
 }
 
+@Composable
+fun CounterButton(onClick: () -> Unit, modifier: Modifier = Modifier, content: @Composable RowScope.() -> Unit) {
+    OutlinedButton(onClick = onClick,
+        modifier = modifier.size(50.dp),  //avoid the oval shape
+        shape = CircleShape,
+        border = null,
+        contentPadding = PaddingValues(0.dp),  //avoid the little icon
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.DarkGray),
+        content = content,
+    )
+}
+
+fun AnimatedContentTransitionScope<Int?>.comboCounterAnimation(): ContentTransform {
+    val initial = initialState
+    val target = targetState
+    return if ( (initial != null && target != null && target > initial) || initial == null) {
+        // If the target number is larger, it slides up and fades in
+        // while the initial (smaller) number slides up and fades out.
+        slideInVertically { height -> height } + fadeIn() togetherWith
+                slideOutVertically { height -> -height } + fadeOut()
+    } else {
+        // If the target number is smaller, it slides down and fades in
+        // while the initial number slides down and fades out.
+        slideInVertically { height -> -height } + fadeIn() togetherWith
+                slideOutVertically { height -> height } + fadeOut()
+    }.using(
+        // Disable clipping since the faded slide-in/out should
+        // be displayed out of bounds.
+        SizeTransform(clip = false)
+    )
+}
+
 @Preview
 @Composable
 fun PlayerCounterTest() {
@@ -216,7 +199,7 @@ fun PlayerCounterTest() {
             }
         )))
     }
-    PlayerCounter(PlayerUIState(
+    PlayerCard(PlayerUIState(
         id = PlayerId(0),
         color = DEFAULT_PALETTE[0],
         selectedCounter = CounterId(0),

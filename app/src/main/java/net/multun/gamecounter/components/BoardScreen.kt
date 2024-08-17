@@ -89,20 +89,8 @@ fun BoardScreen(viewModel: BoardViewModel, navController: NavController, modifie
                         Icon(Icons.Filled.Add, contentDescription = "Add a new player")
                     }
 
-                    IconButton(enabled = boardState.canAddPlayer, onClick = { viewModel.addPlayer() }) {
-                        Icon(Icons.Filled.Delete, contentDescription = "Remove a player")
-                    }
-
                     IconButton(onClick = { }) {
                         Icon(Icons.Filled.Casino, contentDescription = "Roll a dice")
-                    }
-
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Filled.MoveDown, contentDescription = "Reset")
-                    }
-
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Filled.Palette, contentDescription = "Assign player colors")
                     }
 
                     IconButton(onClick = { showConfirmNewGame = true }) {

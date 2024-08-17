@@ -2,7 +2,6 @@ package net.multun.gamecounter.datastore
 
 import android.util.Log
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.colorspace.ColorSpace
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.datastore.core.DataStore
 import kotlinx.collections.immutable.ImmutableList
@@ -117,15 +116,22 @@ class AppStateRepository @Inject constructor(private val appStateStore: DataStor
         appStateStore.updateData { oldState ->
             // remove the counter itself
             val counterIndex = oldState.counterList.indexOfFirst { it.id == counterId.value }
-            if  (counterIndex == -1)
+            if (counterIndex == -1)
                 return@updateData oldState
             val builder = oldState.toBuilder().removeCounter(counterIndex)
 
-            //  remove references to the counter from players
+            // find the new default counter, if any
+            var newDefaultCounter = -1
+            if (builder.counterList.size > 0)
+                newDefaultCounter = builder.counterList[0].id
+
+            // remove references to the counter from players
             builder.clearPlayer()
             for (oldPlayer in oldState.playerList) {
                 val newPlayer = oldPlayer.toBuilder()
                 newPlayer.removeCounters(counterId.value)
+                if (newPlayer.selectedCounter == counterId.value)
+                    newPlayer.setSelectedCounter(newDefaultCounter)
                 builder.addPlayer(newPlayer)
             }
             builder.build()
@@ -165,55 +171,58 @@ class AppStateRepository @Inject constructor(private val appStateStore: DataStor
         }
     }
 
-    suspend fun updatePlayerCounter(playerId: PlayerId, counterId: CounterId, difference: Int) {
+    private suspend fun updateCounter(counterId: CounterId, updater: (Counter) -> Counter) {
+        appStateStore.updateData { oldState ->
+            val counterIndex = oldState.getCounterIndex(counterId)
+            if (counterIndex == -1)
+                return@updateData oldState
+
+            val newCounter = updater(oldState.getCounter(counterIndex))
+            val newState = oldState.toBuilder()
+            newState.setCounter(counterIndex, newCounter)
+            newState.build()
+        }
+    }
+
+    private suspend fun updatePlayer(playerId: PlayerId, updater: (AppState, Player) -> Player) {
         appStateStore.updateData { oldState ->
             val playerIndex = oldState.getPlayerIndex(playerId)
             if (playerIndex == -1)
                 return@updateData oldState
 
-            // create a player with an updated counter
-            val newPlayer = oldState.getPlayer(playerIndex).toBuilder()
-            val oldCounter = newPlayer.getCountersOrThrow(counterId.value)
-            newPlayer.putCounters(counterId.value, oldCounter + difference)
-
-            // create a new state with this player
+            val newPlayer = updater(oldState, oldState.getPlayer(playerIndex))
             val newState = oldState.toBuilder()
             newState.setPlayer(playerIndex, newPlayer)
             newState.build()
+        }
+    }
+
+    suspend fun updatePlayerCounter(playerId: PlayerId, counterId: CounterId, difference: Int) {
+        updatePlayer(playerId) {
+            _, oldPlayer ->
+            oldPlayer.copy {
+                val oldCounter = counters[counterId.value]!!
+                this.counters.put(counterId.value, oldCounter + difference)
+            }
         }
     }
 
     suspend fun setPlayerColor(playerId: PlayerId, color: Color) {
-        appStateStore.updateData { oldState ->
-            val playerIndex = oldState.getPlayerIndex(playerId)
-            if (playerIndex == -1)
-                return@updateData oldState
-
-            // create a player with an updated color
-            val newPlayer = oldState.getPlayer(playerIndex).copy {
+        updatePlayer(playerId) {
+                _, oldPlayer ->
+            oldPlayer.copy {
                 this.color = color.encode()
             }
-
-            // create a new state with this player
-            val newState = oldState.toBuilder()
-            newState.setPlayer(playerIndex, newPlayer)
-            newState.build()
         }
     }
 
     suspend fun changeCounterSelection(playerId: PlayerId, direction: Int) {
-        appStateStore.updateData { oldState ->
-            // fetch the old player
-            val playerIndex = oldState.getPlayerIndex(playerId)
-            if (playerIndex == -1)
-                return@updateData oldState
-            val oldPlayer = oldState.getPlayer(playerIndex)
-            val oldSelectedCounter = oldPlayer.selectedCounter
-
+        updatePlayer(playerId) {
+                oldState, oldPlayer ->
             // find the index of the previously selected counter
-            val counterIndex = oldState.counterList.indexOfFirst { it.id == oldSelectedCounter }
+            val counterIndex = oldState.counterList.indexOfFirst { it.id == oldPlayer.selectedCounter }
             if (counterIndex == -1)
-                return@updateData oldState
+                return@updatePlayer oldPlayer
 
             // compute the index of the new selected counter
             val count = oldState.counterCount
@@ -221,12 +230,48 @@ class AppStateRepository @Inject constructor(private val appStateStore: DataStor
             val newCounterId = oldState.getCounter(newCounterIndex).id
 
             // update the player
-            val newPlayer = oldState.getPlayer(playerIndex).copy {
+            oldPlayer.copy {
                 this.selectedCounter = newCounterId
             }
-            val newState = oldState.toBuilder()
-            newState.setPlayer(playerIndex, newPlayer)
-            newState.build()
+        }
+    }
+
+    suspend fun setCounterName(counterId: CounterId, name: String) {
+        updateCounter(counterId) {
+            it.copy {
+                this.name = name
+            }
+        }
+    }
+
+    suspend fun setCounterDefaultValue(counterId: CounterId, defaultValue: Int) {
+        suspend fun setCounterName(counterId: CounterId, name: String) {
+            updateCounter(counterId) {
+                it.copy {
+                    this.defaultValue = defaultValue
+                }
+            }
+        }
+    }
+
+    suspend fun moveCounter(counterId: CounterId, direction: Int) {
+        appStateStore.updateData { oldState ->
+            // find the current index of the counter
+            val counterIndex = oldState.counterList.indexOfFirst { it.id == counterId.value }
+            if (counterIndex == -1)
+                return@updateData oldState
+            val counter = oldState.getCounter(counterIndex)
+
+            var newCounterIndex = counterIndex + direction
+            if (newCounterIndex < 0)
+                newCounterIndex = 0
+            if (newCounterIndex > (oldState.counterCount - 1))
+                newCounterIndex = oldState.counterCount - 1
+
+            oldState.toBuilder()
+                .removeCounter(counterIndex)
+                .addCounter(newCounterIndex, counter)
+                .build()
         }
     }
 }
@@ -239,6 +284,10 @@ fun AppState.getDefaultCounters(): Map<Int, Int> {
 
 fun AppState.getPlayerIndex(playerId: PlayerId): Int {
     return playerList.indexOfFirst { it.id == playerId.value }
+}
+
+fun AppState.getCounterIndex(counterId: CounterId): Int {
+    return counterList.indexOfFirst { it.id == counterId.value }
 }
 
 fun Color.encode(): Long {
