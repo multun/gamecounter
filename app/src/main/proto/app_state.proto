@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_package = "net.multun.gamecounter.datastore";
+option java_multiple_files = true;
+
+message Player {
+  int32 id = 1;
+  uint64 color = 2;
+  int32 selectedCounter = 3;
+  map<int32, int32> counters = 4;
+}
+
+message Counter {
+  int32 id = 1;
+  string name = 2;
+  int32 defaultValue = 3;
+}
+
+message AppState {
+  repeated Player player = 1;
+  repeated Counter counter = 2;
+}

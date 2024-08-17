@@ -1,8 +1,14 @@
+import com.google.protobuf.gradle.*
+import org.gradle.internal.extensions.stdlib.capitalized
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
-    alias(libs.plugins.kapt)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.protobuf)
 }
 
 android {
@@ -35,15 +41,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
-    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -57,6 +59,11 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.datastore)
+    implementation(libs.protobuf.kotlin)
+    implementation(libs.protobuf.java)
+    implementation(libs.androidx.navigation.compose)
+    compileOnly(libs.protobuf.protoc)
     implementation(libs.androidx.activity.compose)
     implementation(libs.hilt.android)
     implementation(platform(libs.androidx.compose.bom))
@@ -66,7 +73,6 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material3.icons.extended)
     implementation(libs.androidx.lifecycle.runtime.compose.android)
-    implementation(libs.androidx.room.common)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -74,10 +80,46 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 }
 
-// Allow references to generated code
-kapt {
-    correctErrorTypes = true
+project.tasks.withType(JavaCompile::class.java).configureEach {
+    // JDK 21 considers Java 8 an obsolete source and target value. Disable this warning.
+    options.compilerArgs.add("-Xlint:-options")
+    options.compilerArgs.add("-Xlint:deprecation")
+
+}
+
+protobuf {
+    protoc {
+        artifact = libs.protobuf.protoc.get().toString()
+    }
+
+    // Generates the java Protobuf-lite code for the Protobufs in this project. See
+    // https://github.com/google/protobuf-gradle-plugin#customizing-protobuf-compilation
+    // for more information.
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins {
+                id("java") {
+                    option("lite")
+                }
+                id("kotlin") {
+                    option("lite")
+                }
+            }
+        }
+    }
+}
+
+// workaround for https://github.com/google/ksp/issues/1590
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        afterEvaluate {
+            val capName = variant.name.capitalized()
+            tasks.getByName<KotlinCompile>("ksp${capName}Kotlin") {
+                setSource(tasks.getByName("generate${capName}Proto").outputs)
+            }
+        }
+    }
 }
