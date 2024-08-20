@@ -71,10 +71,10 @@ fun CounterSettingsScreen(
         }
     ) { contentPadding ->
         LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier
                 .padding(contentPadding)
                 .padding(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             for (counterIndex in 0 until appState.counters.size) {
                 val counter = appState.counters[counterIndex]

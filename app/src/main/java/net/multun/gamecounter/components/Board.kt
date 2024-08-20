@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -14,6 +15,10 @@ import net.multun.gamecounter.BoardUIState
 import net.multun.gamecounter.BoardViewModel
 
 
+
+// TODO: investigate using FlowRow and animatePlacement:
+//   https://developer.android.com/develop/ui/compose/layouts/flow
+//   https://developer.android.com/reference/kotlin/androidx/compose/ui/layout/package-summary#(androidx.compose.ui.Modifier).onPlaced(kotlin.Function1)
 @Composable
 fun BoardLayout(
     slots: Int,
@@ -39,7 +44,10 @@ fun BoardLayout(
             Row(modifier = Modifier
                 .padding(padding / 2)
                 .fillMaxSize()
-                .weight(1f), horizontalArrangement = Arrangement.spacedBy(padding)) {
+                .weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(padding),
+                verticalAlignment = Alignment.CenterVertically,
+                ) {
                 for (colIndex in 0 until rowSlots) {
                     val slotIndex = rowOffset + colIndex
                     val orientation = when {
@@ -59,24 +67,3 @@ fun BoardLayout(
     }
 }
 
-
-@Composable
-fun Board(
-    boardState: BoardUIState,
-    viewModel: BoardViewModel,
-    modifier: Modifier = Modifier,
-) {
-    val players = boardState.players
-    BoardLayout(slots = players.size, modifier = modifier) {
-            slotIndex, slotModifier ->
-        val player = players[slotIndex]
-        key(player.id) {
-            PlayerCard(
-                player,
-                boardState.hasMultipleCounters,
-                viewModel,
-                modifier = slotModifier,
-            )
-        }
-    }
-}

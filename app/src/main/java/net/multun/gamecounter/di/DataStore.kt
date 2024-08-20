@@ -11,6 +11,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import net.multun.gamecounter.datastore.AppState
 import net.multun.gamecounter.datastore.AppStateSerializer
 import javax.inject.Singleton
 
@@ -24,7 +25,7 @@ object DataStoreModule {
         @ApplicationContext context: Context,
         @Dispatcher(AppDispatchers.IO) ioDispatcher: CoroutineDispatcher,
         @ApplicationScope scope: CoroutineScope,
-    ): DataStore<net.multun.gamecounter.datastore.AppState> =
+    ): DataStore<AppState> =
         DataStoreFactory.create(
             serializer = AppStateSerializer,
             scope = CoroutineScope(scope.coroutineContext + ioDispatcher),

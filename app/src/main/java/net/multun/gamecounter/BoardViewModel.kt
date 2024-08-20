@@ -27,16 +27,21 @@ import kotlin.time.Duration.Companion.milliseconds
 data class BoardUIState(
     val canAddPlayer: Boolean,
     val hasMultipleCounters: Boolean,
-    val players: ImmutableList<PlayerUIState>,
+    val players: ImmutableList<PlayerCardUIState>,
 )
 
-data class PlayerUIState(
-    val id: PlayerId,
-    val selectedCounter: CounterId?,
-    val counterValue: Int?,
-    val counterName: String?,
+data class PlayerCounterUIState(
+    val id: CounterId,
+    val counterValue: Int,
+    val counterName: String,
     val combo: Int?,
+)
+
+data class PlayerCardUIState(
+    val id: PlayerId,
     val color: Color,
+    val counter: PlayerCounterUIState?,
+    val rollResult: Int?,
 )
 
 private const val TAG = "BoardViewModel"
@@ -51,33 +56,25 @@ class BoardViewModel @Inject constructor(private val repository: AppStateReposit
         repository.appState,
         comboCounters,
     ) { appState, combos ->
-        val players = mutableListOf<PlayerUIState>()
-
-        for (player in appState.players) {
-            val playerCounter = player.selectedCounter?.let { selectedCounter ->
-                appState.counters.find { it.id == selectedCounter }
-            }
-            val counterValue = player.selectedCounter?.let {
-                player.counters[it]
-            }
-            val combo = player.selectedCounter?.let { selectedCounter ->
-                combos[player.id]?.get(selectedCounter)
-            }
-
-            players.add(PlayerUIState(
-                id = player.id,
-                selectedCounter = player.selectedCounter,
-                counterValue = counterValue,
-                counterName = playerCounter?.name,
-                combo = combo,
-                color = player.color
-            ))
-        }
-
         BoardUIState(
-            canAddPlayer = players.size < 8,
+            canAddPlayer = appState.players.size < 8,
             hasMultipleCounters = appState.counters.size > 1,
-            players = players.toPersistentList(),
+            players = appState.players.map { player ->
+                PlayerCardUIState(
+                    id = player.id,
+                    color = player.color,
+                    counter = player.selectedCounter?.let {
+                            counterId ->
+                        PlayerCounterUIState(
+                            id = player.selectedCounter,
+                            counterValue = player.counters[counterId]!!,
+                            counterName = appState.counters.find { it.id == counterId }!!.name,
+                            combo = combos[player.id]?.get(counterId),
+                        )
+                    },
+                    rollResult = null,
+                )
+            }.toPersistentList(),
         )
     }.stateIn(
         scope = viewModelScope,
@@ -150,6 +147,18 @@ class BoardViewModel @Inject constructor(private val repository: AppStateReposit
     fun previousCounter(playerId: PlayerId) {
         viewModelScope.launch {
             repository.changeCounterSelection(playerId, -1)
+        }
+    }
+
+    fun setPlayerColor(playerId: PlayerId, color: Color) {
+        viewModelScope.launch {
+            repository.setPlayerColor(playerId, color)
+        }
+    }
+
+    fun removePlayer(playerId: PlayerId) {
+        viewModelScope.launch {
+            repository.removePlayer(playerId)
         }
     }
 }
