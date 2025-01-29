@@ -60,6 +60,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import net.multun.gamecounter.DEFAULT_PALETTE
+import net.multun.gamecounter.toDisplayColor
 
 enum class PlayerMenu {
     MAIN,
@@ -110,7 +111,7 @@ fun PlayerSettings(
                 ),
             ) {
                 for (color in DEFAULT_PALETTE) {
-                    PaletteItem(color, selected = color == currentPlayerColor) {
+                    PaletteItem(color.toDisplayColor(), selected = color == currentPlayerColor) {
                         onSetColor(color)
                     }
                 }
@@ -118,7 +119,7 @@ fun PlayerSettings(
             PlayerMenu.DELETE -> {
                 PlayerMenu {
                     PlayerMenuItem(Icons.Default.Cancel, "Cancel") { menu = PlayerMenu.MAIN }
-                    PlayerMenuItem(Icons.Default.Delete, "Delete") { onDelete() }
+                    PlayerMenuItem(Icons.Default.Delete, "Confirm") { onDelete() }
                 }
             }
         }

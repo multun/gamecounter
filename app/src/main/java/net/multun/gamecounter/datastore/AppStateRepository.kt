@@ -1,6 +1,8 @@
 package net.multun.gamecounter.datastore
 
 import android.util.Log
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.datastore.core.DataStore
@@ -13,9 +15,11 @@ import net.multun.gamecounter.DEFAULT_PALETTE
 import javax.inject.Inject
 
 @JvmInline
+@Immutable
 value class CounterId(val value: Int)
 
 @JvmInline
+@Immutable
 value class PlayerId(val value: Int)
 
 data class UserAppState(
@@ -245,11 +249,9 @@ class AppStateRepository @Inject constructor(private val appStateStore: DataStor
     }
 
     suspend fun setCounterDefaultValue(counterId: CounterId, defaultValue: Int) {
-        suspend fun setCounterName(counterId: CounterId, name: String) {
-            updateCounter(counterId) {
-                it.copy {
-                    this.defaultValue = defaultValue
-                }
+        updateCounter(counterId) {
+            it.copy {
+                this.defaultValue = defaultValue
             }
         }
     }

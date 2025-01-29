@@ -68,7 +68,6 @@ fun CounterSelector(
 @Composable
 fun PlayerCounter(
     counter: PlayerCounterUIState,
-    hasMultipleCounters: Boolean,
     onIncrement: () -> Unit,
     onDecrement: () -> Unit,
     onNextCounter: () -> Unit,
@@ -111,7 +110,7 @@ fun PlayerCounter(
             counterName = counter.counterName,
             onPrev = onPreviousCounter,
             onNext = onNextCounter,
-            showControls = hasMultipleCounters,
+            showControls = counter.hasMultipleCounters,
             modifier = Modifier.layoutId("counterSelector")
         )
     }
@@ -192,9 +191,9 @@ fun PlayerCounterTest() {
                 id = CounterId(0),
                 combo = 1,
                 counterName = "test",
+                hasMultipleCounters = true,
                 counterValue = 1,
             ),
-            hasMultipleCounters = true,
             onIncrement = {},
             onDecrement = {},
             onNextCounter = {},

@@ -13,12 +13,12 @@ plugins {
 
 android {
     namespace = "net.multun.gamecounter"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "net.multun.gamecounter"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -53,7 +53,13 @@ android {
     }
 }
 
+composeCompiler {
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+    metricsDestination = layout.buildDirectory.dir("compose_compiler")
+}
+
 dependencies {
+    implementation("io.github.theapache64:rebugger:1.0.0-rc03")
     implementation(libs.kotlinx.collections.immutable)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -87,7 +93,6 @@ project.tasks.withType(JavaCompile::class.java).configureEach {
     // JDK 21 considers Java 8 an obsolete source and target value. Disable this warning.
     options.compilerArgs.add("-Xlint:-options")
     options.compilerArgs.add("-Xlint:deprecation")
-
 }
 
 protobuf {

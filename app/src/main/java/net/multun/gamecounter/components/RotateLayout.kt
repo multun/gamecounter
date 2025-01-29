@@ -1,5 +1,7 @@
 package net.multun.gamecounter.components
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.graphicsLayer
@@ -12,11 +14,22 @@ import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.unit.Constraints
 
 
-enum class Rotation(val degrees: Float) {
-    ROT_0(0f),
-    ROT_90(90f),
-    ROT_180(180f),
-    ROT_270(270f),
+@Immutable
+enum class Rotation(private val index: Int, val degrees: Float) {
+    ROT_0(0, 0f),
+    ROT_90(1, 90f),
+    ROT_180(2, 180f),
+    ROT_270(3, 270f);
+
+    operator fun plus(rotation: Rotation): Rotation {
+        return when ((this.index + rotation.index) % 4) {
+            0 -> ROT_0
+            1 -> ROT_90
+            2 -> ROT_180
+            3 -> ROT_270
+            else -> error("")
+        }
+    }
 }
 
 /**

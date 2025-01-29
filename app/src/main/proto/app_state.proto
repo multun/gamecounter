@@ -16,7 +16,15 @@ message Counter {
   int32 defaultValue = 3;
 }
 
+message Preset {
+  int32 id = 1;
+  string name = 2;
+  repeated Counter counter = 3;
+  int32 playerCount = 4;
+}
+
 message AppState {
   repeated Player player = 1;
   repeated Counter counter = 2;
+  repeated Preset presets = 3;
 }

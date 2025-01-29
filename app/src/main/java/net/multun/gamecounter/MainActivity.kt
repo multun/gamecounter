@@ -17,7 +17,7 @@ import net.multun.gamecounter.ui.theme.GamecounterTheme
 
 sealed class Screens(val route: String) {
     data object Board: Screens("board")
-    data object CounterSettings: Screens("settings")
+    data object CounterSettings: Screens("counter_settings")
 }
 
 @AndroidEntryPoint

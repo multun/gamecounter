@@ -52,7 +52,6 @@ data class EditDialog(val counter: CounterUIState) : CounterSettingsDialog()
 data class ConfirmDeleteDialog(val counter: CounterUIState) : CounterSettingsDialog()
 
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CounterSettingsScreen(
     viewModel: SettingsViewModel,
@@ -86,10 +85,10 @@ fun CounterSettingsScreen(
                         isFirst,
                         isLast,
                         onEdit = { dialog = EditDialog(counter) },
-                        onMoveUp = { viewModel.moveCounterUp(counter.id) },
-                        onMoveDown = { viewModel.moveCounterDown(counter.id) },
+                        onMoveUp = remember { { viewModel.moveCounterUp(counter.id) } },
+                        onMoveDown = remember { { viewModel.moveCounterDown(counter.id) } },
                         onDelete = { dialog = ConfirmDeleteDialog(counter) },
-                        modifier = Modifier.animateItemPlacement(),
+                        modifier = Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
                     )
                 }
             }
@@ -101,10 +100,10 @@ fun CounterSettingsScreen(
             title = "Add a counter",
             action = "Add",
             onDismissRequest = { dialog = null },
-            onCounterAdded = { name, defaultValue ->
+            onCounterAdded = remember { { name, defaultValue ->
                 viewModel.addCounter(name, defaultValue)
                 dialog = null
-            }
+            } }
         )
         is EditDialog -> CounterChangeDialog(
             title = "Edit a counter",
@@ -112,22 +111,22 @@ fun CounterSettingsScreen(
             initialName = curDialog.counter.name,
             initialDefaultValue = curDialog.counter.defaultValue,
             onDismissRequest = { dialog = null },
-            onCounterAdded = { name, defaultValue ->
+            onCounterAdded = remember { { name, defaultValue ->
                 val counterId = curDialog.counter.id
                 viewModel.setCounterName(counterId, name)
                 viewModel.setCounterDefaultValue(counterId, defaultValue)
                 dialog = null
-            }
+            } }
         )
         is ConfirmDeleteDialog -> AlertDialog(
             icon = { Icon(Icons.Filled.Delete, contentDescription = "Delete icon") },
             text = { Text("Do you really want to delete counter ${curDialog.counter.name}?")},
             onDismissRequest = { dialog = null },
             confirmButton = {
-                TextButton(onClick = {
+                TextButton(onClick = remember { {
                     viewModel.deleteCounter(curDialog.counter.id)
                     dialog = null
-                }) {
+                } }) {
                     Text("Confirm")
                 }
             },
