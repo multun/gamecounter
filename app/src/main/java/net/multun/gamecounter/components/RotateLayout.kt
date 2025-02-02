@@ -46,7 +46,7 @@ fun Modifier.rotateLayout(rotation: Rotation): Modifier {
         // rotate does not
         Rotation.ROT_0, Rotation.ROT_180 -> this
         Rotation.ROT_90, Rotation.ROT_270 -> then(HorizontalLayoutModifier)
-    } then rotate(rotation.degrees)
+    }.rotate(rotation.degrees)
 }
 
 /** Swap horizontal and vertical constraints */
