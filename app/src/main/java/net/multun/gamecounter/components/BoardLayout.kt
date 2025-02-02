@@ -67,9 +67,8 @@ enum class RowType(val orientations: ImmutableList<Rotation>) {
     }
 }
 
-typealias Layout = ImmutableList<RowType>
 
-fun Layout.minWidth(padding: Dp): Dp {
+fun ImmutableList<RowType>.minWidth(padding: Dp): Dp {
     // the min width is the widest row's width
     var maxRowWidth = this[0].minWidth(padding)
     for (rowIndex in 1 until this.size) {
@@ -201,7 +200,7 @@ fun FallbackLayout(
 
 @Composable
 fun VerticalLayout(
-    layout: Layout,
+    layout: ImmutableList<RowType>,
     availableHeight: Dp,
     layoutOrder: ImmutableList<Int>,
     modifier: Modifier = Modifier,
@@ -249,7 +248,7 @@ fun VerticalLayout(
 
 @Composable
 fun HorizontalLayout(
-    layout: Layout,
+    layout: ImmutableList<RowType>,
     availableWidth: Dp,
     layoutOrder: ImmutableList<Int>,
     modifier: Modifier = Modifier,

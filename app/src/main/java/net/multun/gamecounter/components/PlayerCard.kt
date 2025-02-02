@@ -19,11 +19,13 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -102,8 +104,11 @@ fun PlayerCounter(
             }
         }
 
-        IconButton(onClick = onEdit, modifier = Modifier.layoutId("edit")) {
-            Icon(Icons.Outlined.Settings, contentDescription = "Edit player settings")
+        val settingsColor = IconButtonDefaults.iconButtonColors().copy(
+            contentColor = LocalContentColor.current.copy(alpha = 0.75f)
+        )
+        IconButton(onClick = onEdit, colors = settingsColor, modifier = Modifier.layoutId("edit")) {
+            Icon(Icons.Outlined.PersonOutline, contentDescription = "Edit player settings")
         }
 
         CounterSelector(
