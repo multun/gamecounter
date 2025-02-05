@@ -1,4 +1,4 @@
-package net.multun.gamecounter.components
+package net.multun.gamecounter.ui
 
 
 import androidx.compose.foundation.clickable
@@ -12,25 +12,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
@@ -123,7 +113,7 @@ fun BoardScreen(viewModel: BoardViewModel, navController: NavController, modifie
 
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
-    var showBottomSheet by remember { mutableStateOf(false) }
+    var showBottomSheet by rememberSaveable { mutableStateOf(false) }
     fun hideBottomSheet() {
         scope.launch { sheetState.hide() }.invokeOnCompletion {
             if (!sheetState.isVisible) {
@@ -199,8 +189,8 @@ fun BoardScreen(viewModel: BoardViewModel, navController: NavController, modifie
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentSize(),
+                        .fillMaxWidth(),
+                        //.wrapContentSize(),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     SheetMenuItem(
@@ -237,12 +227,12 @@ fun SheetMenuItem(icon: ImageVector, text: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(8.dp),
+            .padding(30.dp, 0.dp, 8.dp, 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(icon, contentDescription = text)
-        Spacer(Modifier.size(12.dp))
-        Text(text, fontSize = 4.em)
+        Spacer(Modifier.size(30.dp))
+        Text(text)
     }
 }
 

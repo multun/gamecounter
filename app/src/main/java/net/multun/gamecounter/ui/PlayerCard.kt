@@ -1,4 +1,4 @@
-package net.multun.gamecounter.components
+package net.multun.gamecounter.ui
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope

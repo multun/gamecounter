@@ -1,7 +1,6 @@
-package net.multun.gamecounter.components
+package net.multun.gamecounter.ui
 
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.graphicsLayer

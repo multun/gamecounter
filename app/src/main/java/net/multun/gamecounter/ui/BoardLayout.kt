@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalLayoutApi::class)
 
-package net.multun.gamecounter.components
+package net.multun.gamecounter.ui
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement

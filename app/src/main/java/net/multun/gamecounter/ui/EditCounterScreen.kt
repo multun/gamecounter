@@ -1,4 +1,4 @@
-package net.multun.gamecounter.components
+package net.multun.gamecounter.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding

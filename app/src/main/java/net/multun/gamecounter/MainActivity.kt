@@ -11,8 +11,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import net.multun.gamecounter.components.BoardScreen
-import net.multun.gamecounter.components.CounterSettingsScreen
+import net.multun.gamecounter.ui.BoardScreen
+import net.multun.gamecounter.ui.CounterSettingsScreen
 import net.multun.gamecounter.ui.theme.GamecounterTheme
 
 sealed class Screens(val route: String) {
