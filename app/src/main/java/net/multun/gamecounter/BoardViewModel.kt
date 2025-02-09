@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentMap
@@ -31,10 +32,14 @@ enum class BoardUIMode {
     ROLL,
 }
 
-data class BoardUIState(
-    val mode: BoardUIMode,
-    val players: ImmutableList<PlayerCardUIState>,
-)
+sealed interface UIState
+sealed interface BoardUI : UIState {
+    val players: ImmutableList<CardUIState>
+}
+data object StartupUI : UIState
+data class SetupUI(val hasCounters: Boolean, val hasPlayers: Boolean) : UIState
+data class RollUI(val selectedDice: Int, override val players: ImmutableList<RollCardUIState>) : BoardUI
+data class CounterBoardUI(override val players: ImmutableList<CounterCardUIState>) : BoardUI
 
 data class PlayerCounterUIState(
     val id: CounterId,
@@ -44,12 +49,22 @@ data class PlayerCounterUIState(
     val combo: Int?,
 )
 
-data class PlayerCardUIState(
-    val id: PlayerId,
-    val color: Color,
+sealed interface CardUIState {
+    val id: PlayerId
+    val color: Color
+}
+
+data class CounterCardUIState(
+    override val id: PlayerId,
+    override val color: Color,
     val counter: PlayerCounterUIState?,
-    val roll: Int?,
-)
+) : CardUIState
+
+data class RollCardUIState(
+    override val id: PlayerId,
+    override val color: Color,
+    val roll: Int,
+) : CardUIState
 
 private const val TAG = "BoardViewModel"
 
@@ -58,22 +73,31 @@ class BoardViewModel @Inject constructor(private val repository: AppStateReposit
     // combo timers
     private val comboCounters = MutableStateFlow(persistentMapOf<PlayerId, PersistentMap<CounterId, Int>>())
     private val comboCountersTimers = mutableMapOf<PlayerId, MutableMap<CounterId, Job>>()
-    private val rollResult = MutableStateFlow<ImmutableList<PlayerCardUIState>?>(null)
+    private val rollResult = MutableStateFlow<ImmutableList<RollCardUIState>?>(null)
 
     fun roll() {
         viewModelScope.launch {
             val currentState = repository.appState.first()
-            val order = (1 .. currentState.players.size).shuffled()
+            val playerCount = currentState.players.size
+            val diceSize = currentState.selectedDice
+            val order = if (diceSize <= 0)
+                (1 .. playerCount).shuffled()
+            else
+                (1 .. playerCount).map { (1..diceSize).random() }
             val newRollResult = currentState.players.zip(order) {
-                player, playerRoll ->
-                PlayerCardUIState(
+                    player, playerRoll ->
+                RollCardUIState(
                     id = player.id,
                     color = player.color,
-                    counter = null,
                     roll = playerRoll,
                 )
             }.toPersistentList()
-            rollResult.update { newRollResult }
+            rollResult.update { newRollResult }        }
+    }
+
+    fun selectDice(diceSize: Int) {
+        viewModelScope.launch {
+            repository.selectDice(diceSize)
         }
     }
 
@@ -87,16 +111,21 @@ class BoardViewModel @Inject constructor(private val repository: AppStateReposit
         rollResult,
     ) { appState, combos, rollResult ->
         if (rollResult != null) {
-            return@combine BoardUIState(
-                mode = BoardUIMode.ROLL,
+            return@combine RollUI(
                 players = rollResult,
+                selectedDice = appState.selectedDice,
             )
         }
 
-        BoardUIState(
-            mode = BoardUIMode.COUNTERS,
+        if (appState.counters.isEmpty() || appState.players.isEmpty())
+            return@combine SetupUI(
+                hasCounters = appState.counters.isNotEmpty(),
+                hasPlayers = appState.players.isNotEmpty(),
+            )
+
+        CounterBoardUI(
             players = appState.players.map { player ->
-                PlayerCardUIState(
+                CounterCardUIState(
                     id = player.id,
                     color = player.color,
                     counter = player.selectedCounter?.let {
@@ -109,14 +138,13 @@ class BoardViewModel @Inject constructor(private val repository: AppStateReposit
                             combo = combos[player.id]?.get(counterId),
                         )
                     },
-                    roll = null,
                 )
             }.toPersistentList(),
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = BoardUIState(mode = BoardUIMode.STARTUP, persistentListOf()),
+        initialValue = StartupUI,
     )
 
     fun newGame() {

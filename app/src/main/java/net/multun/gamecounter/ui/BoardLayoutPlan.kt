@@ -7,10 +7,10 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 
 
-private val PLAYER_MIN_HEIGHT = 150.dp
-private val PLAYER_MIN_WIDTH = 150.dp
-private val PLAYER_PREFERRED_HEIGHT = 170.dp
-private val PLAYER_PREFERRED_WIDTH = 210.dp
+val PLAYER_MIN_HEIGHT = 150.dp
+val PLAYER_MIN_WIDTH = 150.dp
+val PLAYER_PREFERRED_HEIGHT = 170.dp
+val PLAYER_PREFERRED_WIDTH = 210.dp
 
 
 enum class RowType(val orientations: ImmutableList<Rotation>) {

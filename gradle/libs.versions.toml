@@ -9,15 +9,15 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.0"
-composeBom = "2025.01.00"
+composeBom = "2025.01.01"
 collectionsImmutable = "0.3.7"
 lifecycleRuntimeComposeAndroid = "2.8.7"
 hilt = "2.53"
 constraintLayout = "1.1.0"
 protobufPlugin = "0.9.4"
 protobuf = "4.27.3"
-navigationCompose = "2.8.5"
-
+navigationCompose = "2.8.6"
+composeWheelPicker = "1.0.0-rc02"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -47,6 +47,7 @@ androidx-lifecycle-runtime-compose-android = { group = "androidx.lifecycle", nam
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+compose-wheel-picker = { group = "com.github.zj565061763", name = "compose-wheel-picker", version.ref = "composeWheelPicker"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

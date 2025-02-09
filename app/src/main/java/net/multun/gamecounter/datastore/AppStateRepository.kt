@@ -23,6 +23,7 @@ value class CounterId(val value: Int)
 value class PlayerId(val value: Int)
 
 data class UserAppState(
+    val selectedDice: Int, // either -1 for player order, or dice size
     val players: ImmutableList<UserPlayer>,
     val counters: ImmutableList<UserCounter>,
 )
@@ -45,6 +46,7 @@ const val TAG = "AppStateRepository"
 class AppStateRepository @Inject constructor(private val appStateStore: DataStore<AppState>) {
     val appState = appStateStore.data.map { protoAppState ->
         val newAppState = UserAppState(
+            selectedDice = protoAppState.selectedDice,
             players = protoAppState.playerList.map { protoPlayer ->
                 val selectedCounter = if (protoPlayer.selectedCounter == -1)
                     null
@@ -274,6 +276,14 @@ class AppStateRepository @Inject constructor(private val appStateStore: DataStor
                 .removeCounter(counterIndex)
                 .addCounter(newCounterIndex, counter)
                 .build()
+        }
+    }
+
+    suspend fun selectDice(diceSize: Int) {
+        appStateStore.updateData { oldState ->
+            oldState.copy {
+                selectedDice = diceSize
+            }
         }
     }
 }

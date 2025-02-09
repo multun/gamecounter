@@ -59,7 +59,7 @@ composeCompiler {
 }
 
 dependencies {
-    implementation("io.github.theapache64:rebugger:1.0.0-rc03")
+    implementation(libs.compose.wheel.picker)
     implementation(libs.kotlinx.collections.immutable)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

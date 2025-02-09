@@ -11,7 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import net.multun.gamecounter.ui.BoardScreen
+import net.multun.gamecounter.ui.MainScreen
 import net.multun.gamecounter.ui.CounterSettingsScreen
 import net.multun.gamecounter.ui.theme.GamecounterTheme
 
@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
                 val controller = rememberNavController()
                 NavHost(navController = controller, startDestination = Screens.Board.route) {
                     composable(route = Screens.Board.route) {
-                        BoardScreen(boardViewModel, controller, modifier = Modifier.fillMaxSize())
+                        MainScreen(boardViewModel, controller, modifier = Modifier.fillMaxSize())
                     }
                     composable(route = Screens.CounterSettings.route) {
                         CounterSettingsScreen(settingsViewModel, controller)

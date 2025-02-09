@@ -28,19 +28,26 @@ val DEFAULT_PALETTE = listOf(
 private val srgbToLab = ColorSpaces.Srgb.connect(ColorSpaces.CieLab)
 private val labToSrgb = ColorSpaces.CieLab.connect(ColorSpaces.Srgb)
 
-const val DARKENING = 0.55f
-const val DESATURATION = 1.25f
+const val DARK_LUMA = 0.55f
+const val DARK_CHROMA = 1.25f
+
+const val LIGHT_LUMA = 0.95f
+const val LIGHT_CHROMA = 1f
 
 @Composable
 fun Color.toDisplayColor(): Color {
-    if (!isSystemInDarkTheme()) {
-        return this
+    val labColor = srgbToLab.transform(this.red, this.green, this.blue)
+
+    if (isSystemInDarkTheme()) {
+        labColor[0] *= DARK_LUMA
+        labColor[1] *= DARK_CHROMA
+        labColor[2] *= DARK_CHROMA
+    } else {
+        labColor[0] *= LIGHT_LUMA
+        labColor[1] *= LIGHT_CHROMA
+        labColor[2] *= LIGHT_CHROMA
     }
 
-    val labColor = srgbToLab.transform(this.red, this.green, this.blue)
-    labColor[0] *= DARKENING
-    labColor[1] *= DESATURATION
-    labColor[2] *= DESATURATION
 
     val res = labToSrgb.transform(labColor)
     return Color(res[0], res[1], res[2])

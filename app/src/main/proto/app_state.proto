@@ -27,4 +27,5 @@ message AppState {
   repeated Player player = 1;
   repeated Counter counter = 2;
   repeated Preset presets = 3;
+  int32 selectedDice = 4;
 }

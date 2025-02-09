@@ -23,9 +23,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.ButtonDefaults
@@ -55,7 +55,7 @@ enum class PlayerMenu {
 }
 
 @Composable
-fun PlayerSettings(
+fun PlayerCardSettings(
     currentPlayerColor: Color,
     onExit: () -> Unit,
     onDelete: () -> Unit,
@@ -64,7 +64,7 @@ fun PlayerSettings(
     var menu by remember { mutableStateOf(PlayerMenu.MAIN) }
     Column(modifier = Modifier.fillMaxSize()) {
         // top row
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             // back button
             IconButton(onClick = {
                 if (menu == PlayerMenu.MAIN) {
@@ -73,7 +73,7 @@ fun PlayerSettings(
                     menu = PlayerMenu.MAIN
                 }
             }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Go back")
+                Icon(Icons.Filled.Clear, contentDescription = "Go back")
             }
         }
 
@@ -162,8 +162,8 @@ fun PlayerMenuItem(icon: ImageVector, text: String, onClick: () -> Unit) {
 @Composable
 fun PreviewPlayerSettings() {
     var playerColor by remember { mutableStateOf(DEFAULT_PALETTE[0]) }
-    PlayerCard(color = playerColor) {
-        PlayerSettings(
+    BoardCard(color = playerColor) {
+        PlayerCardSettings(
             currentPlayerColor = playerColor,
             onExit = {},
             onDelete = {},
