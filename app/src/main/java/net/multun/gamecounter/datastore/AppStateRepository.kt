@@ -1,8 +1,6 @@
 package net.multun.gamecounter.datastore
 
-import android.util.Log
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.datastore.core.DataStore
@@ -41,11 +39,10 @@ data class UserPlayer(
     val color: Color,
 )
 
-const val TAG = "AppStateRepository"
 
 class AppStateRepository @Inject constructor(private val appStateStore: DataStore<AppState>) {
     val appState = appStateStore.data.map { protoAppState ->
-        val newAppState = UserAppState(
+        UserAppState(
             selectedDice = protoAppState.selectedDice,
             players = protoAppState.playerList.map { protoPlayer ->
                 val selectedCounter = if (protoPlayer.selectedCounter == -1)
@@ -53,7 +50,6 @@ class AppStateRepository @Inject constructor(private val appStateStore: DataStor
                 else
                     CounterId(protoPlayer.selectedCounter)
 
-                Log.i(TAG, "player with color: ${protoPlayer.color.toULong()}")
                 UserPlayer(
                     id = PlayerId(protoPlayer.id),
                     selectedCounter = selectedCounter,
@@ -71,11 +67,9 @@ class AppStateRepository @Inject constructor(private val appStateStore: DataStor
                 )
             }.toPersistentList(),
         )
-        Log.i(TAG, "new appState: $newAppState")
-        newAppState
     }
 
-    suspend fun newGame() {
+    suspend fun resetPlayerCounters() {
         appStateStore.updateData { oldState ->
             val defaultCounters = oldState.getDefaultCounters()
             val builder = oldState.toBuilder()
@@ -144,28 +138,36 @@ class AppStateRepository @Inject constructor(private val appStateStore: DataStor
         }
     }
 
-    suspend fun addPlayer(): PlayerId {
-        var playerId = 0
+    suspend fun addPlayers(count: Int) {
         appStateStore.updateData { oldState ->
-            // allocate the id
-            playerId = (oldState.playerList.maxOfOrNull { it.id } ?: -1) + 1
+            // color allocation
+            val oldCounters = oldState.getDefaultCounters()
+            val usedColors = oldState.playerList.map { Color(it.color) }.toMutableSet()
+            fun allocateColor(): Color {
+                val unusedColor = DEFAULT_PALETTE.find { !usedColors.contains(it) } ?: DEFAULT_PALETTE[0]
+                usedColors.add(unusedColor)
+                return unusedColor
+            }
 
-            val usedColors = oldState.playerList.map { Color(it.color) }.toSet()
-            val color = DEFAULT_PALETTE.find { !usedColors.contains(it) } ?: DEFAULT_PALETTE[0]
+            // id allocation
+            val newPlayerIdStart = (oldState.playerList.maxOfOrNull { it.id } ?: -1) + 1
 
             oldState.copy {
-                this.player.add(player {
-                    this.id = playerId
-                    this.color = color.encode()
-                    this.counters.putAll(oldState.getDefaultCounters())
-                    this.selectedCounter = if (oldState.counterCount == 0)
-                         -1
-                    else
-                        oldState.counterList[0].id
-                })
+                for (newPlayerIndex in 0 until count) {
+                    val playerId = newPlayerIdStart + newPlayerIndex
+
+                    this.player.add(player {
+                        this.id = playerId
+                        this.color = allocateColor().encode()
+                        this.counters.putAll(oldCounters)
+                        this.selectedCounter = if (oldCounters.isEmpty())
+                            -1
+                        else
+                            oldState.counterList[0].id
+                    })
+                }
             }
         }
-        return PlayerId(playerId)
     }
 
     suspend fun removePlayer(playerId: PlayerId) {

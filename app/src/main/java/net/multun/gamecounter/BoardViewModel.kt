@@ -1,17 +1,12 @@
 package net.multun.gamecounter
 
-import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.PersistentMap
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,11 +21,6 @@ import net.multun.gamecounter.datastore.AppStateRepository
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
-enum class BoardUIMode {
-    STARTUP,
-    COUNTERS,
-    ROLL,
-}
 
 sealed interface UIState
 sealed interface BoardUI : UIState {
@@ -66,13 +56,13 @@ data class RollCardUIState(
     val roll: Int,
 ) : CardUIState
 
-private const val TAG = "BoardViewModel"
+data class ComboCounterId(val player: PlayerId, val counter: CounterId)
 
 @HiltViewModel
 class BoardViewModel @Inject constructor(private val repository: AppStateRepository) : ViewModel() {
     // combo timers
-    private val comboCounters = MutableStateFlow(persistentMapOf<PlayerId, PersistentMap<CounterId, Int>>())
-    private val comboCountersTimers = mutableMapOf<PlayerId, MutableMap<CounterId, Job>>()
+    private val comboCounters = MutableStateFlow(persistentMapOf<ComboCounterId, Int>())
+    private val comboCountersTimers = UniqueJobPool<ComboCounterId>(viewModelScope)
     private val rollResult = MutableStateFlow<ImmutableList<RollCardUIState>?>(null)
 
     fun roll() {
@@ -135,7 +125,7 @@ class BoardViewModel @Inject constructor(private val repository: AppStateReposit
                             hasMultipleCounters = appState.counters.size > 1,
                             counterValue = player.counters[counterId]!!,
                             counterName = appState.counters.find { it.id == counterId }!!.name,
-                            combo = combos[player.id]?.get(counterId),
+                            combo = combos[ComboCounterId(player.id, counterId)],
                         )
                     },
                 )
@@ -147,26 +137,24 @@ class BoardViewModel @Inject constructor(private val repository: AppStateReposit
         initialValue = StartupUI,
     )
 
-    fun newGame() {
+    fun resetGame() {
         viewModelScope.launch {
             // clear combo counters
             comboCounters.update { it.clear() }
 
             // stop combo reset timers
-            for (playerComboTimers in comboCountersTimers.values) {
-                for (timer in playerComboTimers.values)
-                    timer.cancel()
-                playerComboTimers.clear()
-            }
             comboCountersTimers.clear()
-            repository.newGame()
+            repository.resetPlayerCounters()
         }
     }
 
     fun addPlayer() {
-        Log.i(TAG, "adding new player")
+        addPlayers(1)
+    }
+
+    fun addPlayers(count: Int) {
         viewModelScope.launch {
-            repository.addPlayer()
+            repository.addPlayers(count)
         }
     }
 
@@ -175,29 +163,19 @@ class BoardViewModel @Inject constructor(private val repository: AppStateReposit
             // update the counter
             repository.updatePlayerCounter(playerId, counterId, counterDelta)
 
+            val counterKey = ComboCounterId(playerId, counterId)
             // update the combo counter
             comboCounters.update {
-                val currentPlayerCounters = it[playerId]
-                val newPlayerCounters = if (currentPlayerCounters == null) {
-                    persistentMapOf(counterId to counterDelta)
-                } else {
-                    val oldCounter = currentPlayerCounters[counterId] ?: 0
-                    currentPlayerCounters.put(counterId, oldCounter + counterDelta)
-                }
-                it.put(playerId, newPlayerCounters)
+                val oldCounter = it[counterKey] ?: 0
+                it.put(counterKey, oldCounter + counterDelta)
             }
 
-            // stop the old combo timer
-            comboCountersTimers[playerId]?.remove(counterId)?.cancel()
-
-            // start a job to reset the combo counter
-            val playerTimers = comboCountersTimers.computeIfAbsent(playerId) { mutableMapOf() }
-            playerTimers[counterId] = viewModelScope.launch {
+            // start the reset timer
+            comboCountersTimers.launch(counterKey) {
                 delay(2500.milliseconds)
                 // reset the combo counter once the timer expires
                 comboCounters.update {
-                    val currentPlayerCounters = it[playerId] ?: return@update it
-                    it.put(playerId, currentPlayerCounters.remove(counterId))
+                    it.remove(counterKey)
                 }
             }
         }
