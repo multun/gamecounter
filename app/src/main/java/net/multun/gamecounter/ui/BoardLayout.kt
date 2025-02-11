@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -41,7 +42,12 @@ fun FallbackLayout(
         ),
     ) {
         for (itemIndex in 0 until itemCount)
-            callback(itemIndex, Modifier)
+            callback(itemIndex, Modifier.sizeIn(
+                minWidth = PLAYER_MIN_WIDTH,
+                maxWidth = PLAYER_PREFERRED_WIDTH,
+                minHeight = PLAYER_MIN_HEIGHT,
+                maxHeight = PLAYER_PREFERRED_HEIGHT,
+            ))
     }
 }
 
