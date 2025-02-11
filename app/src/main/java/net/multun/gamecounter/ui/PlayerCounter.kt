@@ -37,7 +37,7 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import net.multun.gamecounter.DEFAULT_PALETTE
 import net.multun.gamecounter.PlayerCounterUIState
-import net.multun.gamecounter.datastore.CounterId
+import net.multun.gamecounter.store.CounterId
 import java.util.Locale
 
 

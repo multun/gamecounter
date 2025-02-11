@@ -1,13 +1,14 @@
 syntax = "proto3";
 
-option java_package = "net.multun.gamecounter.datastore";
-option java_multiple_files = true;
+option java_package = "net.multun.gamecounter.proto";
+option java_outer_classname = "ProtoGame";
 
 message Player {
   int32 id = 1;
   uint64 color = 2;
   int32 selectedCounter = 3;
   map<int32, int32> counters = 4;
+  // TODO: string name = 5;
 }
 
 message Counter {
@@ -16,16 +17,9 @@ message Counter {
   int32 defaultValue = 3;
 }
 
-message Preset {
-  int32 id = 1;
-  string name = 2;
-  repeated Counter counter = 3;
-  int32 playerCount = 4;
-}
-
-message AppState {
+message Game {
   repeated Player player = 1;
   repeated Counter counter = 2;
-  repeated Preset presets = 3;
+  // TODO: bytes diceSizes = 3;
   int32 selectedDice = 4;
 }

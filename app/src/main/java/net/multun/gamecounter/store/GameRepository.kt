@@ -1,15 +1,18 @@
-package net.multun.gamecounter.datastore
+package net.multun.gamecounter.store
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
-import androidx.datastore.core.DataStore
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.flow.map
 import net.multun.gamecounter.DEFAULT_PALETTE
+import net.multun.gamecounter.proto.ProtoGame
+import net.multun.gamecounter.proto.copy
+import net.multun.gamecounter.proto.counter
+import net.multun.gamecounter.proto.player
 import javax.inject.Inject
 
 @JvmInline
@@ -20,29 +23,28 @@ value class CounterId(val value: Int)
 @Immutable
 value class PlayerId(val value: Int)
 
-data class UserAppState(
+data class GameState(
     val selectedDice: Int, // either -1 for player order, or dice size
-    val players: ImmutableList<UserPlayer>,
-    val counters: ImmutableList<UserCounter>,
+    val players: ImmutableList<Player>,
+    val counters: ImmutableList<Counter>,
 )
 
-data class UserCounter(
+data class Counter(
     val id: CounterId,
     val defaultValue: Int,
     val name: String,
 )
 
-data class UserPlayer(
+data class Player(
     val id: PlayerId,
     val selectedCounter: CounterId?,
     val counters: PersistentMap<CounterId, Int>,
     val color: Color,
 )
 
-
-class AppStateRepository @Inject constructor(private val appStateStore: DataStore<AppState>) {
+class GameRepository @Inject constructor(private val appStateStore: GameStore) {
     val appState = appStateStore.data.map { protoAppState ->
-        UserAppState(
+        GameState(
             selectedDice = protoAppState.selectedDice,
             players = protoAppState.playerList.map { protoPlayer ->
                 val selectedCounter = if (protoPlayer.selectedCounter == -1)
@@ -50,7 +52,7 @@ class AppStateRepository @Inject constructor(private val appStateStore: DataStor
                 else
                     CounterId(protoPlayer.selectedCounter)
 
-                UserPlayer(
+                Player(
                     id = PlayerId(protoPlayer.id),
                     selectedCounter = selectedCounter,
                     color = Color(protoPlayer.color),
@@ -60,7 +62,7 @@ class AppStateRepository @Inject constructor(private val appStateStore: DataStor
                 )
             }.toPersistentList(),
             counters = protoAppState.counterList.map { protoCounter ->
-                UserCounter(
+                Counter(
                     id = CounterId(protoCounter.id),
                     defaultValue = protoCounter.defaultValue,
                     name = protoCounter.name,
@@ -179,7 +181,7 @@ class AppStateRepository @Inject constructor(private val appStateStore: DataStor
         }
     }
 
-    private suspend fun updateCounter(counterId: CounterId, updater: (Counter) -> Counter) {
+    private suspend fun updateCounter(counterId: CounterId, updater: (ProtoGame.Counter) -> ProtoGame.Counter) {
         appStateStore.updateData { oldState ->
             val counterIndex = oldState.getCounterIndex(counterId)
             if (counterIndex == -1)
@@ -192,7 +194,7 @@ class AppStateRepository @Inject constructor(private val appStateStore: DataStor
         }
     }
 
-    private suspend fun updatePlayer(playerId: PlayerId, updater: (AppState, Player) -> Player) {
+    private suspend fun updatePlayer(playerId: PlayerId, updater: (ProtoGame.Game, ProtoGame.Player) -> ProtoGame.Player) {
         appStateStore.updateData { oldState ->
             val playerIndex = oldState.getPlayerIndex(playerId)
             if (playerIndex == -1)
@@ -290,17 +292,17 @@ class AppStateRepository @Inject constructor(private val appStateStore: DataStor
     }
 }
 
-fun AppState.getDefaultCounters(): Map<Int, Int> {
+fun ProtoGame.Game.getDefaultCounters(): Map<Int, Int> {
     return counterList.associate {
         Pair(it.id, it.defaultValue)
     }
 }
 
-fun AppState.getPlayerIndex(playerId: PlayerId): Int {
+fun ProtoGame.Game.getPlayerIndex(playerId: PlayerId): Int {
     return playerList.indexOfFirst { it.id == playerId.value }
 }
 
-fun AppState.getCounterIndex(counterId: CounterId): Int {
+fun ProtoGame.Game.getCounterIndex(counterId: CounterId): Int {
     return counterList.indexOfFirst { it.id == counterId.value }
 }
 

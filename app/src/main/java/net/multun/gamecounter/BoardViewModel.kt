@@ -15,9 +15,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import net.multun.gamecounter.datastore.CounterId
-import net.multun.gamecounter.datastore.PlayerId
-import net.multun.gamecounter.datastore.AppStateRepository
+import net.multun.gamecounter.store.CounterId
+import net.multun.gamecounter.store.PlayerId
+import net.multun.gamecounter.store.GameRepository
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -59,7 +59,7 @@ data class RollCardUIState(
 data class ComboCounterId(val player: PlayerId, val counter: CounterId)
 
 @HiltViewModel
-class BoardViewModel @Inject constructor(private val repository: AppStateRepository) : ViewModel() {
+class BoardViewModel @Inject constructor(private val repository: GameRepository) : ViewModel() {
     // combo timers
     private val comboCounters = MutableStateFlow(persistentMapOf<ComboCounterId, Int>())
     private val comboCountersTimers = UniqueJobPool<ComboCounterId>(viewModelScope)

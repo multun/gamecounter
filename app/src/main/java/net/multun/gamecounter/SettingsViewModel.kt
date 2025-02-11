@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import net.multun.gamecounter.datastore.CounterId
-import net.multun.gamecounter.datastore.AppStateRepository
+import net.multun.gamecounter.store.CounterId
+import net.multun.gamecounter.store.GameRepository
 import javax.inject.Inject
 
 data class CounterUIState(
@@ -25,7 +25,7 @@ data class SettingsUIState(
 )
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(private val repository: AppStateRepository) : ViewModel() {
+class SettingsViewModel @Inject constructor(private val repository: GameRepository) : ViewModel() {
     val settingsUIState = repository.appState.map { appState ->
         SettingsUIState(
             counters = appState.counters.map {

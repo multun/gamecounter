@@ -56,8 +56,8 @@ import net.multun.gamecounter.RollUI
 import net.multun.gamecounter.Screens
 import net.multun.gamecounter.SetupUI
 import net.multun.gamecounter.StartupUI
-import net.multun.gamecounter.datastore.AppStateRepository
-import net.multun.gamecounter.datastore.AppStateSerializer
+import net.multun.gamecounter.store.GameRepository
+import net.multun.gamecounter.store.GameSerializer
 import java.io.File
 
 
@@ -238,8 +238,8 @@ fun SettingsItem(icon: ImageVector, text: String, onClick: () -> Unit) {
 fun BoardPreview() {
     // Define the counter value as a state object
     val viewModel by remember {
-        mutableStateOf(BoardViewModel(AppStateRepository(
-            DataStoreFactory.create(serializer = AppStateSerializer) {
+        mutableStateOf(BoardViewModel(GameRepository(
+            DataStoreFactory.create(serializer = GameSerializer) {
                 File.createTempFile("board_preview", ".pb", null)
             }
         )))
