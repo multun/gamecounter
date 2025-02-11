@@ -1,3 +1,5 @@
+package net.multun.gamecounter.ui
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -21,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import com.sd.lib.compose.wheel_picker.FHorizontalWheelPicker
 import com.sd.lib.compose.wheel_picker.rememberFWheelPickerState
 import net.multun.gamecounter.BoardViewModel
-import net.multun.gamecounter.ui.ModalState
 
 
 val BOTTOM_BAR_PADDING = 12.dp
