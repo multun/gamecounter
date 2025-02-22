@@ -3,9 +3,14 @@ package net.multun.gamecounter.ui.board
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.Clear
@@ -24,23 +29,39 @@ import com.sd.lib.compose.wheel_picker.FHorizontalWheelPicker
 import com.sd.lib.compose.wheel_picker.rememberFWheelPickerState
 
 
-val BOTTOM_BAR_PADDING = 12.dp
+val BOTTOM_BAR_PADDING_SIDES = 12.dp
+
+
+object BottomBarDefaults {
+    val insets: WindowInsets
+        @Composable get() = WindowInsets.safeDrawing.only(
+            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+        )
+}
 
 @Composable
 fun BottomBar(
     horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceBetween,
-    content: @Composable (RowScope.() -> Unit)
+    windowInsets: WindowInsets,
+    content: @Composable (RowScope.() -> Unit),
 ) {
     Row(
-        Modifier.fillMaxWidth().padding(BOTTOM_BAR_PADDING, 0.dp, BOTTOM_BAR_PADDING, BOTTOM_BAR_PADDING),
+        Modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(windowInsets)
+            .padding(BOTTOM_BAR_PADDING_SIDES, 0.dp, BOTTOM_BAR_PADDING_SIDES, 0.dp),
         horizontalArrangement = horizontalArrangement,
         content = content,
     )
 }
 
 @Composable
-fun CounterBottomBar(onRoll: () -> Unit, onOpenSettings: () -> Unit) {
-    BottomBar {
+fun CounterBottomBar(
+    onRoll: () -> Unit,
+    onOpenSettings: () -> Unit,
+    windowInsets: WindowInsets = BottomBarDefaults.insets,
+) {
+    BottomBar(windowInsets = windowInsets) {
         IconButton(onClick = onRoll) {
             Icon(Icons.Filled.Casino, contentDescription = "Roll a dice")
         }
@@ -54,8 +75,12 @@ fun CounterBottomBar(onRoll: () -> Unit, onOpenSettings: () -> Unit) {
 private val DICE_OPTIONS = listOf(0, 4, 6, 8, 10, 12, 20, 30, 100)
 
 @Composable
-fun RollBottomBar(viewModel: BoardViewModel, initialSelectedDice: Int) {
-    BottomBar {
+fun RollBottomBar(
+    viewModel: BoardViewModel,
+    initialSelectedDice: Int,
+    windowInsets: WindowInsets = BottomBarDefaults.insets,
+) {
+    BottomBar(windowInsets = windowInsets) {
         val initialIndex = remember { DICE_OPTIONS.indexOfFirst { it == initialSelectedDice } }
 
         val state = rememberFWheelPickerState(initialIndex)
