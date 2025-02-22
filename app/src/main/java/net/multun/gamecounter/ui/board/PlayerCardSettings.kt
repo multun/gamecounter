@@ -44,7 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import net.multun.gamecounter.DEFAULT_PALETTE
 import net.multun.gamecounter.toDisplayColor
 
@@ -154,7 +154,7 @@ fun PlayerMenuItem(icon: ImageVector, text: String, onClick: () -> Unit) {
     ) {
         Icon(icon, contentDescription = text)
         Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-        Text(text, fontSize = 4.em)
+        Text(text, fontSize = 18.sp, lineHeight = 18.sp * 1.2f)
     }
 }
 

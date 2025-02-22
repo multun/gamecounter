@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,7 +14,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.em
 import net.multun.gamecounter.toDisplayColor
 
 
@@ -45,13 +43,13 @@ fun Player(
             when (player) {
                 is RollCardUIState -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = "${player.roll}", fontSize = counterScale.apply(10.em, 25.em))
+                        CardMainText("${player.roll}", counterScale)
                     }
                 }
                 is CounterCardUIState -> {
                     if (player.counter == null) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(text = "no counter", fontSize = 5.em)
+                            CardSubText("no counter", counterScale)
                         }
                         return@BoxWithConstraints
                     }

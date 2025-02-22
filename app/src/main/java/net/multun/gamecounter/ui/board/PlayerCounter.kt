@@ -24,13 +24,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
@@ -38,6 +36,41 @@ import androidx.constraintlayout.compose.layoutId
 import net.multun.gamecounter.DEFAULT_PALETTE
 import net.multun.gamecounter.store.CounterId
 import java.util.Locale
+
+
+
+@Composable
+fun CardMainText(text: String, scale: FontScale, modifier: Modifier = Modifier) {
+    ScaledText(
+        text = text,
+        scale = scale,
+        baseSize = 45.dp,
+        maxSize = 112.5.dp,
+        modifier = modifier,
+    )
+}
+
+@Composable
+fun CardSubText(text: String, scale: FontScale, modifier: Modifier = Modifier) {
+    ScaledText(
+        text = text,
+        scale = scale,
+        baseSize = 18.dp,
+        maxSize = 28.dp,
+        modifier = modifier,
+    )
+}
+
+@Composable
+fun CardExpText(text: String, scale: FontScale, modifier: Modifier = Modifier) {
+    ScaledText(
+        text = text,
+        scale = scale,
+        baseSize = 18.dp,
+        maxSize = 45.dp,
+        modifier = modifier,
+    )
+}
 
 
 @Composable
@@ -55,7 +88,7 @@ fun CounterSelector(
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "")
             }
         }
-        Text(text = counterName, fontSize = counterScale.apply(4.em, 6.em))
+        CardSubText(text = counterName, counterScale)
         if (showControls) {
             IconButton(onClick = onNext) {
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, "")
@@ -87,10 +120,10 @@ fun PlayerCounter(
         }
 
         // counter
-        Text(
+        CardMainText(
             text = "${counter.counterValue}",
-            fontSize = counterScale.apply(10.em, 25.em),
-            modifier = Modifier.layoutId("counterValue")
+            scale = counterScale,
+            modifier = Modifier.layoutId("counterValue"),
         )
 
         // combo counter
@@ -102,7 +135,7 @@ fun PlayerCounter(
         ) { targetCount ->
             if (targetCount != null) {
                 val comboText = String.format(Locale.ENGLISH, "%+d", targetCount)
-                Text(text = comboText, fontSize = counterScale.apply(4.em, 10.em))
+                CardExpText(comboText, counterScale)
             }
         }
 

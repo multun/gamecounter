@@ -38,11 +38,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import net.multun.gamecounter.ui.GameCounterTopBar
+import net.multun.gamecounter.ui.theme.Typography
 
 sealed class CounterSettingsDialog
 data object AddDialog : CounterSettingsDialog()
@@ -158,7 +158,7 @@ fun CounterChangeDialog(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 horizontalAlignment = Alignment.Start,
             ) {
-                Text(title, fontSize = 4.em)
+                Text(title, style = Typography.bodyLarge)
 
                 val nameError = counterName.isBlank()
                 val defaultValueError = parsedDefaultValue == null
@@ -218,7 +218,7 @@ fun CounterSettingsLine(
             modifier = Modifier.padding(start = 20.dp, end = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(name, fontSize = 4.em)
+            Text(name, style = Typography.bodyLarge)
             Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                 IconButton(onClick = onEdit) {
                     Icon(Icons.Filled.Edit, contentDescription = "edit counter")

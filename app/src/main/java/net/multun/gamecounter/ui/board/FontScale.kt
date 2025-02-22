@@ -1,5 +1,9 @@
 package net.multun.gamecounter.ui.board
 
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import kotlin.math.min
@@ -14,9 +18,23 @@ fun counterScale(maxWidth: Dp, maxHeight: Dp): FontScale {
     return FontScale(min(verticalScale, horizontalScale))
 }
 
-fun FontScale.apply(baseFontSize: TextUnit, maxFontSize: TextUnit): TextUnit {
-    val res =  baseFontSize * value
+@Composable
+private fun FontScale.apply(baseFontSize: Dp, maxFontSize: Dp): TextUnit {
+    var res = baseFontSize * value
     if (res > maxFontSize)
-        return maxFontSize
-    return res
+        res = maxFontSize
+    return with(LocalDensity.current) { res.toSp() }
+}
+
+@Composable
+fun ScaledText(
+    text: String,
+    scale: FontScale,
+    baseSize: Dp,
+    maxSize: Dp,
+    modifier: Modifier = Modifier,
+    lineHeight: Float = 1.15f,
+) {
+    val textSize = scale.apply(baseSize, maxSize)
+    Text(text = text, fontSize = textSize, lineHeight = textSize * lineHeight, modifier = modifier)
 }
