@@ -1,4 +1,4 @@
-package net.multun.gamecounter.ui
+package net.multun.gamecounter.ui.board
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text

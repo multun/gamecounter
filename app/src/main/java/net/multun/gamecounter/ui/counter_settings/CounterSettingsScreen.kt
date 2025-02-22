@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package net.multun.gamecounter.ui
+package net.multun.gamecounter.ui.counter_settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,8 +42,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import net.multun.gamecounter.CounterUIState
-import net.multun.gamecounter.SettingsViewModel
+import net.multun.gamecounter.ui.GameCounterTopBar
 
 sealed class CounterSettingsDialog
 data object AddDialog : CounterSettingsDialog()

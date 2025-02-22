@@ -1,34 +1,27 @@
-package net.multun.gamecounter.ui
+package net.multun.gamecounter.ui.board
 
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -46,28 +39,25 @@ import androidx.datastore.core.DataStoreFactory
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.sd.lib.compose.wheel_picker.FHorizontalWheelPicker
-import com.sd.lib.compose.wheel_picker.rememberFWheelPickerState
 import kotlinx.coroutines.launch
-import net.multun.gamecounter.BoardUI
-import net.multun.gamecounter.BoardViewModel
-import net.multun.gamecounter.CounterBoardUI
-import net.multun.gamecounter.RollUI
 import net.multun.gamecounter.Screens
-import net.multun.gamecounter.SetupUI
-import net.multun.gamecounter.StartupUI
 import net.multun.gamecounter.store.GameRepository
 import net.multun.gamecounter.store.GameSerializer
 import java.io.File
 
 
 @Composable
-fun MainScreen(viewModel: BoardViewModel, navController: NavController, modifier: Modifier = Modifier) {
+fun BoardScreen(viewModel: BoardViewModel, navController: NavController, modifier: Modifier = Modifier) {
     val boardState = viewModel.boardUIState.collectAsStateWithLifecycle()
     when (val uiState = boardState.value) {
+        StartupUI -> {}
+        SetupRequired -> {
+            if (navController.previousBackStackEntry != null)
+                navController.navigateUp()
+            else
+                navController.navigate(Screens.MainMenu.route)
+        }
         is BoardUI -> Board(uiState, viewModel, navController, modifier)
-        is SetupUI -> Setup(uiState, viewModel, navController, modifier)
-        StartupUI -> return
     }
 }
 
@@ -75,69 +65,11 @@ fun MainScreen(viewModel: BoardViewModel, navController: NavController, modifier
 enum class ModalState {
     Settings,
     ConfirmGameReset,
-    ConfirmLeaveGame,
-}
-
-@Composable
-fun Setup(setupUI: SetupUI, viewModel: BoardViewModel, navController: NavController, modifier: Modifier = Modifier) {
-    val playerCount = rememberFWheelPickerState(1)
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    Scaffold(
-        modifier = modifier,
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-    ) { innerPadding ->
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.wrapContentSize()) {
-                Text("Player count", style = MaterialTheme.typography.headlineSmall)
-                Spacer(Modifier.height(10.dp))
-                FHorizontalWheelPicker(
-                    modifier = Modifier.height(48.dp),
-                    state = playerCount,
-                    count = 100,
-                ) { index ->
-                    Text((index + 1).toString())
-                }
-
-                Spacer(Modifier.height(30.dp))
-
-                TextButton(onClick = { navController.navigate(Screens.CounterSettings.route) }) {
-                    Text("Counter settings")
-                }
-
-                TextButton(
-                    onClick = {
-                        if (!setupUI.hasCounters) {
-                            scope.launch {
-                                val result = snackbarHostState
-                                    .showSnackbar(
-                                        message = "Cannot start game without counter",
-                                        actionLabel = "Counter settings",
-                                        duration = SnackbarDuration.Long,
-                                    )
-                                when (result) {
-                                    SnackbarResult.ActionPerformed -> {
-                                        navController.navigate(Screens.CounterSettings.route)
-                                    }
-                                    SnackbarResult.Dismissed -> {}
-                                }
-                            }
-                        } else {
-                            viewModel.addPlayers(playerCount.currentIndex + 1)
-                        }
-                    },
-                ) {
-                    Text("Start game")
-                }
-            }
-        }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: NavController, modifier: Modifier = Modifier) {
+private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: NavController, modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
     var modalState by remember { mutableStateOf<ModalState?>(null) }
     val sheetState = rememberModalBottomSheetState()
@@ -200,6 +132,11 @@ fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: NavControl
                         navController.navigate(Screens.CounterSettings.route)
                     }
 
+                    SettingsItem(Icons.AutoMirrored.Filled.ExitToApp, "Leave to main menu") {
+                        hideBottomSheet()
+                        navController.navigate(Screens.MainMenu.route)
+                    }
+
                     SettingsItem(Icons.Filled.Clear, "Close menu") {
                         hideBottomSheet()
                     }
@@ -246,7 +183,7 @@ fun BoardPreview() {
     }
 
     val controller = rememberNavController()
-    MainScreen(
+    BoardScreen(
         viewModel,
         controller,
         modifier = Modifier.fillMaxSize(),

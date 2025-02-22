@@ -24,6 +24,7 @@ value class CounterId(val value: Int)
 value class PlayerId(val value: Int)
 
 data class GameState(
+    val isPlayable: Boolean,
     val selectedDice: Int, // either -1 for player order, or dice size
     val players: ImmutableList<Player>,
     val counters: ImmutableList<Counter>,
@@ -45,6 +46,7 @@ data class Player(
 class GameRepository @Inject constructor(private val appStateStore: GameStore) {
     val appState = appStateStore.data.map { protoAppState ->
         GameState(
+            isPlayable = protoAppState.counterCount != 0,
             selectedDice = protoAppState.selectedDice,
             players = protoAppState.playerList.map { protoPlayer ->
                 val selectedCounter = if (protoPlayer.selectedCounter == -1)
@@ -137,6 +139,14 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
                 builder.addPlayer(newPlayer)
             }
             builder.build()
+        }
+    }
+
+    suspend fun clearPlayers() {
+        appStateStore.updateData {
+            it.copy {
+                this.player.clear()
+            }
         }
     }
 

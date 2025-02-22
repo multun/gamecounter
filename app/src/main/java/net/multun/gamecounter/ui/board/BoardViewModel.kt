@@ -1,4 +1,4 @@
-package net.multun.gamecounter
+package net.multun.gamecounter.ui.board
 
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -26,9 +26,11 @@ sealed interface UIState
 sealed interface BoardUI : UIState {
     val players: ImmutableList<CardUIState>
 }
+
 data object StartupUI : UIState
-data class SetupUI(val hasCounters: Boolean, val hasPlayers: Boolean) : UIState
-data class RollUI(val selectedDice: Int, override val players: ImmutableList<RollCardUIState>) : BoardUI
+data object SetupRequired : UIState
+data class RollUI(val selectedDice: Int, override val players: ImmutableList<RollCardUIState>) :
+    BoardUI
 data class CounterBoardUI(override val players: ImmutableList<CounterCardUIState>) : BoardUI
 
 data class PlayerCounterUIState(
@@ -82,7 +84,8 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
                     roll = playerRoll,
                 )
             }.toPersistentList()
-            rollResult.update { newRollResult }        }
+            rollResult.update { newRollResult }
+        }
     }
 
     fun selectDice(diceSize: Int) {
@@ -107,11 +110,8 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
             )
         }
 
-        if (appState.counters.isEmpty() || appState.players.isEmpty())
-            return@combine SetupUI(
-                hasCounters = appState.counters.isNotEmpty(),
-                hasPlayers = appState.players.isNotEmpty(),
-            )
+        if (!appState.isPlayable)
+            return@combine SetupRequired
 
         CounterBoardUI(
             players = appState.players.map { player ->
@@ -143,7 +143,7 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
             comboCounters.update { it.clear() }
 
             // stop combo reset timers
-            comboCountersTimers.clear()
+            comboCountersTimers.cancelAll()
             repository.resetPlayerCounters()
         }
     }

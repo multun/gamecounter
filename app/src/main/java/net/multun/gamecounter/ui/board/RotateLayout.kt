@@ -1,4 +1,4 @@
-package net.multun.gamecounter.ui
+package net.multun.gamecounter.ui.board
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier

@@ -1,4 +1,4 @@
-package net.multun.gamecounter
+package net.multun.gamecounter.ui.counter_settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

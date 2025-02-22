@@ -2,7 +2,7 @@
     ExperimentalLayoutApi::class
 )
 
-package net.multun.gamecounter.ui
+package net.multun.gamecounter.ui.board
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

@@ -1,4 +1,4 @@
-package net.multun.gamecounter.ui
+package net.multun.gamecounter.ui.board
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -36,7 +36,6 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import net.multun.gamecounter.DEFAULT_PALETTE
-import net.multun.gamecounter.PlayerCounterUIState
 import net.multun.gamecounter.store.CounterId
 import java.util.Locale
 
@@ -184,7 +183,7 @@ fun AnimatedContentTransitionScope<Int?>.comboCounterAnimation(): ContentTransfo
 }
 
 
-@Preview(widthDp = 400, heightDp = 400)
+@Preview(widthDp = 400, heightDp = 400, fontScale = 1f)
 @Composable
 fun PlayerCounterTest() {
     BoardCard(color = DEFAULT_PALETTE[0], modifier = Modifier.width(IntrinsicSize.Min).height(IntrinsicSize.Min)) {
