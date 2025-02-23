@@ -130,6 +130,7 @@ fun PlayerCounter(
         AnimatedContent(
             label = "combo animation",
             modifier = Modifier.layoutId("combo"),
+            contentAlignment = Alignment.BottomEnd,
             targetState = counter.combo,
             transitionSpec = { comboCounterAnimation() },
         ) { targetCount ->
