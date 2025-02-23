@@ -33,8 +33,8 @@ fun MainMenu(viewModel: MainMenuViewModel, navController: NavController, modifie
                     Text("Continue")
                 }
 
-                TextButton(onClick = { navController.navigate(Screens.QuickGameMenu.route) }) {
-                    Text("Quick game")
+                TextButton(onClick = { navController.navigate(Screens.NewGameMenu.route) }) {
+                    Text("New game")
                 }
             }
         }

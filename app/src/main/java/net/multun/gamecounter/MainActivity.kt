@@ -17,13 +17,13 @@ import net.multun.gamecounter.ui.counter_settings.CounterSettingsScreen
 import net.multun.gamecounter.ui.counter_settings.SettingsViewModel
 import net.multun.gamecounter.ui.main_menu.MainMenu
 import net.multun.gamecounter.ui.main_menu.MainMenuViewModel
-import net.multun.gamecounter.ui.quick_game_menu.QuickGameMenu
-import net.multun.gamecounter.ui.quick_game_menu.QuickGameViewModel
+import net.multun.gamecounter.ui.new_game_menu.NewGameMenu
+import net.multun.gamecounter.ui.new_game_menu.NewGameViewModel
 import net.multun.gamecounter.ui.theme.GamecounterTheme
 
 sealed class Screens(val route: String) {
     data object MainMenu: Screens("main_menu")
-    data object QuickGameMenu: Screens("new_game_menu")
+    data object NewGameMenu: Screens("new_game_menu")
     data object Board: Screens("board")
     data object CounterSettings: Screens("counter_settings")
 }
@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
     private val boardViewModel: BoardViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val mainMenuViewModel: MainMenuViewModel by viewModels()
-    private val quickGameViewModel: QuickGameViewModel by viewModels()
+    private val newGameViewModel: NewGameViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,8 +45,8 @@ class MainActivity : ComponentActivity() {
                     composable(route = Screens.MainMenu.route) {
                         MainMenu(mainMenuViewModel, controller)
                     }
-                    composable(route = Screens.QuickGameMenu.route) {
-                        QuickGameMenu(quickGameViewModel, controller)
+                    composable(route = Screens.NewGameMenu.route) {
+                        NewGameMenu(newGameViewModel, controller)
                     }
                     composable(route = Screens.Board.route) {
                         BoardScreen(boardViewModel, controller, modifier = Modifier.fillMaxSize())

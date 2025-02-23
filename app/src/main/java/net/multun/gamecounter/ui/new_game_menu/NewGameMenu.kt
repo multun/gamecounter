@@ -1,4 +1,4 @@
-package net.multun.gamecounter.ui.quick_game_menu
+package net.multun.gamecounter.ui.new_game_menu
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -27,10 +28,11 @@ import com.sd.lib.compose.wheel_picker.FHorizontalWheelPicker
 import com.sd.lib.compose.wheel_picker.rememberFWheelPickerState
 import kotlinx.coroutines.launch
 import net.multun.gamecounter.Screens
+import net.multun.gamecounter.ui.GameCounterTopBar
 
 
 @Composable
-fun QuickGameMenu(viewModel: QuickGameViewModel, navController: NavController, modifier: Modifier = Modifier) {
+fun NewGameMenu(viewModel: NewGameViewModel, navController: NavController, modifier: Modifier = Modifier) {
     val state = viewModel.uiState.collectAsStateWithLifecycle()
     val currentState = state.value ?: return
 
@@ -41,6 +43,34 @@ fun QuickGameMenu(viewModel: QuickGameViewModel, navController: NavController, m
     Scaffold(
         modifier = modifier,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        topBar = {
+            GameCounterTopBar("New game", navController)
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(onClick = {
+                if (currentState.needsCounters) {
+                    scope.launch {
+                        val result = snackbarHostState
+                            .showSnackbar(
+                                message = "Cannot start game without counter",
+                                actionLabel = "Counter settings",
+                                duration = SnackbarDuration.Long,
+                            )
+                        when (result) {
+                            SnackbarResult.ActionPerformed -> {
+                                navController.navigate(Screens.CounterSettings.route)
+                            }
+                            SnackbarResult.Dismissed -> {}
+                        }
+                    }
+                } else {
+                    viewModel.setupGame(playerCount.currentIndex + 1)
+                    navController.navigate(Screens.Board.route)
+                }
+            }) {
+                Text("Start game")
+            }
+        }
     ) { innerPadding ->
         Box(contentAlignment = Alignment.Center, modifier = Modifier
             .padding(innerPadding)
@@ -60,32 +90,6 @@ fun QuickGameMenu(viewModel: QuickGameViewModel, navController: NavController, m
 
                 TextButton(onClick = { navController.navigate(Screens.CounterSettings.route) }) {
                     Text("Counter settings")
-                }
-
-                TextButton(
-                    onClick = {
-                        if (currentState.needsCounters) {
-                            scope.launch {
-                                val result = snackbarHostState
-                                    .showSnackbar(
-                                        message = "Cannot start game without counter",
-                                        actionLabel = "Counter settings",
-                                        duration = SnackbarDuration.Long,
-                                    )
-                                when (result) {
-                                    SnackbarResult.ActionPerformed -> {
-                                        navController.navigate(Screens.CounterSettings.route)
-                                    }
-                                    SnackbarResult.Dismissed -> {}
-                                }
-                            }
-                        } else {
-                            viewModel.setupGame(playerCount.currentIndex + 1)
-                            navController.navigate(Screens.Board.route)
-                        }
-                    },
-                ) {
-                    Text("Start game")
                 }
             }
         }

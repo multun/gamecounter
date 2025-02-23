@@ -1,4 +1,4 @@
-package net.multun.gamecounter.ui.quick_game_menu
+package net.multun.gamecounter.ui.new_game_menu
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,7 +15,7 @@ data class QuickGameUI(val needsCounters: Boolean)
 
 
 @HiltViewModel
-class QuickGameViewModel @Inject constructor(private val repository: GameRepository) : ViewModel() {
+class NewGameViewModel @Inject constructor(private val repository: GameRepository) : ViewModel() {
     val uiState = repository.appState.map { appState ->
         QuickGameUI(
             needsCounters = appState.counters.isEmpty(),
