@@ -9,8 +9,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -23,11 +21,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -35,14 +28,12 @@ import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
-import kotlinx.coroutines.delay
 import net.multun.gamecounter.store.CounterId
 import java.util.Locale
-import kotlin.time.Duration.Companion.milliseconds
 
 
 @Composable
-fun CardMainText(text: String, scale: FontScale, lineHeight: Float = 1.15f, modifier: Modifier = Modifier) {
+fun CardMainText(text: String, scale: FontScale, modifier: Modifier = Modifier, lineHeight: Float = 1.15f) {
     ScaledText(
         text = text,
         scale = scale,
@@ -101,56 +92,6 @@ fun CounterSelector(
 }
 
 
-private val INITIAL_DELAY = 700.milliseconds
-private val BUMP_DELAY = 400.milliseconds
-
-
-sealed interface CounterUpdateEvent
-data object SmallCounterUpdate : CounterUpdateEvent
-data object BigCounterUpdate : CounterUpdateEvent
-
-fun CounterUpdateEvent.stepSize(): Int {
-    return when (this) {
-        BigCounterUpdate -> 5
-        SmallCounterUpdate -> 1
-    }
-}
-
-@Composable
-fun CounterUpdateButton(
-    modifier: Modifier = Modifier,
-    onUpdateCounter: (CounterUpdateEvent) -> Unit,
-    content: @Composable () -> Unit,
-) {
-    val minusInteractionSource = remember { MutableInteractionSource() }
-    val isPressed by minusInteractionSource.collectIsPressedAsState()
-    var longPressed by remember { mutableStateOf(false) }
-
-    LaunchedEffect(isPressed) {
-        if (!isPressed)
-            return@LaunchedEffect
-
-        delay(INITIAL_DELAY)
-        longPressed = true
-        while (true) {
-            onUpdateCounter(BigCounterUpdate)
-            delay(BUMP_DELAY)
-        }
-    }
-
-    IconButton(
-        interactionSource = minusInteractionSource,
-        modifier = modifier,
-        content = content,
-        onClick = {
-            if (longPressed) {
-                longPressed = false
-            } else {
-                onUpdateCounter(SmallCounterUpdate)
-            }
-        },
-    )
-}
 
 @Composable
 fun PlayerCounter(
