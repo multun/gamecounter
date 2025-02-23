@@ -134,7 +134,7 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
 
                     SettingsItem(Icons.AutoMirrored.Filled.ExitToApp, "Leave to main menu") {
                         hideBottomSheet()
-                        navController.navigate(Screens.MainMenu.route)
+                        navController.popBackStack(Screens.MainMenu.route, inclusive = false)
                     }
 
                     SettingsItem(Icons.Filled.Clear, "Close menu") {
