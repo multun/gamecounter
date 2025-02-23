@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -40,19 +41,23 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             GamecounterTheme {
-                val controller = rememberNavController()
-                NavHost(navController = controller, startDestination = Screens.MainMenu.route) {
-                    composable(route = Screens.MainMenu.route) {
-                        MainMenu(mainMenuViewModel, controller)
-                    }
-                    composable(route = Screens.NewGameMenu.route) {
-                        NewGameMenu(newGameViewModel, controller)
-                    }
-                    composable(route = Screens.Board.route) {
-                        BoardScreen(boardViewModel, controller, modifier = Modifier.fillMaxSize())
-                    }
-                    composable(route = Screens.CounterSettings.route) {
-                        CounterSettingsScreen(settingsViewModel, controller)
+                // the surface is used to provide a sane background during navigation transitions
+                // without it, navigation in dark mode will flash a light background
+                Surface {
+                    val controller = rememberNavController()
+                    NavHost(navController = controller, startDestination = Screens.MainMenu.route) {
+                        composable(route = Screens.MainMenu.route) {
+                            MainMenu(mainMenuViewModel, controller)
+                        }
+                        composable(route = Screens.NewGameMenu.route) {
+                            NewGameMenu(newGameViewModel, controller)
+                        }
+                        composable(route = Screens.Board.route) {
+                            BoardScreen(boardViewModel, controller, modifier = Modifier.fillMaxSize())
+                        }
+                        composable(route = Screens.CounterSettings.route) {
+                            CounterSettingsScreen(settingsViewModel, controller)
+                        }
                     }
                 }
             }
