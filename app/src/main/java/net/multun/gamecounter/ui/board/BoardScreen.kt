@@ -33,17 +33,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.datastore.core.DataStoreFactory
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import net.multun.gamecounter.Screens
-import net.multun.gamecounter.store.GameRepository
-import net.multun.gamecounter.store.GameSerializer
-import java.io.File
 
 
 @Composable
@@ -106,7 +100,16 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
         ) { playerIndex, slotModifier ->
             val player = players[playerIndex]
             key(player.id.value) {
-                Player(player, viewModel, modifier = slotModifier.wrapContentSize())
+                Player(
+                    player,
+                    onDelete = remember { { viewModel.removePlayer(player.id) } },
+                    onSetColor = remember { { color -> viewModel.setPlayerColor(player.id, color) } },
+                    onIncrement = remember { { counterId -> viewModel.updateCounter(player.id, counterId, 1) } },
+                    onDecrement = remember { { counterId -> viewModel.updateCounter(player.id, counterId, -1) } },
+                    onNextCounter = remember { { viewModel.nextCounter(player.id) } },
+                    onPreviousCounter = remember { { viewModel.previousCounter(player.id) } },
+                    modifier = slotModifier.wrapContentSize(),
+                )
             }
         }
 
@@ -167,25 +170,4 @@ fun SettingsItem(icon: ImageVector, text: String, onClick: () -> Unit) {
         Spacer(Modifier.size(30.dp))
         Text(text)
     }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun BoardPreview() {
-    // Define the counter value as a state object
-    val viewModel by remember {
-        mutableStateOf(BoardViewModel(GameRepository(
-            DataStoreFactory.create(serializer = GameSerializer) {
-                File.createTempFile("board_preview", ".pb", null)
-            }
-        )))
-    }
-
-    val controller = rememberNavController()
-    BoardScreen(
-        viewModel,
-        controller,
-        modifier = Modifier.fillMaxSize(),
-    )
 }

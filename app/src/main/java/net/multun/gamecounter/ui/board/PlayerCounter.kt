@@ -40,10 +40,11 @@ import java.util.Locale
 
 
 @Composable
-fun CardMainText(text: String, scale: FontScale, modifier: Modifier = Modifier) {
+fun CardMainText(text: String, scale: FontScale, lineHeight: Float = 1.15f, modifier: Modifier = Modifier) {
     ScaledText(
         text = text,
         scale = scale,
+        lineHeight = lineHeight,
         baseSize = 45.dp,
         maxSize = 112.5.dp,
         modifier = modifier,
@@ -100,8 +101,8 @@ fun CounterSelector(
 @Composable
 fun PlayerCounter(
     counter: PlayerCounterUIState,
-    onIncrement: () -> Unit,
-    onDecrement: () -> Unit,
+    onIncrement: (CounterId) -> Unit,
+    onDecrement: (CounterId) -> Unit,
     onNextCounter: () -> Unit,
     onPreviousCounter: () -> Unit,
     onEdit: () -> Unit,
@@ -110,12 +111,12 @@ fun PlayerCounter(
 ) {
     ConstraintLayout(playerCounterLayout(), modifier = modifier) {
         // minus
-        IconButton(onClick = onDecrement, modifier = Modifier.layoutId("decr")) {
+        IconButton(onClick = { onDecrement(counter.id) }, modifier = Modifier.layoutId("decr")) {
             Icon(Icons.Default.Remove, contentDescription = "Increase counter")
         }
 
         // plus
-        IconButton(onClick = onIncrement, modifier = Modifier.layoutId("incr")) {
+        IconButton(onClick = { onIncrement(counter.id) }, modifier = Modifier.layoutId("incr")) {
             Icon(Icons.Default.Add, contentDescription = "Increase counter")
         }
 
@@ -124,6 +125,7 @@ fun PlayerCounter(
             text = "${counter.counterValue}",
             scale = counterScale,
             modifier = Modifier.layoutId("counterValue"),
+            lineHeight = 1f,
         )
 
         // combo counter
@@ -214,27 +216,4 @@ fun AnimatedContentTransitionScope<Int?>.comboCounterAnimation(): ContentTransfo
         // be displayed out of bounds.
         SizeTransform(clip = false)
     )
-}
-
-
-@Preview(widthDp = 400, heightDp = 400, fontScale = 1f)
-@Composable
-fun PlayerCounterTest() {
-    BoardCard(color = DEFAULT_PALETTE[0], modifier = Modifier.width(IntrinsicSize.Min).height(IntrinsicSize.Min)) {
-        PlayerCounter(
-            modifier = Modifier.fillMaxSize(),
-            counter = PlayerCounterUIState(
-                id = CounterId(0),
-                combo = 1,
-                counterName = "test",
-                hasMultipleCounters = true,
-                counterValue = 1,
-            ),
-            onIncrement = {},
-            onDecrement = {},
-            onNextCounter = {},
-            onPreviousCounter = {},
-            onEdit = {}
-        )
-    }
 }
