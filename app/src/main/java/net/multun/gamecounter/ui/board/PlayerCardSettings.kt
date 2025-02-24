@@ -1,6 +1,4 @@
-@file:OptIn(ExperimentalLayoutApi::class, ExperimentalLayoutApi::class,
-    ExperimentalLayoutApi::class
-)
+@file:OptIn(ExperimentalLayoutApi::class)
 
 package net.multun.gamecounter.ui.board
 
@@ -62,48 +60,18 @@ fun PlayerCardSettings(
     onSetColor: (Color) -> Unit,
 ) {
     var menu by remember { mutableStateOf(PlayerMenu.MAIN) }
-    Column(modifier = Modifier.fillMaxSize()) {
-        // top row
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            // back button
-            IconButton(onClick = {
-                if (menu == PlayerMenu.MAIN) {
-                    onExit()
-                } else {
-                    menu = PlayerMenu.MAIN
-                }
-            }) {
-                Icon(Icons.Filled.Clear, contentDescription = "Go back")
-            }
-        }
-
+    Box(modifier = Modifier.fillMaxSize()) {
         when (menu) {
-            PlayerMenu.MAIN -> PlayerMenu {
+            PlayerMenu.MAIN -> PlayerMenu(onBack = onExit) {
                 PlayerMenuItem(icon = Icons.Default.Palette, "Color") { menu = PlayerMenu.COLOR }
                 PlayerMenuItem(icon = Icons.Default.Delete, "Delete") { menu = PlayerMenu.DELETE }
             }
-            PlayerMenu.COLOR -> FlowRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(start = 10.dp, end = 10.dp, bottom = 10.dp),
-                horizontalArrangement = Arrangement.spacedBy(
-                    space = 4.dp,
-                    alignment = Alignment.CenterHorizontally
-                ),
-                verticalArrangement = Arrangement.spacedBy(
-                    space = 4.dp,
-                    alignment = Alignment.CenterVertically
-                ),
-            ) {
-                for (color in DEFAULT_PALETTE) {
-                    PaletteItem(color.toDisplayColor(), selected = color == currentPlayerColor) {
-                        onSetColor(color)
-                    }
-                }
+            PlayerMenu.COLOR -> Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                CardSettingsTopBar(onBack = { menu = PlayerMenu.MAIN })
+                ColorPicker(currentPlayerColor, onSetColor)
             }
             PlayerMenu.DELETE -> {
-                PlayerMenu {
+                PlayerMenu(onBack = { menu = PlayerMenu.MAIN }) {
                     PlayerMenuItem(Icons.Default.Cancel, "Cancel") { menu = PlayerMenu.MAIN }
                     PlayerMenuItem(Icons.Default.Delete, "Confirm") { onDelete() }
                 }
@@ -113,17 +81,39 @@ fun PlayerCardSettings(
 }
 
 @Composable
-fun PlayerMenu(content: @Composable () -> Unit) {
-    Column(
+fun CardSettingsTopBar(onBack: () -> Unit) {
+    // top row
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+        // back button
+        IconButton(onClick = onBack, ) {
+            Icon(Icons.Filled.Clear, contentDescription = "Go back")
+        }
+    }
+}
+
+@Composable
+private fun ColorPicker(
+    currentPlayerColor: Color,
+    onSetColor: (Color) -> Unit,
+) {
+    FlowRow(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentSize()
-            .verticalScroll(
-                rememberScrollState()
-            ),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+            .padding(start = 10.dp, end = 10.dp, bottom = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(
+            space = 4.dp,
+            alignment = Alignment.CenterHorizontally
+        ),
+        verticalArrangement = Arrangement.spacedBy(
+            space = 4.dp,
+            alignment = Alignment.CenterVertically
+        ),
     ) {
-        content()
+        for (color in DEFAULT_PALETTE) {
+            PaletteItem(color.toDisplayColor(), selected = color == currentPlayerColor) {
+                onSetColor(color)
+            }
+        }
     }
 }
 
@@ -134,11 +124,30 @@ fun PaletteItem(color: Color, modifier: Modifier = Modifier, selected: Boolean =
             .size(40.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(color)
-            .border(width = 1.dp, color = Color.DarkGray, shape = RoundedCornerShape(8.dp))
+            .border(width = 1.5.dp, color = Color.DarkGray, shape = RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
         )
         if (selected) {
             Icon(Icons.Default.Check, "")
+        }
+    }
+}
+
+@Composable
+fun PlayerMenu(onBack: () -> Unit, content: @Composable () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        CardSettingsTopBar(onBack = onBack)
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .wrapContentSize()
+                .verticalScroll(
+                    rememberScrollState()
+                ),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            content()
         }
     }
 }
@@ -158,7 +167,7 @@ fun PlayerMenuItem(icon: ImageVector, text: String, onClick: () -> Unit) {
     }
 }
 
-@Preview(widthDp = 210, heightDp = 170)
+@Preview(widthDp = 150, heightDp = 150)
 @Composable
 fun PreviewPlayerSettings() {
     var playerColor by remember { mutableStateOf(DEFAULT_PALETTE[0]) }
