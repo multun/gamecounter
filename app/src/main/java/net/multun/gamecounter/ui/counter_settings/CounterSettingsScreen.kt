@@ -41,13 +41,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import kotlinx.collections.immutable.ImmutableList
+import net.multun.gamecounter.store.CounterId
 import net.multun.gamecounter.ui.GameCounterTopBar
 import net.multun.gamecounter.ui.theme.Typography
 
 sealed class CounterSettingsDialog
 data object AddDialog : CounterSettingsDialog()
-data class EditDialog(val counter: CounterUIState) : CounterSettingsDialog()
-data class ConfirmDeleteDialog(val counter: CounterUIState) : CounterSettingsDialog()
+data class EditDialog(val counter: CounterSettingsUIState) : CounterSettingsDialog()
+data class ConfirmDeleteDialog(val counter: CounterSettingsUIState) : CounterSettingsDialog()
 
 
 @Composable
@@ -67,73 +69,109 @@ fun CounterSettingsScreen(
             }
         }
     ) { contentPadding ->
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier
-                .padding(contentPadding)
-                .padding(10.dp),
-        ) {
-            for (counterIndex in 0 until appState.counters.size) {
-                val counter = appState.counters[counterIndex]
-                val isFirst = counterIndex == 0
-                val isLast = counterIndex == appState.counters.size - 1
-                item(counter.id.value) {
-                    CounterSettingsLine(
-                        counter.name,
-                        isFirst,
-                        isLast,
-                        onEdit = { dialog = EditDialog(counter) },
-                        onMoveUp = remember { { viewModel.moveCounterUp(counter.id) } },
-                        onMoveDown = remember { { viewModel.moveCounterDown(counter.id) } },
-                        onDelete = { dialog = ConfirmDeleteDialog(counter) },
-                        modifier = Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
-                    )
-                }
+        CounterSettingsList(
+            counters = appState.counters,
+            onMoveUp = remember { { viewModel.moveCounterUp(it)} },
+            onMoveDown = remember { { viewModel.moveCounterDown(it) } },
+            onDialog = { dialog = it },
+            modifier = Modifier.padding(contentPadding),
+        )
+    }
+
+    val curDialog = dialog
+    if (curDialog != null) {
+        CounterSettingsDialog(
+            curDialog,
+            onDelete = { viewModel.deleteCounter(it) },
+            onAddCounter = { name, defaultVal -> viewModel.addCounter(name, defaultVal) },
+            onSetName = { id, name -> viewModel.setCounterName(id, name) },
+            onSetDefaultValue = { id, defaultVal -> viewModel.setCounterDefaultValue(id, defaultVal) },
+            onClearDialog = { dialog = null },
+        )
+    }
+}
+
+@Composable
+fun CounterSettingsList(
+    counters: ImmutableList<CounterSettingsUIState>,
+    onMoveUp: (CounterId) -> Unit,
+    onMoveDown: (CounterId) -> Unit,
+    onDialog: (CounterSettingsDialog) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = modifier.padding(10.dp),
+    ) {
+        for (counterIndex in 0 until counters.size) {
+            val counter = counters[counterIndex]
+            val isFirst = counterIndex == 0
+            val isLast = counterIndex == counters.size - 1
+            item(counter.id.value) {
+                CounterSettingsLine(
+                    counter.name,
+                    isFirst,
+                    isLast,
+                    onEdit = { onDialog(EditDialog(counter)) },
+                    onMoveUp = remember { { onMoveUp(counter.id) } },
+                    onMoveDown = remember { { onMoveDown(counter.id) } },
+                    onDelete = { onDialog(ConfirmDeleteDialog(counter)) },
+                    modifier = Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
+                )
             }
         }
     }
+}
 
-    when (val curDialog = dialog) {
+@Composable
+fun CounterSettingsDialog(
+    dialog: CounterSettingsDialog,
+    onDelete: (CounterId) -> Unit,
+    onAddCounter: (String, Int) -> Unit,
+    onSetName: (CounterId, String) -> Unit,
+    onSetDefaultValue: (CounterId, Int) -> Unit,
+    onClearDialog: () -> Unit,
+) {
+    when (dialog) {
         AddDialog -> CounterChangeDialog(
             title = "Add a counter",
             action = "Add",
-            onDismissRequest = { dialog = null },
+            onDismissRequest = onClearDialog,
             onCounterAdded = remember { { name, defaultValue ->
-                viewModel.addCounter(name, defaultValue)
-                dialog = null
+                onAddCounter(name, defaultValue)
+                onClearDialog()
             } }
         )
         is EditDialog -> CounterChangeDialog(
             title = "Edit a counter",
             action = "Save",
-            initialName = curDialog.counter.name,
-            initialDefaultValue = curDialog.counter.defaultValue,
-            onDismissRequest = { dialog = null },
+            initialName = dialog.counter.name,
+            initialDefaultValue = dialog.counter.defaultValue,
+            onDismissRequest = onClearDialog,
             onCounterAdded = remember { { name, defaultValue ->
-                val counterId = curDialog.counter.id
-                viewModel.setCounterName(counterId, name)
-                viewModel.setCounterDefaultValue(counterId, defaultValue)
-                dialog = null
+                val counterId = dialog.counter.id
+                onSetName(counterId, name)
+                onSetDefaultValue(counterId, defaultValue)
+                onClearDialog()
             } }
         )
         is ConfirmDeleteDialog -> AlertDialog(
             icon = { Icon(Icons.Filled.Delete, contentDescription = "Delete icon") },
-            text = { Text("Do you really want to delete counter ${curDialog.counter.name}?")},
-            onDismissRequest = { dialog = null },
+            text = { Text("Do you really want to delete counter ${dialog.counter.name}?")},
+            onDismissRequest = onClearDialog,
             confirmButton = {
                 TextButton(onClick = remember { {
-                    viewModel.deleteCounter(curDialog.counter.id)
-                    dialog = null
+                    onDelete(dialog.counter.id)
+                    onClearDialog()
                 } }) {
                     Text("Confirm")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { dialog = null }) {
+                TextButton(onClick = onClearDialog) {
                     Text("Cancel")
                 }
             })
-        null -> {}
     }
 }
 

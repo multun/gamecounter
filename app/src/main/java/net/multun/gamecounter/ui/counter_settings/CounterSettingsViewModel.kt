@@ -14,14 +14,14 @@ import net.multun.gamecounter.store.CounterId
 import net.multun.gamecounter.store.GameRepository
 import javax.inject.Inject
 
-data class CounterUIState(
+data class CounterSettingsUIState(
     val id: CounterId,
     val name: String,
     val defaultValue: Int,
 )
 
 data class SettingsUIState(
-    val counters: ImmutableList<CounterUIState>,
+    val counters: ImmutableList<CounterSettingsUIState>,
 )
 
 @HiltViewModel
@@ -29,7 +29,7 @@ class SettingsViewModel @Inject constructor(private val repository: GameReposito
     val settingsUIState = repository.appState.map { appState ->
         SettingsUIState(
             counters = appState.counters.map {
-                CounterUIState(it.id, it.name, it.defaultValue)
+                CounterSettingsUIState(it.id, it.name, it.defaultValue)
             }.toImmutableList(),
         )
     }.stateIn(
