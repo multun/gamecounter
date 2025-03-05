@@ -24,6 +24,15 @@ import net.multun.gamecounter.store.PlayerId
 import net.multun.gamecounter.toDisplayColor
 
 
+fun formatAsOrdinal(number: Int): String {
+    try {
+        val formatter = android.icu.text.MessageFormat("{0,ordinal}")
+        return formatter.format(arrayOf(number))
+    } catch (e: IllegalArgumentException) {
+        return number.toString()
+    }
+}
+
 @Composable
 fun Player(
     player: CardUIState,
@@ -54,12 +63,10 @@ fun Player(
             when (player) {
                 is RollCardUIState -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        val text: String
-                        if (player.isOrdinal) {
-                            val formatter = android.icu.text.MessageFormat("{0,ordinal}")
-                            text = formatter.format(arrayOf(player.roll))
+                        val text = if (player.isOrdinal) {
+                            formatAsOrdinal(player.roll)
                         } else {
-                            text = "${player.roll}"
+                            "${player.roll}"
                         }
                         CardMainText(text, counterScale)
                     }
