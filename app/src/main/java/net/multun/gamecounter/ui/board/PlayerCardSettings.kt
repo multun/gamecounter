@@ -171,7 +171,7 @@ fun PlayerMenuItem(icon: ImageVector, text: String, onClick: () -> Unit) {
 @Composable
 fun PreviewPlayerSettings() {
     var playerColor by remember { mutableStateOf(DEFAULT_PALETTE[0]) }
-    BoardCard(color = playerColor) {
+    GameCard(baseColor = playerColor) {
         PlayerCardSettings(
             currentPlayerColor = playerColor,
             onExit = {},

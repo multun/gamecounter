@@ -1,8 +1,11 @@
 package net.multun.gamecounter.ui.board
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
@@ -14,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import net.multun.gamecounter.DEFAULT_PALETTE
 import net.multun.gamecounter.store.CounterId
 import net.multun.gamecounter.store.PlayerId
@@ -31,8 +35,8 @@ fun Player(
     modifier: Modifier = Modifier,
 ) {
     var isEditing by rememberSaveable { mutableStateOf(false) }
-    BoardCard(
-        color = player.color.toDisplayColor(),
+    GameCard(
+        baseColor = player.color,
         modifier = modifier
     ) {
         BoxWithConstraints {
@@ -79,11 +83,36 @@ fun Player(
 
 
 @Composable
-fun BoardCard(color: Color, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    Card(modifier = modifier, colors = CardDefaults.cardColors().copy(containerColor = color)) {
+fun GameCard(baseColor: Color, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    val displayColor = baseColor.toDisplayColor()
+    Card(
+        modifier = modifier,
+        colors = CardDefaults
+            .cardColors()
+            .copy(containerColor = displayColor)
+    ) {
         content()
     }
 }
+
+@Composable
+fun GameButton(
+    baseColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    GameCard(
+        baseColor = baseColor,
+        modifier = modifier.clickable(onClick = onClick),
+        content = {
+            Column(modifier = Modifier.padding(20.dp)) {
+                content()
+            }
+        }
+    )
+}
+
 
 @Preview(widthDp = 150, heightDp = 150, fontScale = 1f)
 @Composable

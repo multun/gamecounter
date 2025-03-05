@@ -1,6 +1,5 @@
 package net.multun.gamecounter.ui.main_menu
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,17 +20,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import net.multun.gamecounter.DEFAULT_PALETTE
 import net.multun.gamecounter.Screens
-import net.multun.gamecounter.toDisplayColor
-import net.multun.gamecounter.ui.board.BoardCard
+import net.multun.gamecounter.ui.board.GameButton
 
 
 @Composable
 fun MainMenuItem(name: String, baseColor: Color, onClick: () -> Unit) {
-    BoardCard(
-        color = baseColor.toDisplayColor(),
-        modifier = Modifier.clickable(onClick = onClick)
-    ) {
-        Text(name, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp).fillMaxWidth())
+    GameButton(baseColor, onClick = onClick) {
+        Text(name, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
     }
 }
 
