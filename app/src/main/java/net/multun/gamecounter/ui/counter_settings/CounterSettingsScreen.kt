@@ -64,7 +64,7 @@ fun CounterSettingsScreen(
             GameCounterTopBar("Counter settings", navController)
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { dialog = AddDialog }) {
+            FloatingActionButton(onClick = remember { { dialog = AddDialog } }) {
                 Icon(Icons.Filled.Add, "Add a counter")
             }
         }
@@ -73,7 +73,7 @@ fun CounterSettingsScreen(
             counters = appState.counters,
             onMoveUp = remember { { viewModel.moveCounterUp(it)} },
             onMoveDown = remember { { viewModel.moveCounterDown(it) } },
-            onDialog = { dialog = it },
+            onDialog = remember { { dialog = it } },
             modifier = Modifier.padding(contentPadding),
         )
     }
@@ -82,11 +82,11 @@ fun CounterSettingsScreen(
     if (curDialog != null) {
         CounterSettingsDialog(
             curDialog,
-            onDelete = { viewModel.deleteCounter(it) },
-            onAddCounter = { name, defaultVal -> viewModel.addCounter(name, defaultVal) },
-            onSetName = { id, name -> viewModel.setCounterName(id, name) },
-            onSetDefaultValue = { id, defaultVal -> viewModel.setCounterDefaultValue(id, defaultVal) },
-            onClearDialog = { dialog = null },
+            onDelete = remember { { viewModel.deleteCounter(it) } },
+            onAddCounter = remember { { name, defaultVal -> viewModel.addCounter(name, defaultVal) } },
+            onSetName = remember { { id, name -> viewModel.setCounterName(id, name) } },
+            onSetDefaultValue = remember { { id, defaultVal -> viewModel.setCounterDefaultValue(id, defaultVal) } },
+            onClearDialog = remember { { dialog = null } },
         )
     }
 }
