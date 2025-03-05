@@ -54,7 +54,14 @@ fun Player(
             when (player) {
                 is RollCardUIState -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CardMainText("${player.roll}", counterScale)
+                        val text: String
+                        if (player.isOrdinal) {
+                            val formatter = android.icu.text.MessageFormat("{0,ordinal}")
+                            text = formatter.format(arrayOf(player.roll))
+                        } else {
+                            text = "${player.roll}"
+                        }
+                        CardMainText(text, counterScale)
                     }
                 }
                 is CounterCardUIState -> {

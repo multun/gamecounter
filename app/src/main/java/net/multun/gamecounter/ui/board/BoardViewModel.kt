@@ -55,6 +55,7 @@ data class CounterCardUIState(
 data class RollCardUIState(
     override val id: PlayerId,
     override val color: Color,
+    val isOrdinal: Boolean,
     val roll: Int,
 ) : CardUIState
 
@@ -72,16 +73,22 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
             val currentState = repository.appState.first()
             val playerCount = currentState.players.size
             val diceSize = currentState.selectedDice
-            val order = if (diceSize <= 0)
-                (1 .. playerCount).shuffled()
-            else
-                (1 .. playerCount).map { (1..diceSize).random() }
+            val order: List<Int>
+            val isOrdinal: Boolean
+            if (diceSize <= 0) {
+                order = (1 .. playerCount).shuffled()
+                isOrdinal = true
+            } else {
+                order = (1 .. playerCount).map { (1..diceSize).random() }
+                isOrdinal = false
+            }
             val newRollResult = currentState.players.zip(order) {
                     player, playerRoll ->
                 RollCardUIState(
                     id = player.id,
                     color = player.color,
                     roll = playerRoll,
+                    isOrdinal = isOrdinal,
                 )
             }.toPersistentList()
             rollResult.update { newRollResult }
