@@ -162,7 +162,8 @@ fun SettingsItem(icon: ImageVector, text: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(30.dp, 0.dp, 8.dp, 8.dp),
+            .padding(30.dp, 4.dp, 8.dp, 4.dp)
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(icon, contentDescription = text)
