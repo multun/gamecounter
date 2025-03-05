@@ -16,10 +16,10 @@ An app for counting points at board, card, or role playing games:
 
 ```sh
 # build a signed debug package
-./gradlew build
+./gradlew assembleDebug
 
 # sign the release binary with the debug key
-./gradlew build -PdebugSignRelease=true
+./gradlew assembleRelease -PdebugSignRelease=true
 ```
 
 # Install
