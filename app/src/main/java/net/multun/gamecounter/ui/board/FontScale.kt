@@ -22,12 +22,14 @@ fun counterScale(maxWidth: Dp, maxHeight: Dp): FontScale {
 }
 
 @Composable
-fun FontScale.apply(baseFontSize: Dp, maxFontSize: Dp): TextUnit {
-    var res = baseFontSize * value
-    if (res > maxFontSize)
-        res = maxFontSize
+fun FontScale.apply(sizeClass: FontSizeClass): TextUnit {
+    var res = sizeClass.base * value
+    if (res > sizeClass.max)
+        res = sizeClass.max
     return with(LocalDensity.current) { res.toSp() }
 }
+
+
 
 @Composable
 fun WithFontSize(
@@ -49,5 +51,5 @@ fun WithScaledFontSize(
     baseStyle: TextStyle = LocalTextStyle.current,
     content: @Composable () -> Unit
 ) {
-    WithFontSize(scale.apply(sizeClass.base, sizeClass.max), lineHeight, baseStyle, content)
+    WithFontSize(scale.apply(sizeClass), lineHeight, baseStyle, content)
 }
