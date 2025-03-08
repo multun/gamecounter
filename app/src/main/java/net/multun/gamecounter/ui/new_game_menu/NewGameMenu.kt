@@ -22,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -89,7 +88,7 @@ fun NewGameMenu(viewModel: NewGameViewModel, navController: NavController, modif
                         Text(
                             "Player count",
                             style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.alpha(0.8f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         FHorizontalWheelPicker(
@@ -110,7 +109,6 @@ fun NewGameMenu(viewModel: NewGameViewModel, navController: NavController, modif
                 ) {
                     Text("Counter settings")
                 }
-
             }
         }
     }
