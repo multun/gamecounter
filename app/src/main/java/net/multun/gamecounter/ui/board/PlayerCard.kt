@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,19 +19,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import net.multun.gamecounter.DEFAULT_PALETTE
 import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
 import net.multun.gamecounter.store.PlayerId
 import net.multun.gamecounter.toDisplayColor
-import kotlin.streams.toList
 
 
 val MAIN_CARD_TEXT = FontSizeClass(base = 45.dp, max = 112.5.dp)
@@ -40,42 +33,6 @@ val ORDINAL_CARD_TEXT = FontSizeClass(base = 30.dp, max = 75.dp)
 val SUB_CARD_TEXT = FontSizeClass(base = 18.dp, max = 28.dp)
 val EXP_CARD_TEXT = FontSizeClass(base = 18.dp, max = 45.dp)
 
-
-fun formatAsOrdinal(number: Int): String {
-    try {
-        val formatter = android.icu.text.MessageFormat("{0,ordinal}")
-        return formatter.format(arrayOf(number))
-    } catch (e: IllegalArgumentException) {
-        return number.toString()
-    }
-}
-
-@Composable
-fun ordinalAnnotatedString(ordinal: String, ordFontSize: TextUnit): AnnotatedString {
-    val codePoints = ordinal.codePoints().toList()
-    val firstDigitCPIndex = codePoints.indexOfFirst { Character.isDigit(it) }
-    val lastDigitCPIndex = codePoints.indexOfLast { Character.isDigit(it) }
-    val digitsStart = ordinal.offsetByCodePoints(0, firstDigitCPIndex)
-    val digitsEnd = ordinal.offsetByCodePoints(digitsStart, lastDigitCPIndex - digitsStart + 1)
-
-    val prefix = ordinal.substring(0, digitsStart)
-    val digits = ordinal.substring(digitsStart, digitsEnd)
-    val suffix = ordinal.substring(digitsEnd, ordinal.length)
-
-    val smallTextStyle = SpanStyle(
-        fontSize = ordFontSize,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-    )
-    return buildAnnotatedString {
-        withStyle(style = smallTextStyle) {
-            append(prefix)
-        }
-        append(digits)
-        withStyle(style = smallTextStyle) {
-            append(suffix)
-        }
-    }
-}
 
 @Composable
 fun Player(
@@ -112,10 +69,10 @@ fun Player(
                         val ordFontSize = counterScale.apply(ORDINAL_CARD_TEXT)
                         WithFontSize(digitsFontSize, baseStyle = baseStyle) {
                             if (player.isOrdinal) {
-                                val ordinal = formatAsOrdinal(player.roll)
+                                val ordinal = formatOrdinal(player.roll)
                                 Text(ordinalAnnotatedString(ordinal, ordFontSize))
                             } else {
-                                Text(player.roll.toString())
+                                Text(formatInteger(player.roll))
                             }
                         }
                     }

@@ -32,7 +32,6 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
-import java.util.Locale
 
 
 @Composable
@@ -104,7 +103,7 @@ fun PlayerCounter(
         // counter
         WithScaledFontSize(counterScale, MAIN_CARD_TEXT, lineHeight = 1f) {
             Text(
-                text = "${counter.counterValue}",
+                text = formatInteger(counter.counterValue),
                 modifier = Modifier.layoutId("counterValue")
             )
         }
@@ -118,7 +117,7 @@ fun PlayerCounter(
             transitionSpec = { comboCounterAnimation() },
         ) { targetCount ->
             if (targetCount != null) {
-                val comboText = String.format(Locale.ENGLISH, "%+d", targetCount)
+                val comboText = formatCombo(targetCount)
                 WithScaledFontSize(counterScale, EXP_CARD_TEXT) {
                     Text(text = comboText)
                 }
