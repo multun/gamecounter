@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,6 +23,11 @@ import net.multun.gamecounter.DEFAULT_PALETTE
 import net.multun.gamecounter.store.CounterId
 import net.multun.gamecounter.store.PlayerId
 import net.multun.gamecounter.toDisplayColor
+
+
+val MAIN_CARD_TEXT = FontSizeClass(base = 45.dp, max = 112.5.dp)
+val SUB_CARD_TEXT = FontSizeClass(base = 18.dp, max = 28.dp)
+val EXP_CARD_TEXT = FontSizeClass(base = 18.dp, max = 45.dp)
 
 
 fun formatAsOrdinal(number: Int): String {
@@ -68,13 +74,17 @@ fun Player(
                         } else {
                             "${player.roll}"
                         }
-                        CardMainText(text, counterScale)
+                        WithScaledFontSize(counterScale, MAIN_CARD_TEXT) {
+                            Text(text = text)
+                        }
                     }
                 }
                 is CounterCardUIState -> {
                     if (player.counter == null) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CardSubText("no counter", counterScale)
+                            WithScaledFontSize(counterScale, SUB_CARD_TEXT) {
+                                Text(text = "no counter")
+                            }
                         }
                         return@BoxWithConstraints
                     }

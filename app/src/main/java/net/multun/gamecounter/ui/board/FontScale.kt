@@ -1,9 +1,10 @@
 package net.multun.gamecounter.ui.board
 
-import androidx.compose.material3.Text
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import kotlin.math.min
@@ -12,6 +13,8 @@ import kotlin.math.min
 @JvmInline
 value class FontScale(val value: Float)
 
+data class FontSizeClass(val base: Dp, val max: Dp)
+
 fun counterScale(maxWidth: Dp, maxHeight: Dp): FontScale {
     val verticalScale = maxHeight / PLAYER_MIN_HEIGHT
     val horizontalScale = maxWidth / PLAYER_MIN_WIDTH
@@ -19,7 +22,7 @@ fun counterScale(maxWidth: Dp, maxHeight: Dp): FontScale {
 }
 
 @Composable
-private fun FontScale.apply(baseFontSize: Dp, maxFontSize: Dp): TextUnit {
+fun FontScale.apply(baseFontSize: Dp, maxFontSize: Dp): TextUnit {
     var res = baseFontSize * value
     if (res > maxFontSize)
         res = maxFontSize
@@ -27,14 +30,24 @@ private fun FontScale.apply(baseFontSize: Dp, maxFontSize: Dp): TextUnit {
 }
 
 @Composable
-fun ScaledText(
-    text: String,
-    scale: FontScale,
-    baseSize: Dp,
-    maxSize: Dp,
-    modifier: Modifier = Modifier,
+fun WithFontSize(
+    fontSize: TextUnit,
     lineHeight: Float = 1.15f,
+    baseStyle: TextStyle = LocalTextStyle.current,
+    content: @Composable () -> Unit
 ) {
-    val textSize = scale.apply(baseSize, maxSize)
-    Text(text = text, fontSize = textSize, lineHeight = textSize * lineHeight, modifier = modifier)
+    val newStyle = baseStyle.copy(fontSize = fontSize, lineHeight = fontSize * lineHeight)
+    CompositionLocalProvider(LocalTextStyle provides newStyle, content = content)
+}
+
+
+@Composable
+fun WithScaledFontSize(
+    scale: FontScale,
+    sizeClass: FontSizeClass,
+    lineHeight: Float = 1.15f,
+    baseStyle: TextStyle = LocalTextStyle.current,
+    content: @Composable () -> Unit
+) {
+    WithFontSize(scale.apply(sizeClass.base, sizeClass.max), lineHeight, baseStyle, content)
 }
