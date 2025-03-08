@@ -36,12 +36,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.collections.immutable.ImmutableList
+import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
 import net.multun.gamecounter.ui.GameCounterTopBar
 import net.multun.gamecounter.ui.theme.Typography
@@ -61,11 +63,11 @@ fun CounterSettingsScreen(
     val appState by viewModel.settingsUIState.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
-            GameCounterTopBar("Counter settings", navController)
+            GameCounterTopBar(stringResource(R.string.counter_settings), navController)
         },
         floatingActionButton = {
             FloatingActionButton(onClick = remember { { dialog = AddDialog } }) {
-                Icon(Icons.Filled.Add, "Add a counter")
+                Icon(Icons.Filled.Add, stringResource(R.string.new_counter))
             }
         }
     ) { contentPadding ->
@@ -134,8 +136,8 @@ fun CounterSettingsDialog(
 ) {
     when (dialog) {
         AddDialog -> CounterChangeDialog(
-            title = "Add a counter",
-            action = "Add",
+            title = stringResource(R.string.new_counter),
+            action = stringResource(R.string.add),
             onDismissRequest = onClearDialog,
             onCounterAdded = remember { { name, defaultValue ->
                 onAddCounter(name, defaultValue)
@@ -143,8 +145,8 @@ fun CounterSettingsDialog(
             } }
         )
         is EditDialog -> CounterChangeDialog(
-            title = "Edit a counter",
-            action = "Save",
+            title = stringResource(R.string.edit_a_counter),
+            action = stringResource(R.string.save),
             initialName = dialog.counter.name,
             initialDefaultValue = dialog.counter.defaultValue,
             onDismissRequest = onClearDialog,
@@ -156,20 +158,27 @@ fun CounterSettingsDialog(
             } }
         )
         is ConfirmDeleteDialog -> AlertDialog(
-            icon = { Icon(Icons.Filled.Delete, contentDescription = "Delete icon") },
-            text = { Text("Do you really want to delete counter ${dialog.counter.name}?")},
+            icon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.confirm_delete_counter,
+                        dialog.counter.name
+                    )
+                )
+            },
             onDismissRequest = onClearDialog,
             confirmButton = {
                 TextButton(onClick = remember { {
                     onDelete(dialog.counter.id)
                     onClearDialog()
                 } }) {
-                    Text("Confirm")
+                    Text(stringResource(R.string.confirm))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onClearDialog) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             })
     }
@@ -205,14 +214,14 @@ fun CounterChangeDialog(
                     value = counterName,
                     isError = nameError,
                     onValueChange = { counterName = it },
-                    label = { Text("Name") },
+                    label = { Text(stringResource(R.string.counter_name)) },
                     singleLine = true,
                 )
 
                 OutlinedTextField(
                     value = counterDefaultValue,
                     onValueChange = { counterDefaultValue = it },
-                    label = { Text("Default value") },
+                    label = { Text(stringResource(R.string.counter_default_value)) },
                     isError = defaultValueError,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
@@ -223,7 +232,7 @@ fun CounterChangeDialog(
                         onClick = { onDismissRequest() },
                         modifier = Modifier.padding(8.dp),
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
                     TextButton(
                         enabled = !(nameError || defaultValueError),
@@ -259,16 +268,16 @@ fun CounterSettingsLine(
             Text(name, style = Typography.bodyLarge)
             Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                 IconButton(onClick = onEdit) {
-                    Icon(Icons.Filled.Edit, contentDescription = "edit counter")
+                    Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.edit_a_counter))
                 }
                 IconButton(enabled = !isFirst, onClick = onMoveUp) {
-                    Icon(Icons.Filled.MoveUp, contentDescription = "move counter up")
+                    Icon(Icons.Filled.MoveUp, contentDescription = stringResource(R.string.move_counter_up))
                 }
                 IconButton(enabled = !isLast, onClick = onMoveDown) {
-                    Icon(Icons.Filled.MoveDown, contentDescription = "move counter down")
+                    Icon(Icons.Filled.MoveDown, contentDescription = stringResource(R.string.move_counter_down))
                 }
                 IconButton(enabled = !(isFirst && isLast), onClick = onDelete) {
-                    Icon(Icons.Filled.Delete, contentDescription = "delete counter")
+                    Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.delete_counter))
                 }
             }
         }

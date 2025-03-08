@@ -24,11 +24,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
+import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
 import java.util.Locale
 
@@ -45,7 +47,10 @@ fun CounterSelector(
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         if (showControls) {
             IconButton(onClick = onPrev) {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "")
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                    stringResource(R.string.previous_counter)
+                )
             }
         }
         WithScaledFontSize(counterScale, SUB_CARD_TEXT) {
@@ -53,7 +58,10 @@ fun CounterSelector(
         }
         if (showControls) {
             IconButton(onClick = onNext) {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, "")
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    stringResource(R.string.next_counter)
+                )
             }
         }
     }
@@ -76,7 +84,10 @@ fun PlayerCounter(
             onUpdateCounter = { onUpdateCounter(counter.id, -it.stepSize()) },
             modifier = Modifier.layoutId("decr"),
         ) {
-            Icon(Icons.Default.Remove, contentDescription = "Decrease counter")
+            Icon(
+                Icons.Default.Remove,
+                contentDescription = stringResource(R.string.decrease_counter)
+            )
         }
 
         // plus
@@ -84,7 +95,10 @@ fun PlayerCounter(
             onUpdateCounter = { onUpdateCounter(counter.id, it.stepSize()) },
             modifier = Modifier.layoutId("incr"),
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Increase counter")
+            Icon(
+                Icons.Default.Add,
+                contentDescription = stringResource(R.string.increase_counter)
+            )
         }
 
         // counter
@@ -115,7 +129,10 @@ fun PlayerCounter(
             contentColor = LocalContentColor.current.copy(alpha = 0.75f)
         )
         IconButton(onClick = onEdit, colors = settingsColor, modifier = Modifier.layoutId("edit")) {
-            Icon(Icons.Outlined.PersonOutline, contentDescription = "Edit player settings")
+            Icon(
+                Icons.Outlined.PersonOutline,
+                contentDescription = stringResource(R.string.player_settings)
+            )
         }
 
         CounterSelector(

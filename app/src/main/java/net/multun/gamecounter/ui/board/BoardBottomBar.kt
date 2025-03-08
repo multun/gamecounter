@@ -24,9 +24,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sd.lib.compose.wheel_picker.FHorizontalWheelPicker
 import com.sd.lib.compose.wheel_picker.rememberFWheelPickerState
+import net.multun.gamecounter.R
 
 
 val BOTTOM_BAR_PADDING_SIDES = 12.dp
@@ -63,11 +65,11 @@ fun CounterBottomBar(
 ) {
     BottomBar(windowInsets = windowInsets) {
         IconButton(onClick = onRoll) {
-            Icon(Icons.Filled.Casino, contentDescription = "Roll a dice")
+            Icon(Icons.Filled.Casino, contentDescription = stringResource(R.string.roll_dice))
         }
 
         IconButton(onClick = onOpenSettings) {
-            Icon(Icons.Filled.Settings, contentDescription = "Settings")
+            Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings))
         }
     }
 }
@@ -94,7 +96,7 @@ fun RollBottomBar(
         }
 
         IconButton(onClick = { viewModel.roll() }) {
-            Icon(Icons.Filled.Casino, contentDescription = "Roll a dice")
+            Icon(Icons.Filled.Casino, contentDescription = stringResource(R.string.roll_dice))
         }
 
         FHorizontalWheelPicker(
@@ -104,13 +106,13 @@ fun RollBottomBar(
         ) { index ->
             val diceSize = DICE_OPTIONS[index]
             if (diceSize == 0)
-                Icon(Icons.Filled.Person, contentDescription = "player order")
+                Icon(Icons.Filled.Person, contentDescription = stringResource(R.string.player_order))
             else
                 Text(diceSize.toString())
         }
 
         IconButton(onClick = { viewModel.clearRoll() }) {
-            Icon(Icons.Filled.Clear, contentDescription = "Settings")
+            Icon(Icons.Filled.Clear, contentDescription = stringResource(R.string.clear_dice_roll))
         }
     }
 }

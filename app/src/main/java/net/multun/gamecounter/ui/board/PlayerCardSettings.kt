@@ -40,10 +40,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.multun.gamecounter.DEFAULT_PALETTE
+import net.multun.gamecounter.R
 import net.multun.gamecounter.toDisplayColor
 
 enum class PlayerMenu {
@@ -63,8 +65,8 @@ fun PlayerCardSettings(
     Box(modifier = Modifier.fillMaxSize()) {
         when (menu) {
             PlayerMenu.MAIN -> PlayerMenu(onBack = onExit) {
-                PlayerMenuItem(icon = Icons.Default.Palette, "Color") { menu = PlayerMenu.COLOR }
-                PlayerMenuItem(icon = Icons.Default.Delete, "Delete") { menu = PlayerMenu.DELETE }
+                PlayerMenuItem(icon = Icons.Default.Palette, stringResource(R.string.color)) { menu = PlayerMenu.COLOR }
+                PlayerMenuItem(icon = Icons.Default.Delete, stringResource(R.string.delete)) { menu = PlayerMenu.DELETE }
             }
             PlayerMenu.COLOR -> Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 CardSettingsTopBar(onBack = { menu = PlayerMenu.MAIN })
@@ -72,8 +74,8 @@ fun PlayerCardSettings(
             }
             PlayerMenu.DELETE -> {
                 PlayerMenu(onBack = { menu = PlayerMenu.MAIN }) {
-                    PlayerMenuItem(Icons.Default.Cancel, "Cancel") { menu = PlayerMenu.MAIN }
-                    PlayerMenuItem(Icons.Default.Delete, "Confirm") { onDelete() }
+                    PlayerMenuItem(Icons.Default.Cancel, stringResource(R.string.cancel)) { menu = PlayerMenu.MAIN }
+                    PlayerMenuItem(Icons.Default.Delete, stringResource(R.string.confirm)) { onDelete() }
                 }
             }
         }
@@ -85,8 +87,8 @@ fun CardSettingsTopBar(onBack: () -> Unit) {
     // top row
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
         // back button
-        IconButton(onClick = onBack, ) {
-            Icon(Icons.Filled.Clear, contentDescription = "Go back")
+        IconButton(onClick = onBack) {
+            Icon(Icons.Filled.Clear, contentDescription = stringResource(R.string.previous_screen))
         }
     }
 }
@@ -128,7 +130,7 @@ fun PaletteItem(color: Color, modifier: Modifier = Modifier, selected: Boolean =
             .clickable(onClick = onClick)
         )
         if (selected) {
-            Icon(Icons.Default.Check, "")
+            Icon(Icons.Default.Check, null)
         }
     }
 }

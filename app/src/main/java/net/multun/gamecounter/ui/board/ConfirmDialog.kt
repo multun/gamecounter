@@ -4,6 +4,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import net.multun.gamecounter.R
 
 @Composable
 fun ConfirmDialog(
@@ -24,12 +26,12 @@ fun ConfirmDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = onConfirmation) {
-                Text("Confirm")
+                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

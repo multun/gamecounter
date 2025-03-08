@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -27,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import net.multun.gamecounter.DEFAULT_PALETTE
+import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
 import net.multun.gamecounter.store.PlayerId
 import net.multun.gamecounter.toDisplayColor
@@ -113,7 +115,7 @@ fun Player(
                                 val ordinal = formatAsOrdinal(player.roll)
                                 Text(ordinalAnnotatedString(ordinal, ordFontSize))
                             } else {
-                                Text("${player.roll}")
+                                Text(player.roll.toString())
                             }
                         }
                     }
@@ -122,7 +124,7 @@ fun Player(
                     if (player.counter == null) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             WithScaledFontSize(counterScale, SUB_CARD_TEXT) {
-                                Text(text = "no counter")
+                                Text(text = stringResource(R.string.no_counter))
                             }
                         }
                         return@BoxWithConstraints

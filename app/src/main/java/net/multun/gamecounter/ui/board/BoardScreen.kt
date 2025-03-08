@@ -33,10 +33,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
+import net.multun.gamecounter.R
 import net.multun.gamecounter.Screens
 
 
@@ -121,25 +123,26 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    SettingsItem(Icons.Filled.Add, "Add new player") {
+                    SettingsItem(Icons.Filled.Add, stringResource(R.string.add_new_player)) {
                         viewModel.addPlayer()
                     }
 
-                    SettingsItem(Icons.Filled.Replay, "Reset game") {
+                    SettingsItem(Icons.Filled.Replay, stringResource(R.string.reset_game)) {
                         modalState = ModalState.ConfirmGameReset
                     }
 
-                    SettingsItem(Icons.Filled.Settings, "Counter settings") {
+                    SettingsItem(Icons.Filled.Settings, stringResource(R.string.counter_settings)) {
                         hideBottomSheet()
                         navController.navigate(Screens.CounterSettings.route)
                     }
 
-                    SettingsItem(Icons.AutoMirrored.Filled.ExitToApp, "Leave to main menu") {
+                    SettingsItem(Icons.AutoMirrored.Filled.ExitToApp,
+                        stringResource(R.string.leave_to_main_menu)) {
                         hideBottomSheet()
                         navController.popBackStack(Screens.MainMenu.route, inclusive = false)
                     }
 
-                    SettingsItem(Icons.Filled.Clear, "Close menu") {
+                    SettingsItem(Icons.Filled.Clear, stringResource(R.string.close_menu)) {
                         hideBottomSheet()
                     }
                 }
@@ -148,7 +151,7 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
 
         if (modalState == ModalState.ConfirmGameReset) {
             ConfirmDialog(
-                dialogText = "Are you sure you want to reset all counters to their default value?",
+                dialogText = stringResource(R.string.confirm_reset_counters),
                 onDismissRequest = { modalState = null },
                 onConfirmation = { modalState = null; viewModel.resetGame() }
             )

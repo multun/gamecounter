@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Game Counter</string>
+    <string name="start_game">Commencer la partie</string>
+    <string name="player_count">Nombre de joueurs</string>
+    <string name="counter_settings">Paramètres des compteurs</string>
+    <string name="cannot_start_game_without_counter">Impossible de démarrer la partie sans compteurs</string>
+    <string name="new_game">Nouvelle partie</string>
+    <string name="continue_">Continuer</string>
+    <string name="new_counter">Nouveau compteur</string>
+    <string name="add">Ajouter</string>
+    <string name="save">Sauvegarder</string>
+    <string name="confirm_delete_counter">Voulez-vous vraiment supprimer %1$s ?</string>
+    <string name="confirm">Confirmer</string>
+    <string name="cancel">Annuler</string>
+    <string name="counter_name">Nom</string>
+    <string name="counter_default_value">Valeur initiale</string>
+    <string name="previous_screen">Page précédente</string>
+    <string name="player_settings">Paramètres du joueur</string>
+    <string name="increase_counter">Augmenter la valeur</string>
+    <string name="decrease_counter">Diminuer la valeur</string>
+    <string name="previous_counter">Compteur précédent</string>
+    <string name="next_counter">Compteur suivant</string>
+    <string name="delete">Supprimer</string>
+    <string name="color">Couleur</string>
+    <string name="no_counter">Pas de compteur</string>
+    <string name="add_new_player">Nouveau joueur</string>
+    <string name="reset_game">Réinitialiser la partie</string>
+    <string name="leave_to_main_menu">Retour au menu principal</string>
+    <string name="close_menu">Fermer le menu</string>
+    <string name="confirm_reset_counters">Êtes-vous sûr·e de vouloir réinitialiser les compteurs ?</string>
+    <string name="clear_dice_roll">Retour au jeu</string>
+    <string name="player_order">Ordre des joueurs</string>
+    <string name="roll_dice">Lancer un dé</string>
+    <string name="settings">Paramètres</string>
+    <string name="delete_counter">Supprimer le compteur</string>
+    <string name="move_counter_down">Bouger vers le bas</string>
+    <string name="move_counter_up">Bouger vers le haut</string>
+    <string name="edit_a_counter">Paramètres du compteur</string>
+</resources>
