@@ -1,0 +1,6 @@
+Fully usable initial release:
+ - keep track of multiple counters per player
+ - customizable counter name and initial value
+ - long press plus or minus for quick updates
+ - players can change card colors
+ - roll dices of any size, or pick player order

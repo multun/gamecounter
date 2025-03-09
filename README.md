@@ -3,14 +3,15 @@
 </p>
 
 An app for counting points at board, card, or role playing games:
- - configurable counters
+ - keep track of multiple counters per player
+ - customizable counter name and initial value
  - long press plus or minus for quick updates
  - players can change card colors
  - roll dices of any size, or pick player order
 
 # Screenshots
 
-![](metadata/en-US/images/demo.png)
+![](metadata/en-US/images/featureGraphic.png)
 
 # Build
 
