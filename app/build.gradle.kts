@@ -28,6 +28,14 @@ android {
         }
     }
 
+    flavorDimensions += "target"
+    productFlavors {
+        create("fdroid") {
+            dimension = "target"
+            applicationIdSuffix = ".fdroid"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
