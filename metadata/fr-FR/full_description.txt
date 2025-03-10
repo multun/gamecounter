@@ -1,0 +1,6 @@
+Un compteur de points pour jeux de société et jeux de rôle :
+ - suivi de plusieur compteurs par joueur
+ - compteurs configurables
+ - changement rapide des compteurs avec un appui long
+ - les joueurs peuvent changer la couleur de leur carte
+ - lancé de dé et choix de l'ordre des joueurs intégré
