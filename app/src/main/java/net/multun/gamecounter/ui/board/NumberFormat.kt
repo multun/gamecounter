@@ -1,5 +1,9 @@
 package net.multun.gamecounter.ui.board
 
+import android.icu.number.NumberFormatter
+import android.icu.text.DecimalFormat
+import android.icu.text.DecimalFormatSymbols
+import android.os.Build
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.AnnotatedString
@@ -29,7 +33,11 @@ fun formatInteger(number: Int, locale: Locale = Locale.getDefault()): String {
 }
 
 fun formatCombo(number: Int, locale: Locale = Locale.getDefault()): String {
-    return formatNumber(number, "{0, number, :: +?}", locale)
+    // we can't use {0, number, :: +?}, as this is not available in nougat
+    val formatter = DecimalFormat("0", DecimalFormatSymbols(locale))
+    if (number != 0)
+        formatter.positivePrefix = "+"
+    return formatter.format(number)
 }
 
 @Composable
