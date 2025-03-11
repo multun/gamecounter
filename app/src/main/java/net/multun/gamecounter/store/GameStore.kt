@@ -39,7 +39,7 @@ object GameStoreProvider {
             scope = CoroutineScope(scope.coroutineContext + ioDispatcher),
             migrations = listOf(),
         ) {
-            context.dataStoreFile("app_state.pb")
+            context.dataStoreFile("game.pb")
         }
 }
 
