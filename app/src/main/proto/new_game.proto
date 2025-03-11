@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "game.proto";
+
+option java_package = "net.multun.gamecounter.proto";
+option java_outer_classname = "ProtoNewGame";
+
+message NewGame {
+  int32 playerCount = 1;
+  repeated Counter counter = 2;
+}

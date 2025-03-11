@@ -14,8 +14,10 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -39,7 +41,21 @@ fun NewGameMenu(viewModel: NewGameViewModel, navController: NavController, modif
     val state = viewModel.uiState.collectAsStateWithLifecycle()
     val currentState = state.value ?: return
 
-    val playerCount = rememberFWheelPickerState(1)
+    // initialize the player count to either 2 or whatever was saved before
+    val playerCount = rememberFWheelPickerState(remember {
+        if (currentState.playerCount == 0)
+            return@remember 1 // 2 players by default
+       currentState.playerCount - 1
+    })
+
+    // when the index is changed, save to disk
+    LaunchedEffect(playerCount) {
+        snapshotFlow { playerCount.currentIndex }
+            .collect {
+                viewModel.setPlayerCount(playerCount.currentIndex + 1)
+            }
+    }
+
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -62,13 +78,13 @@ fun NewGameMenu(viewModel: NewGameViewModel, navController: NavController, modif
                             )
                         when (result) {
                             SnackbarResult.ActionPerformed -> {
-                                navController.navigate(Screens.CounterSettings.route)
+                                navController.navigate(Screens.NewGameCounterSettings.route)
                             }
                             SnackbarResult.Dismissed -> {}
                         }
                     }
                 } else {
-                    viewModel.setupGame(playerCount.currentIndex + 1)
+                    viewModel.startGame()
                     navController.navigate(Screens.Board.route)
                 }
             }) {
@@ -102,7 +118,7 @@ fun NewGameMenu(viewModel: NewGameViewModel, navController: NavController, modif
                 GameButton(
                     baseColor = DEFAULT_PALETTE[7],
                     onClick = {
-                        navController.navigate(Screens.CounterSettings.route)
+                        navController.navigate(Screens.NewGameCounterSettings.route)
                     }
                 ) {
                     Text(stringResource(R.string.counter_settings))

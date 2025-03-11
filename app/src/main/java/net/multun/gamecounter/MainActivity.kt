@@ -18,6 +18,7 @@ import net.multun.gamecounter.ui.board.BoardScreen
 import net.multun.gamecounter.ui.board.BoardViewModel
 import net.multun.gamecounter.ui.counter_settings.CounterSettingsScreen
 import net.multun.gamecounter.ui.counter_settings.GameCounterSettingsViewModel
+import net.multun.gamecounter.ui.counter_settings.NewGameCounterSettingsViewModel
 import net.multun.gamecounter.ui.main_menu.MainMenu
 import net.multun.gamecounter.ui.main_menu.MainMenuViewModel
 import net.multun.gamecounter.ui.new_game_menu.NewGameMenu
@@ -28,13 +29,17 @@ sealed class Screens(val route: String) {
     data object MainMenu: Screens("main_menu")
     data object NewGameMenu: Screens("new_game_menu")
     data object Board: Screens("board")
+    // the counter settings of the currently running game
     data object CounterSettings: Screens("counter_settings")
+    // the counter settings of the not yet started game
+    data object NewGameCounterSettings: Screens("new_game_counter_settings")
 }
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val boardViewModel: BoardViewModel by viewModels()
     private val gameCounterSettingsViewModel: GameCounterSettingsViewModel by viewModels()
+    private val newGameCounterSettingsViewModel: NewGameCounterSettingsViewModel by viewModels()
     private val mainMenuViewModel: MainMenuViewModel by viewModels()
     private val newGameViewModel: NewGameViewModel by viewModels()
 
@@ -60,6 +65,10 @@ class MainActivity : ComponentActivity() {
                         composable(route = Screens.CounterSettings.route) {
                             val counters by gameCounterSettingsViewModel.settingsUIState.collectAsStateWithLifecycle()
                             CounterSettingsScreen(counters, gameCounterSettingsViewModel, controller)
+                        }
+                        composable(route = Screens.NewGameCounterSettings.route) {
+                            val counters by newGameCounterSettingsViewModel.settingsUIState.collectAsStateWithLifecycle()
+                            CounterSettingsScreen(counters, newGameCounterSettingsViewModel, controller)
                         }
                     }
                 }

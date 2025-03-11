@@ -152,33 +152,18 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
 
     suspend fun addPlayers(count: Int) {
         appStateStore.updateData { oldState ->
-            // color allocation
-            val oldCounters = oldState.getDefaultCounters()
-            val usedColors = oldState.playerList.map { Color(it.color) }.toMutableSet()
-            fun allocateColor(): Color {
-                val unusedColor = DEFAULT_PALETTE.find { !usedColors.contains(it) } ?: DEFAULT_PALETTE[0]
-                usedColors.add(unusedColor)
-                return unusedColor
-            }
+            val builder = oldState.toBuilder()
+            builder.addPlayers(count)
+            builder.build()
+        }
+    }
 
-            // id allocation
-            val newPlayerIdStart = (oldState.playerList.maxOfOrNull { it.id } ?: -1) + 1
-
-            oldState.copy {
-                for (newPlayerIndex in 0 until count) {
-                    val playerId = newPlayerIdStart + newPlayerIndex
-
-                    this.player.add(player {
-                        this.id = playerId
-                        this.color = allocateColor().encode()
-                        this.counters.putAll(oldCounters)
-                        this.selectedCounter = if (oldCounters.isEmpty())
-                            -1
-                        else
-                            oldState.counterList[0].id
-                    })
-                }
-            }
+    suspend fun startGame(playerCount: Int, counters: List<ProtoGame.Counter>) {
+        appStateStore.updateData {
+            val builder = ProtoGame.Game.newBuilder()
+            builder.addAllCounter(counters)
+            builder.addPlayers(playerCount)
+            builder.build()
         }
     }
 
@@ -289,21 +274,49 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
     }
 }
 
-fun ProtoGame.Game.getDefaultCounters(): Map<Int, Int> {
+fun ProtoGame.GameOrBuilder.getDefaultCounters(): Map<Int, Int> {
     return counterList.associate {
         Pair(it.id, it.defaultValue)
     }
 }
 
-fun ProtoGame.Game.getPlayerIndex(playerId: PlayerId): Int {
+fun ProtoGame.GameOrBuilder.getPlayerIndex(playerId: PlayerId): Int {
     return playerList.indexOfFirst { it.id == playerId.value }
 }
 
-fun ProtoGame.Game.getCounterIndex(counterId: CounterId): Int {
+fun ProtoGame.GameOrBuilder.getCounterIndex(counterId: CounterId): Int {
     return counterList.indexOfFirst { it.id == counterId.value }
 }
 
 fun Color.encode(): Long {
     assert(colorSpace == ColorSpaces.Srgb)
     return (value shr 32).toLong()
+}
+
+fun ProtoGame.Game.Builder.addPlayers(playerCount: Int) {
+    // color allocation
+    val oldCounters = this.getDefaultCounters()
+    val usedColors = this.playerList.map { Color(it.color) }.toMutableSet()
+    fun allocateColor(): Color {
+        val unusedColor = DEFAULT_PALETTE.find { !usedColors.contains(it) } ?: DEFAULT_PALETTE[0]
+        usedColors.add(unusedColor)
+        return unusedColor
+    }
+
+    // id allocation
+    val newPlayerIdStart = (this.playerList.maxOfOrNull { it.id } ?: -1) + 1
+
+    for (newPlayerIndex in 0 until playerCount) {
+        val playerId = newPlayerIdStart + newPlayerIndex
+
+        this.addPlayer(player {
+            this.id = playerId
+            this.color = allocateColor().encode()
+            this.counters.putAll(oldCounters)
+            this.selectedCounter = if (oldCounters.isEmpty())
+                -1
+            else
+                this@addPlayers.counterList[0].id
+        })
+    }
 }

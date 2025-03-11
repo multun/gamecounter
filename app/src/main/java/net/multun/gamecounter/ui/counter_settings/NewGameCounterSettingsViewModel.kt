@@ -10,13 +10,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import net.multun.gamecounter.store.CounterId
-import net.multun.gamecounter.store.GameRepository
+import net.multun.gamecounter.store.NewGameRepository
 import javax.inject.Inject
 
-
-// the counter settings for the currently running game
 @HiltViewModel
-class GameCounterSettingsViewModel @Inject constructor(private val repository: GameRepository) : ViewModel(), CounterSettingsActions {
+class NewGameCounterSettingsViewModel @Inject constructor(private val repository: NewGameRepository) : ViewModel(), CounterSettingsActions {
     val settingsUIState = repository.appState.map { appState ->
         appState.counters.map {
             CounterSettingsUIState(it.id, it.name, it.defaultValue)
