@@ -7,7 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -15,7 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import net.multun.gamecounter.ui.board.BoardScreen
 import net.multun.gamecounter.ui.board.BoardViewModel
 import net.multun.gamecounter.ui.counter_settings.CounterSettingsScreen
-import net.multun.gamecounter.ui.counter_settings.SettingsViewModel
+import net.multun.gamecounter.ui.counter_settings.GameCounterSettingsViewModel
 import net.multun.gamecounter.ui.main_menu.MainMenu
 import net.multun.gamecounter.ui.main_menu.MainMenuViewModel
 import net.multun.gamecounter.ui.new_game_menu.NewGameMenu
@@ -32,7 +34,7 @@ sealed class Screens(val route: String) {
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val boardViewModel: BoardViewModel by viewModels()
-    private val settingsViewModel: SettingsViewModel by viewModels()
+    private val gameCounterSettingsViewModel: GameCounterSettingsViewModel by viewModels()
     private val mainMenuViewModel: MainMenuViewModel by viewModels()
     private val newGameViewModel: NewGameViewModel by viewModels()
 
@@ -56,7 +58,8 @@ class MainActivity : ComponentActivity() {
                             BoardScreen(boardViewModel, controller, modifier = Modifier.fillMaxSize())
                         }
                         composable(route = Screens.CounterSettings.route) {
-                            CounterSettingsScreen(settingsViewModel, controller)
+                            val counters by gameCounterSettingsViewModel.settingsUIState.collectAsStateWithLifecycle()
+                            CounterSettingsScreen(counters, gameCounterSettingsViewModel, controller)
                         }
                     }
                 }

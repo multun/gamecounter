@@ -191,19 +191,6 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
         }
     }
 
-    private suspend fun updateCounter(counterId: CounterId, updater: (ProtoGame.Counter) -> ProtoGame.Counter) {
-        appStateStore.updateData { oldState ->
-            val counterIndex = oldState.getCounterIndex(counterId)
-            if (counterIndex == -1)
-                return@updateData oldState
-
-            val newCounter = updater(oldState.getCounter(counterIndex))
-            val newState = oldState.toBuilder()
-            newState.setCounter(counterIndex, newCounter)
-            newState.build()
-        }
-    }
-
     private suspend fun updatePlayer(playerId: PlayerId, updater: (ProtoGame.Game, ProtoGame.Player) -> ProtoGame.Player) {
         appStateStore.updateData { oldState ->
             val playerIndex = oldState.getPlayerIndex(playerId)
@@ -256,19 +243,19 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
         }
     }
 
-    suspend fun setCounterName(counterId: CounterId, name: String) {
-        updateCounter(counterId) {
-            it.copy {
-                this.name = name
-            }
-        }
-    }
+    suspend fun updateCounter(counterId: CounterId, name: String, defaultValue: Int) {
+        appStateStore.updateData { oldState ->
+            val counterIndex = oldState.getCounterIndex(counterId)
+            if (counterIndex == -1)
+                return@updateData oldState
 
-    suspend fun setCounterDefaultValue(counterId: CounterId, defaultValue: Int) {
-        updateCounter(counterId) {
-            it.copy {
+            val newCounter = oldState.getCounter(counterIndex).copy {
+                this.name = name
                 this.defaultValue = defaultValue
             }
+            val newState = oldState.toBuilder()
+            newState.setCounter(counterIndex, newCounter)
+            newState.build()
         }
     }
 

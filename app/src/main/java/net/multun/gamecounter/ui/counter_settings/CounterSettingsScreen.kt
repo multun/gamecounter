@@ -40,7 +40,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.collections.immutable.ImmutableList
 import net.multun.gamecounter.R
@@ -48,19 +47,32 @@ import net.multun.gamecounter.store.CounterId
 import net.multun.gamecounter.ui.GameCounterTopBar
 import net.multun.gamecounter.ui.theme.Typography
 
+data class CounterSettingsUIState(
+    val id: CounterId,
+    val name: String,
+    val defaultValue: Int,
+)
+
+interface CounterSettingsActions {
+    fun addCounter(counterName: String, defaultValue: Int)
+    fun deleteCounter(counterId: CounterId)
+    fun moveCounterUp(counterId: CounterId)
+    fun moveCounterDown(counterId: CounterId)
+    fun updateCounter(counterId: CounterId, name: String, defaultVal: Int)
+}
+
 sealed class CounterSettingsDialog
 data object AddDialog : CounterSettingsDialog()
 data class EditDialog(val counter: CounterSettingsUIState) : CounterSettingsDialog()
 data class ConfirmDeleteDialog(val counter: CounterSettingsUIState) : CounterSettingsDialog()
 
-
 @Composable
 fun CounterSettingsScreen(
-    viewModel: SettingsViewModel,
+    counters: ImmutableList<CounterSettingsUIState>,
+    viewModel: CounterSettingsActions,
     navController: NavController,
 ) {
     var dialog by remember { mutableStateOf<CounterSettingsDialog?>(null) }
-    val appState by viewModel.settingsUIState.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             GameCounterTopBar(stringResource(R.string.counter_settings), navController)
@@ -72,7 +84,7 @@ fun CounterSettingsScreen(
         }
     ) { contentPadding ->
         CounterSettingsList(
-            counters = appState.counters,
+            counters = counters,
             onMoveUp = remember { { viewModel.moveCounterUp(it)} },
             onMoveDown = remember { { viewModel.moveCounterDown(it) } },
             onDialog = remember { { dialog = it } },
@@ -86,8 +98,7 @@ fun CounterSettingsScreen(
             curDialog,
             onDelete = remember { { viewModel.deleteCounter(it) } },
             onAddCounter = remember { { name, defaultVal -> viewModel.addCounter(name, defaultVal) } },
-            onSetName = remember { { id, name -> viewModel.setCounterName(id, name) } },
-            onSetDefaultValue = remember { { id, defaultVal -> viewModel.setCounterDefaultValue(id, defaultVal) } },
+            onUpdateCounter = remember { { id, name, defaultVal -> viewModel.updateCounter(id, name, defaultVal) } },
             onClearDialog = remember { { dialog = null } },
         )
     }
@@ -130,8 +141,7 @@ fun CounterSettingsDialog(
     dialog: CounterSettingsDialog,
     onDelete: (CounterId) -> Unit,
     onAddCounter: (String, Int) -> Unit,
-    onSetName: (CounterId, String) -> Unit,
-    onSetDefaultValue: (CounterId, Int) -> Unit,
+    onUpdateCounter: (CounterId, String, Int) -> Unit,
     onClearDialog: () -> Unit,
 ) {
     when (dialog) {
@@ -152,8 +162,7 @@ fun CounterSettingsDialog(
             onDismissRequest = onClearDialog,
             onCounterAdded = remember { { name, defaultValue ->
                 val counterId = dialog.counter.id
-                onSetName(counterId, name)
-                onSetDefaultValue(counterId, defaultValue)
+                onUpdateCounter(counterId, name, defaultValue)
                 onClearDialog()
             } }
         )
