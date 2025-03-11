@@ -9,6 +9,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.flow.map
 import net.multun.gamecounter.DEFAULT_PALETTE
+import net.multun.gamecounter.allocate
 import net.multun.gamecounter.proto.ProtoGame
 import net.multun.gamecounter.proto.copy
 import net.multun.gamecounter.proto.counter
@@ -296,11 +297,11 @@ fun Color.encode(): Long {
 fun ProtoGame.Game.Builder.addPlayers(playerCount: Int) {
     // color allocation
     val oldCounters = this.getDefaultCounters()
-    val usedColors = this.playerList.map { Color(it.color) }.toMutableSet()
+    val usedColors = this.playerList.map { Color(it.color) }.toMutableList()
     fun allocateColor(): Color {
-        val unusedColor = DEFAULT_PALETTE.find { !usedColors.contains(it) } ?: DEFAULT_PALETTE[0]
-        usedColors.add(unusedColor)
-        return unusedColor
+        val newColor = DEFAULT_PALETTE.allocate(usedColors)
+        usedColors.add(newColor)
+        return newColor
     }
 
     // id allocation
