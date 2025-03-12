@@ -1,6 +1,6 @@
 package net.multun.gamecounter.ui.main_menu
 
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,9 +17,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -40,25 +41,22 @@ fun MainMenuItem(name: String, baseColor: Color, onClick: () -> Unit) {
 }
 
 @Composable
-fun AppLogo(
-    modifier: Modifier = Modifier,
-) {
+fun AppLogo(modifier: Modifier = Modifier) {
     Surface(
-        color = Color.White,
         shape = RoundedCornerShape(16.dp),
         shadowElevation = 4.dp,
         modifier = modifier,
     ) {
-        Image(
-            painterResource(R.drawable.ic_launcher_foreground),
-            null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .graphicsLayer(
-                    scaleX = 1.5f,
-                    scaleY = 1.5f,
-                ),
-        )
+        val logo = painterResource(R.drawable.ic_launcher_foreground)
+        val bgColor = colorResource(R.color.ic_launcher_background)
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            scale(1.5f, pivot = Offset(size.width / 2, size.height / 2)) {
+                with(logo){
+                    drawRect(color = bgColor)
+                    draw(size = this@Canvas.size)
+                }
+            }
+        }
     }
 }
 
