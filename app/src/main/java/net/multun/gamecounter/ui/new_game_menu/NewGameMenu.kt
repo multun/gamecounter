@@ -102,7 +102,6 @@ fun NewGameMenu(viewModel: NewGameViewModel, navController: NavController, modif
                         Text(
                             stringResource(R.string.player_count),
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         FHorizontalWheelPicker(
