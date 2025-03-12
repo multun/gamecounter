@@ -45,7 +45,18 @@ class MainActivity : ComponentActivity() {
     private val newGameViewModel: NewGameViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        // the default splash screen does a weird flashing animation in dark mode
+        installSplashScreen().setOnExitAnimationListener { splashScreenViewProvider ->
+            val height = splashScreenViewProvider.view.width.toFloat()
+            splashScreenViewProvider.view
+                .animate()
+                .translationY(-height)
+                .alpha(0f)
+                .setDuration(400)
+                .withEndAction { splashScreenViewProvider.remove() }
+                .start()
+        }
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
