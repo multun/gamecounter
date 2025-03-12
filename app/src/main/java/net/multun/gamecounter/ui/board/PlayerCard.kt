@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -128,8 +130,11 @@ fun GameButton(
         baseColor = baseColor,
         modifier = modifier.clickable(onClick = onClick),
         content = {
-            Column(modifier = Modifier.padding(20.dp)) {
-                content()
+            val newTextStyle = LocalTextStyle.current.merge(MaterialTheme.typography.labelLarge)
+            CompositionLocalProvider(LocalTextStyle provides newTextStyle) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    content()
+                }
             }
         }
     )
