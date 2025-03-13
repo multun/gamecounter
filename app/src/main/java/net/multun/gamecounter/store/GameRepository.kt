@@ -142,14 +142,6 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
         }
     }
 
-    suspend fun clearPlayers() {
-        appStateStore.updateData {
-            it.copy {
-                this.player.clear()
-            }
-        }
-    }
-
     suspend fun addPlayers(count: Int) {
         appStateStore.updateData { oldState ->
             val builder = oldState.toBuilder()

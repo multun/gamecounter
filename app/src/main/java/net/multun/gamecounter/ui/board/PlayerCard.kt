@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.multun.gamecounter.PaletteColor
 import net.multun.gamecounter.R
@@ -124,6 +125,7 @@ fun GameButton(
     baseColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    padding: Dp = 20.dp,
     content: @Composable () -> Unit,
 ) {
     GameCard(
@@ -132,12 +134,24 @@ fun GameButton(
         content = {
             val newTextStyle = LocalTextStyle.current.merge(MaterialTheme.typography.labelLarge)
             CompositionLocalProvider(LocalTextStyle provides newTextStyle) {
-                Column(modifier = Modifier.padding(20.dp)) {
+                Column(modifier = Modifier.padding(padding)) {
                     content()
                 }
             }
         }
     )
+}
+
+
+
+@Composable
+fun GameIconButton(
+    baseColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    GameButton(baseColor, onClick, modifier, 15.dp, content)
 }
 
 

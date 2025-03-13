@@ -42,9 +42,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import kotlinx.collections.immutable.ImmutableList
+import net.multun.gamecounter.PaletteColor
 import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
 import net.multun.gamecounter.ui.GameCounterTopBar
+import net.multun.gamecounter.ui.board.GameButton
+import net.multun.gamecounter.ui.board.GameIconButton
 import net.multun.gamecounter.ui.theme.Typography
 
 data class CounterSettingsUIState(
@@ -78,7 +81,10 @@ fun CounterSettingsScreen(
             GameCounterTopBar(stringResource(R.string.counter_settings), navController)
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = remember { { dialog = AddDialog } }) {
+            GameIconButton(
+                PaletteColor.Indigo.color,
+                onClick = remember { { dialog = AddDialog } }
+            ) {
                 Icon(Icons.Filled.Add, stringResource(R.string.new_counter))
             }
         }
