@@ -1,104 +1,139 @@
 package net.multun.gamecounter
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.graphics.colorspace.connect
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import kotlin.enums.enumEntries
 import kotlin.math.sqrt
 
-// 2014 Material Design color palettes
+// tweaked from 2014 Material Design color palettes
 // https://m2.material.io/design/color/the-color-system.html#tools-for-picking-colors
-val DEFAULT_PALETTE = listOf(
-    Color(0xFFFFCDD2), // red 100
-    Color(0xFFF8BBD0), // pink 100
-    Color(0xFFE1BEE7), // purple 100
-    Color(0xFFD1C4E9), // deep purple 100
+enum class PaletteColor(val color: Color) {
+    Red(Color(0xFFFFCDD2)), // red 100
+    Blue(Color(0xFFBBDEFB)), // blue 100
+    Purple(Color(0xFFD1C4E9)), // deep purple 100
+    Green(Color(0xFFC8E6C9)), // green 100
+    Indigo(Color(0xFFC5CAE9)), // indigo 100
+    Gold(Color(0xFFF1E4AB)),
+    Teal(Color(0xFFB2DFDB)), // teal 100
+    Pink(Color(0xFFF8BBD0)), // pink 100
+    Cyan(Color(0xFFB2EBF2)), // cyan 100
+    Orange(Color(0xFFF1CCB4)), // custom orange
+    Gray(Color(0xFFE0E0E0)), // custom gray
+    ;
 
-    Color(0xFFC5CAE9), // indigo 100
-    Color(0xFFBBDEFB), // blue 100
-    Color(0xFFB2EBF2), // cyan 100
-    Color(0xFFB2DFDB), // teal 100
+    companion object {
+        @JvmStatic
+        fun allocate(usedColors: List<Color>): PaletteColor {
+            val paletteColors = enumEntries<PaletteColor>()
+            if (usedColors.isEmpty())
+                return paletteColors[0]
 
-    Color(0xFFC8E6C9), // green 100
-    Color(0xFFFFF9C4), // yellow 100
-    Color(0xFFFFE0B2), // orange 100
-    Color(0xFFF5F5F5), // gray 100
-)
+            // compute how often palette colors are currently used
+            val colorUsage = mutableMapOf<Color, Int>()
+            for (paletteColor in paletteColors)
+                colorUsage[paletteColor.color] = 0
 
-fun List<Color>.allocate(usedColors: List<Color>): Color {
-    if (usedColors.isEmpty())
-        return DEFAULT_PALETTE[0]
+            // only count palette colors
+            for (usedColor in usedColors) {
+                colorUsage.compute(usedColor) {
+                        _, oldCount ->
+                    if (oldCount == null)
+                        return@compute null
+                    oldCount + 1
+                }
+            }
 
-    // find which palette colors are left unused
-    val unusedPaletteColors = toMutableSet()
-    for (usedColor in usedColors) {
-        unusedPaletteColors.remove(usedColor)
+            // the number of time the least used color occurred
+            val leastUsedCount = colorUsage.values.minOrNull() ?: 0
+
+            // iterate over the palette, pick the first color that hasn't been used too many times
+            val availableColors = enumEntries<PaletteColor>().filter { (colorUsage[it.color] ?: 0) <= leastUsedCount }
+            return availableColors[0]
+        }
     }
-
-    // if all colors from the palette were used, pick from the whole palette
-    val availableColors = if (unusedPaletteColors.isEmpty()) {
-        DEFAULT_PALETTE
-    } else {
-        unusedPaletteColors.toList()
-    }
-
-    // pick the available color which has the most distance to the last used color
-    val neighbor = usedColors.last()
-    var bestIndex = -1
-    var bestDistance = Float.NEGATIVE_INFINITY
-    for (i in availableColors.indices) {
-        val candidate = availableColors[i]
-        val dist = distance(neighbor, candidate)
-        if (dist <= bestDistance)
-            continue
-
-        bestIndex = i
-        bestDistance = dist
-    }
-
-    assert(bestIndex != -1)
-    return availableColors[bestIndex]
 }
 
-private val srgbToLab = ColorSpaces.Srgb.connect(ColorSpaces.CieLab)
-private val labToSrgb = ColorSpaces.CieLab.connect(ColorSpaces.Srgb)
+val PALETTE = enumEntries<PaletteColor>().map { it.color }
 
-const val DARK_LUMA = 0.55f
-const val DARK_CHROMA = 1.25f
 
-const val LIGHT_LUMA = 0.95f
-const val LIGHT_CHROMA = 1f
+private val transformSpace = ColorSpaces.Oklab
+private val srgbToLab = ColorSpaces.Srgb.connect(transformSpace)
+private val labToSrgb = transformSpace.connect(ColorSpaces.Srgb)
 
-private fun Color.toLab(): FloatArray {
+const val DARK_LUMA = 0.65f
+const val DARK_CHROMA = 1.45f
+
+private fun Color.toOklab(): FloatArray {
     return srgbToLab.transform(this.red, this.green, this.blue)
 }
 
 @Composable
-fun Color.toDisplayColor(): Color {
-    val labColor = this.toLab()
+fun Color.toDisplayColor(isDark: Boolean = isSystemInDarkTheme()): Color {
+    val labColor = this.toOklab()
 
-    if (isSystemInDarkTheme()) {
+    if (isDark) {
         labColor[0] *= DARK_LUMA
         labColor[1] *= DARK_CHROMA
         labColor[2] *= DARK_CHROMA
-    } else {
-        labColor[0] *= LIGHT_LUMA
-        labColor[1] *= LIGHT_CHROMA
-        labColor[2] *= LIGHT_CHROMA
     }
-
 
     val res = labToSrgb.transform(labColor)
     return Color(res[0], res[1], res[2])
 }
 
+@ExperimentalLayoutApi
+@Preview(widthDp = 600)
+@Composable
+fun PalettePreview() {
+    val lightColors = PALETTE.map { it.toDisplayColor(false) }
+    val darkColors = PALETTE.map { it.toDisplayColor(true) }
 
-fun distance(a: Color, b: Color): Float {
-    val aLab = a.toLab()
-    val bLab = b.toLab()
-    val ld = aLab[0] - bLab[0]
-    val ad = aLab[1] - bLab[1]
-    val bd = aLab[2] - bLab[2]
-    return sqrt(ld * ld + ad * ad + bd * bd)
+    Column {
+        Colors(darkColors, modifier = Modifier.background(darkColorScheme().background))
+        Colors(lightColors, modifier = Modifier.background(lightColorScheme().background))
+    }
+}
+
+@ExperimentalLayoutApi
+@Composable
+fun Colors(colors: List<Color>, modifier: Modifier = Modifier) {
+    FlowRow(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(20.dp),
+        horizontalArrangement = Arrangement.spacedBy(
+            space = 16.dp,
+            alignment = Alignment.CenterHorizontally
+        ),
+        verticalArrangement = Arrangement.spacedBy(
+            space = 16.dp,
+            alignment = Alignment.CenterVertically
+        ),
+    ) {
+        for (color in colors) {
+            Spacer(
+                modifier = Modifier
+                    .size(100.dp)
+                    .background(color)
+            )
+        }
+    }
 }

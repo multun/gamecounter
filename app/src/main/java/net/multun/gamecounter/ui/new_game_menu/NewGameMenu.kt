@@ -28,7 +28,7 @@ import androidx.navigation.NavController
 import com.sd.lib.compose.wheel_picker.FHorizontalWheelPicker
 import com.sd.lib.compose.wheel_picker.rememberFWheelPickerState
 import kotlinx.coroutines.launch
-import net.multun.gamecounter.DEFAULT_PALETTE
+import net.multun.gamecounter.PaletteColor
 import net.multun.gamecounter.R
 import net.multun.gamecounter.Screens
 import net.multun.gamecounter.ui.GameCounterTopBar
@@ -67,7 +67,7 @@ fun NewGameMenu(viewModel: NewGameViewModel, navController: NavController, modif
         },
         floatingActionButton = {
             val context = LocalContext.current
-            GameButton(baseColor = DEFAULT_PALETTE[6], onClick = {
+            GameButton(baseColor = PaletteColor.Indigo.color, onClick = {
                 if (currentState.needsCounters) {
                     scope.launch {
                         val result = snackbarHostState
@@ -96,7 +96,7 @@ fun NewGameMenu(viewModel: NewGameViewModel, navController: NavController, modif
             .padding(innerPadding)
             .fillMaxSize()) {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                GameCard(baseColor = DEFAULT_PALETTE[4]) {
+                GameCard(baseColor = PaletteColor.Green.color) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
 
                         Text(
@@ -115,7 +115,7 @@ fun NewGameMenu(viewModel: NewGameViewModel, navController: NavController, modif
                 }
 
                 GameButton(
-                    baseColor = DEFAULT_PALETTE[7],
+                    baseColor = PaletteColor.Red.color,
                     onClick = {
                         navController.navigate(Screens.NewGameCounterSettings.route)
                     }

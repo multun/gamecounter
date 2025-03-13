@@ -27,7 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import net.multun.gamecounter.DEFAULT_PALETTE
+import net.multun.gamecounter.PaletteColor
 import net.multun.gamecounter.R
 import net.multun.gamecounter.Screens
 import net.multun.gamecounter.ui.board.GameButton
@@ -79,12 +79,12 @@ fun MainMenu(viewModel: MainMenuViewModel, navController: NavController, modifie
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     if (currentState.canContinue) {
-                        MainMenuItem(stringResource(R.string.continue_), DEFAULT_PALETTE[0]) {
+                        MainMenuItem(stringResource(R.string.continue_), PaletteColor.Red.color) {
                             navController.navigate(Screens.Board.route)
                         }
                     }
 
-                    MainMenuItem(stringResource(R.string.new_game), DEFAULT_PALETTE[2]) {
+                    MainMenuItem(stringResource(R.string.new_game), PaletteColor.Purple.color) {
                         navController.navigate(Screens.NewGameMenu.route)
                     }
                 }

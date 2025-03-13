@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.multun.gamecounter.DEFAULT_PALETTE
+import net.multun.gamecounter.PaletteColor
 import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
 import net.multun.gamecounter.store.PlayerId
@@ -147,7 +147,7 @@ fun PlayerCardPreview() {
     Player(
         player = CounterCardUIState(
             id = PlayerId(0),
-            color = DEFAULT_PALETTE[0],
+            color = PaletteColor.Blue.color,
             counter = PlayerCounterUIState(
                 id = CounterId(0),
                 combo = 1,

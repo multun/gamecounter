@@ -8,8 +8,7 @@ import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.flow.map
-import net.multun.gamecounter.DEFAULT_PALETTE
-import net.multun.gamecounter.allocate
+import net.multun.gamecounter.PaletteColor
 import net.multun.gamecounter.proto.ProtoGame
 import net.multun.gamecounter.proto.copy
 import net.multun.gamecounter.proto.counter
@@ -299,7 +298,7 @@ fun ProtoGame.Game.Builder.addPlayers(playerCount: Int) {
     val oldCounters = this.getDefaultCounters()
     val usedColors = this.playerList.map { Color(it.color) }.toMutableList()
     fun allocateColor(): Color {
-        val newColor = DEFAULT_PALETTE.allocate(usedColors)
+        val newColor = PaletteColor.allocate(usedColors).color
         usedColors.add(newColor)
         return newColor
     }
