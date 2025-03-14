@@ -73,7 +73,7 @@ fun BoardScreen(viewModel: BoardViewModel, navController: NavController, modifie
 private sealed interface ModalState
 data object ModalSettings : ModalState
 data object ModalConfirmGameReset : ModalState
-data class ModalEditPlayerName(val playerId: PlayerId, val initialName: String?) : ModalState
+data class ModalEditPlayerName(val playerId: PlayerId) : ModalState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -126,7 +126,7 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                     onUpdateCounter = remember { { counterId, delta -> viewModel.updateCounter(player.id, counterId, delta) } },
                     onNextCounter = remember { { viewModel.nextCounter(player.id) } },
                     onPreviousCounter = remember { { viewModel.previousCounter(player.id) } },
-                    onEditName = remember { { modalState = ModalEditPlayerName(player.id, player.name) } },
+                    onEditName = remember { { modalState = ModalEditPlayerName(player.id) } },
                     modifier = slotModifier.wrapContentSize(),
                 )
             }
@@ -134,14 +134,18 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
 
         when (val currentModalState = modalState) {
             null -> {}
-            is ModalEditPlayerName -> PlayerNameDialog(
-                currentModalState.initialName ?: "",
-                onDismissRequest = { modalState = null },
-                onUpdate = { newName ->
-                    modalState = null
-                    viewModel.setPlayerName(currentModalState.playerId, newName)
-                }
-            )
+            is ModalEditPlayerName -> {
+                val player = players.find { it.id == currentModalState.playerId }
+                val initialName = player?.name ?: ""
+                PlayerNameDialog(
+                    initialName,
+                    onDismissRequest = { modalState = null },
+                    onUpdate = { newName ->
+                        modalState = null
+                        viewModel.setPlayerName(currentModalState.playerId, newName)
+                    }
+                )
+            }
             ModalConfirmGameReset -> ConfirmDialog(
                 dialogText = stringResource(R.string.confirm_reset_counters),
                 onDismissRequest = { modalState = null },
