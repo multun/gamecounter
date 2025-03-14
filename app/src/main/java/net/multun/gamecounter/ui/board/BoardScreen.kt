@@ -212,10 +212,8 @@ fun PlayerNameDialog(
             ) {
                 Text(stringResource(R.string.update_player_name), style = Typography.bodyLarge)
 
-                val nameError = counterName.isBlank()
                 OutlinedTextField(
                     value = counterName,
-                    isError = nameError,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Done,
@@ -227,17 +225,10 @@ fun PlayerNameDialog(
                 )
 
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                    TextButton(
-                        onClick = { onDismissRequest() },
-                        modifier = Modifier.padding(8.dp),
-                    ) {
+                    TextButton(onClick = onDismissRequest, modifier = Modifier.padding(8.dp)) {
                         Text(stringResource(R.string.cancel))
                     }
-                    TextButton(
-                        enabled = !nameError,
-                        onClick = onConfirm,
-                        modifier = Modifier.padding(8.dp),
-                    ) {
+                    TextButton(onClick = onConfirm, modifier = Modifier.padding(8.dp)) {
                         Text(stringResource(R.string.confirm))
                     }
                 }
