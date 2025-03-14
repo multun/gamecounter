@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
@@ -146,13 +147,29 @@ fun Player(
 
 
 @Composable
+private fun gameCardColors(backgroundColor: Color): CardColors {
+    return CardDefaults
+        .cardColors()
+        .copy(containerColor = backgroundColor)
+}
+
+@Composable
 fun GameCard(baseColor: Color, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    val displayColor = baseColor.toDisplayColor()
     Card(
         modifier = modifier,
-        colors = CardDefaults
-            .cardColors()
-            .copy(containerColor = displayColor)
+        colors = gameCardColors(baseColor.toDisplayColor())
+    ) {
+        content()
+    }
+}
+
+// clickable variant
+@Composable
+fun GameCard(baseColor: Color, modifier: Modifier = Modifier, onClick: () -> Unit, content: @Composable () -> Unit) {
+    Card(
+        onClick = onClick,
+        modifier = modifier,
+        colors = gameCardColors(baseColor.toDisplayColor())
     ) {
         content()
     }
@@ -168,7 +185,8 @@ fun GameButton(
 ) {
     GameCard(
         baseColor = baseColor,
-        modifier = modifier.clickable(onClick = onClick),
+        modifier = modifier,
+        onClick = onClick,
         content = {
             val newTextStyle = LocalTextStyle.current.merge(MaterialTheme.typography.labelLarge)
             CompositionLocalProvider(LocalTextStyle provides newTextStyle) {
@@ -179,7 +197,6 @@ fun GameButton(
         }
     )
 }
-
 
 
 @Composable
