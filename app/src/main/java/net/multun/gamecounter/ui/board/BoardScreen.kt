@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
@@ -41,6 +43,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -197,6 +201,7 @@ fun PlayerNameDialog(
     onUpdate: (String) -> Unit,
 ) {
     var counterName by remember { mutableStateOf(initialName) }
+    val onConfirm = { onUpdate(counterName.trim()) }
 
     Dialog(onDismissRequest = onDismissRequest) {
         Card(shape = RoundedCornerShape(16.dp), modifier = Modifier.width(IntrinsicSize.Min)) {
@@ -211,6 +216,11 @@ fun PlayerNameDialog(
                 OutlinedTextField(
                     value = counterName,
                     isError = nameError,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done,
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { onConfirm() }),
                     onValueChange = { counterName = it },
                     label = { Text(stringResource(R.string.player_name)) },
                     singleLine = true,
@@ -225,7 +235,7 @@ fun PlayerNameDialog(
                     }
                     TextButton(
                         enabled = !nameError,
-                        onClick = { onUpdate(counterName.trim()) },
+                        onClick = onConfirm,
                         modifier = Modifier.padding(8.dp),
                     ) {
                         Text(stringResource(R.string.confirm))
