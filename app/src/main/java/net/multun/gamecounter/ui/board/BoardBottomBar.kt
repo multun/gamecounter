@@ -74,12 +74,27 @@ fun CounterBottomBar(
     }
 }
 
+
+@Composable
+fun PlayerNamesBottomBar(
+    onClear: () -> Unit,
+    windowInsets: WindowInsets = BottomBarDefaults.insets,
+) {
+    BottomBar(windowInsets = windowInsets, horizontalArrangement = Arrangement.End) {
+        IconButton(onClick = onClear) {
+            Icon(Icons.Filled.Clear, contentDescription = stringResource(R.string.clear_player_names))
+        }
+    }
+}
+
 private val DICE_OPTIONS = listOf(0, 4, 6, 8, 10, 12, 20, 30, 100)
 
 @Composable
 fun RollBottomBar(
-    viewModel: BoardViewModel,
     initialSelectedDice: Int,
+    onSelectDice: (Int) -> Unit,
+    onRoll: () -> Unit,
+    onClear: () -> Unit,
     windowInsets: WindowInsets = BottomBarDefaults.insets,
 ) {
     BottomBar(windowInsets = windowInsets) {
@@ -91,11 +106,11 @@ fun RollBottomBar(
             snapshotFlow { state.currentIndex }
                 .collect {
                     if (it != -1)
-                        viewModel.selectDice(DICE_OPTIONS[it])
+                        onSelectDice(DICE_OPTIONS[it])
                 }
         }
 
-        IconButton(onClick = { viewModel.roll() }) {
+        IconButton(onClick = onRoll) {
             Icon(Icons.Filled.Casino, contentDescription = stringResource(R.string.roll_dice))
         }
 
@@ -111,7 +126,7 @@ fun RollBottomBar(
                 Text(diceSize.toString())
         }
 
-        IconButton(onClick = { viewModel.clearRoll() }) {
+        IconButton(onClick = onClear) {
             Icon(Icons.Filled.Clear, contentDescription = stringResource(R.string.clear_dice_roll))
         }
     }

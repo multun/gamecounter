@@ -4,24 +4,32 @@ package net.multun.gamecounter.ui.board
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,12 +42,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import net.multun.gamecounter.R
 import net.multun.gamecounter.Screens
+import net.multun.gamecounter.store.PlayerId
+import net.multun.gamecounter.ui.theme.Typography
 
 
 @Composable
@@ -58,10 +70,10 @@ fun BoardScreen(viewModel: BoardViewModel, navController: NavController, modifie
 }
 
 
-enum class ModalState {
-    Settings,
-    ConfirmGameReset,
-}
+private sealed interface ModalState
+data object ModalSettings : ModalState
+data object ModalConfirmGameReset : ModalState
+data class ModalEditPlayerName(val playerId: PlayerId, val initialName: String?) : ModalState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,12 +95,17 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
         bottomBar = {
             when (boardUI) {
                 is RollUI -> RollBottomBar(
-                    viewModel = viewModel,
+                    onRoll = remember { { viewModel.roll() } },
+                    onClear = remember { { viewModel.clearRoll() } },
+                    onSelectDice = remember { { viewModel.selectDice(it) } },
                     initialSelectedDice = remember { boardUI.selectedDice },
                 )
                 is CounterBoardUI -> CounterBottomBar(
                     onRoll = { viewModel.roll() },
-                    onOpenSettings = { modalState = ModalState.Settings },
+                    onOpenSettings = { modalState = ModalSettings },
+                )
+                is PlayerNameBoardUI -> PlayerNamesBottomBar(
+                    onClear = remember { { viewModel.clearRoll() } },
                 )
             }
         },
@@ -109,13 +126,28 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                     onUpdateCounter = remember { { counterId, delta -> viewModel.updateCounter(player.id, counterId, delta) } },
                     onNextCounter = remember { { viewModel.nextCounter(player.id) } },
                     onPreviousCounter = remember { { viewModel.previousCounter(player.id) } },
+                    onEditName = remember { { modalState = ModalEditPlayerName(player.id, player.name) } },
                     modifier = slotModifier.wrapContentSize(),
                 )
             }
         }
 
-        if (modalState == ModalState.Settings) {
-            ModalBottomSheet(
+        when (val currentModalState = modalState) {
+            null -> {}
+            is ModalEditPlayerName -> PlayerNameDialog(
+                currentModalState.initialName ?: "",
+                onDismissRequest = { modalState = null },
+                onUpdate = { newName ->
+                    modalState = null
+                    viewModel.setPlayerName(currentModalState.playerId, newName)
+                }
+            )
+            ModalConfirmGameReset -> ConfirmDialog(
+                dialogText = stringResource(R.string.confirm_reset_counters),
+                onDismissRequest = { modalState = null },
+                onConfirmation = { modalState = null; viewModel.resetGame() }
+            )
+            ModalSettings -> ModalBottomSheet(
                 onDismissRequest = { modalState = null },
                 sheetState = sheetState
             ) {
@@ -127,8 +159,13 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                         viewModel.addPlayer()
                     }
 
+                    SettingsItem(Icons.Filled.Edit, stringResource(R.string.edit_player_names)) {
+                        hideBottomSheet()
+                        viewModel.editPlayerNames()
+                    }
+
                     SettingsItem(Icons.Filled.Replay, stringResource(R.string.reset_game)) {
-                        modalState = ModalState.ConfirmGameReset
+                        modalState = ModalConfirmGameReset
                     }
 
                     SettingsItem(Icons.Filled.Settings, stringResource(R.string.counter_settings)) {
@@ -148,17 +185,54 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                 }
             }
         }
-
-        if (modalState == ModalState.ConfirmGameReset) {
-            ConfirmDialog(
-                dialogText = stringResource(R.string.confirm_reset_counters),
-                onDismissRequest = { modalState = null },
-                onConfirmation = { modalState = null; viewModel.resetGame() }
-            )
-        }
     }
 }
 
+@Composable
+fun PlayerNameDialog(
+    initialName: String,
+    onDismissRequest: () -> Unit,
+    onUpdate: (String) -> Unit,
+) {
+    var counterName by remember { mutableStateOf(initialName) }
+
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(shape = RoundedCornerShape(16.dp), modifier = Modifier.width(IntrinsicSize.Min)) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalAlignment = Alignment.Start,
+            ) {
+                Text(stringResource(R.string.update_player_name), style = Typography.bodyLarge)
+
+                val nameError = counterName.isBlank()
+                OutlinedTextField(
+                    value = counterName,
+                    isError = nameError,
+                    onValueChange = { counterName = it },
+                    label = { Text(stringResource(R.string.player_name)) },
+                    singleLine = true,
+                )
+
+                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                    TextButton(
+                        onClick = { onDismissRequest() },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                    TextButton(
+                        enabled = !nameError,
+                        onClick = { onUpdate(counterName.trim()) },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text(stringResource(R.string.confirm))
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun SettingsItem(icon: ImageVector, text: String, onClick: () -> Unit) {

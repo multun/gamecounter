@@ -41,6 +41,7 @@ data class Player(
     val selectedCounter: CounterId?,
     val counters: PersistentMap<CounterId, Int>,
     val color: Color,
+    val name: String,
 )
 
 class GameRepository @Inject constructor(private val appStateStore: GameStore) {
@@ -57,6 +58,7 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
                 Player(
                     id = PlayerId(protoPlayer.id),
                     selectedCounter = selectedCounter,
+                    name = protoPlayer.name,
                     color = Color(protoPlayer.color),
                     counters = protoPlayer.countersMap.entries.associate {
                         Pair(CounterId(it.key), it.value)
@@ -196,6 +198,15 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
                 _, oldPlayer ->
             oldPlayer.copy {
                 this.color = color.encode()
+            }
+        }
+    }
+
+    suspend fun setPlayerName(playerId: PlayerId, name: String) {
+        updatePlayer(playerId) {
+                _, oldPlayer ->
+            oldPlayer.copy {
+                this.name = name
             }
         }
     }

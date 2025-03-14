@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -61,12 +62,14 @@ fun PlayerCardSettings(
     onExit: () -> Unit,
     onDelete: () -> Unit,
     onSetColor: (Color) -> Unit,
+    onEditName: () -> Unit,
 ) {
     var menu by remember { mutableStateOf(PlayerMenu.MAIN) }
     Box(modifier = Modifier.fillMaxSize()) {
         when (menu) {
             PlayerMenu.MAIN -> PlayerMenu(onBack = onExit) {
                 PlayerMenuItem(icon = Icons.Default.Palette, stringResource(R.string.color)) { menu = PlayerMenu.COLOR }
+                PlayerMenuItem(icon = Icons.Default.Edit, stringResource(R.string.name)) { onEditName() }
                 PlayerMenuItem(icon = Icons.Default.Delete, stringResource(R.string.delete)) { menu = PlayerMenu.DELETE }
             }
             PlayerMenu.COLOR -> Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
@@ -180,6 +183,7 @@ fun PreviewPlayerSettings() {
             onExit = {},
             onDelete = {},
             onSetColor = { playerColor = it },
+            onEditName = {}
         )
     }
 }

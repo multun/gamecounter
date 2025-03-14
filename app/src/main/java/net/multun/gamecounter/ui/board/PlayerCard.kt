@@ -1,13 +1,20 @@
 package net.multun.gamecounter.ui.board
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,6 +42,7 @@ val MAIN_CARD_TEXT = FontSizeClass(base = 45.dp, max = 112.5.dp)
 val ORDINAL_CARD_TEXT = FontSizeClass(base = 30.dp, max = 75.dp)
 val SUB_CARD_TEXT = FontSizeClass(base = 18.dp, max = 28.dp)
 val EXP_CARD_TEXT = FontSizeClass(base = 18.dp, max = 45.dp)
+val NAME_CARD_TEXT = FontSizeClass(base = 14.dp, max = 35.dp)
 
 
 @Composable
@@ -42,6 +50,7 @@ fun Player(
     player: CardUIState,
     onDelete: () -> Unit,
     onSetColor: (Color) -> Unit,
+    onEditName: () -> Unit,
     onUpdateCounter: (CounterId, Int) -> Unit,
     onNextCounter: () -> Unit,
     onPreviousCounter: () -> Unit,
@@ -77,6 +86,7 @@ fun Player(
                             onExit = { isEditing = false },
                             onDelete = onDelete,
                             onSetColor = onSetColor,
+                            onEditName = onEditName,
                         )
                         return@BoxWithConstraints
                     }
@@ -92,6 +102,7 @@ fun Player(
 
                     val counter = player.counter
                     PlayerCounter(
+                        name = player.name,
                         modifier = Modifier.fillMaxSize(),
                         counter = counter,
                         counterScale = counterScale,
@@ -100,6 +111,33 @@ fun Player(
                         onPreviousCounter = onPreviousCounter,
                         onEdit = { isEditing = true }
                     )
+                }
+
+                is PlayerNameUIState -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        WithScaledFontSize(counterScale, SUB_CARD_TEXT) {
+                            Row(
+                                modifier = Modifier
+                                    .clickable(onClick = onEditName)
+                                    .fillMaxSize(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                            ) {
+                                val playerName = player.name
+                                if (playerName.isEmpty()) {
+                                    Text(
+                                        text = stringResource(R.string.player_name),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                } else {
+                                    Text(
+                                        text = playerName,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -162,6 +200,7 @@ fun PlayerCardPreview() {
         player = CounterCardUIState(
             id = PlayerId(0),
             color = PaletteColor.Blue.color,
+            name = "Alice",
             counter = PlayerCounterUIState(
                 id = CounterId(0),
                 combo = 1,
@@ -175,5 +214,6 @@ fun PlayerCardPreview() {
         onPreviousCounter = {},
         onDelete = {},
         onSetColor = {},
+        onEditName = {}
     )
 }

@@ -8,7 +8,7 @@ message Player {
   uint64 color = 2;
   int32 selectedCounter = 3;
   map<int32, int32> counters = 4;
-  // TODO: string name = 5;
+  string name = 5;
 }
 
 message Counter {

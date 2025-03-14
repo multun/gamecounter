@@ -13,7 +13,7 @@
     <string name="confirm_delete_counter">Voulez-vous vraiment supprimer %1$s ?</string>
     <string name="confirm">Confirmer</string>
     <string name="cancel">Annuler</string>
-    <string name="counter_name">Nom</string>
+    <string name="name">Nom</string>
     <string name="counter_default_value">Valeur initiale</string>
     <string name="previous_screen">Page précédente</string>
     <string name="player_settings">Paramètres du joueur</string>
@@ -37,4 +37,9 @@
     <string name="move_counter_down">Bouger vers le bas</string>
     <string name="move_counter_up">Bouger vers le haut</string>
     <string name="edit_a_counter">Paramètres du compteur</string>
+    <string name="clear_player_names">Retour au jeu</string>
+    <string name="edit_player_name">Éditer le nom du joueur</string>
+    <string name="edit_player_names">Éditer les noms des joueurs</string>
+    <string name="player_name">Nom du joueur</string>
+    <string name="update_player_name">Mettre à jour le nom du joueur</string>
 </resources>

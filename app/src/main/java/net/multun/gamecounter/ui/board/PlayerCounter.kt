@@ -10,6 +10,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -20,11 +21,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -32,6 +37,7 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
+import net.multun.gamecounter.ui.theme.Typography
 
 
 @Composable
@@ -69,6 +75,7 @@ fun CounterSelector(
 
 @Composable
 fun PlayerCounter(
+    name: String?,
     counter: PlayerCounterUIState,
     onUpdateCounter: (CounterId, Int) -> Unit,
     onNextCounter: () -> Unit,
@@ -108,6 +115,15 @@ fun PlayerCounter(
             )
         }
 
+        // name
+        WithScaledFontSize(counterScale, NAME_CARD_TEXT, lineHeight = 1f) {
+            Text(
+                text = name ?: "",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.layoutId("name")
+            )
+        }
+
         // combo counter
         AnimatedContent(
             label = "combo animation",
@@ -125,7 +141,7 @@ fun PlayerCounter(
         }
 
         val settingsColor = IconButtonDefaults.iconButtonColors().copy(
-            contentColor = LocalContentColor.current.copy(alpha = 0.75f)
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
         IconButton(onClick = onEdit, colors = settingsColor, modifier = Modifier.layoutId("edit")) {
             Icon(
@@ -153,6 +169,7 @@ private fun playerCounterLayout(): ConstraintSet {
         val combo = createRefFor("combo")
         val counterSelector = createRefFor("counterSelector")
         val edit = createRefFor("edit")
+        val name = createRefFor("name")
 
         createHorizontalChain(decr, counterValue, incr, chainStyle = ChainStyle.Spread)
 
@@ -179,6 +196,11 @@ private fun playerCounterLayout(): ConstraintSet {
         constrain(edit) {
             top.linkTo(parent.top, margin = 0.dp)
             end.linkTo(parent.end, margin = 0.dp)
+        }
+
+        constrain(name) {
+            centerVerticallyTo(edit)
+            start.linkTo(parent.start, margin = 15.dp)
         }
     }
 }

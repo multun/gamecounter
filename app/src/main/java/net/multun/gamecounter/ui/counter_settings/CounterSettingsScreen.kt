@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.MoveUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -46,7 +45,6 @@ import net.multun.gamecounter.PaletteColor
 import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
 import net.multun.gamecounter.ui.GameCounterTopBar
-import net.multun.gamecounter.ui.board.GameButton
 import net.multun.gamecounter.ui.board.GameIconButton
 import net.multun.gamecounter.ui.theme.Typography
 
@@ -229,7 +227,7 @@ fun CounterChangeDialog(
                     value = counterName,
                     isError = nameError,
                     onValueChange = { counterName = it },
-                    label = { Text(stringResource(R.string.counter_name)) },
+                    label = { Text(stringResource(R.string.name)) },
                     singleLine = true,
                 )
 

@@ -12,7 +12,7 @@
     <string name="confirm_delete_counter">Do you really want to delete counter %1$s?</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
-    <string name="counter_name">Name</string>
+    <string name="name">Name</string>
     <string name="counter_default_value">Default value</string>
     <string name="previous_screen">Previous screen</string>
     <string name="player_settings">Player settings</string>
@@ -36,4 +36,9 @@
     <string name="move_counter_down">Move counter down</string>
     <string name="move_counter_up">Move counter up</string>
     <string name="edit_a_counter">Edit counter</string>
+    <string name="clear_player_names">Clear player names</string>
+    <string name="edit_player_name">Edit player name</string>
+    <string name="edit_player_names">Edit player names</string>
+    <string name="player_name">Player name</string>
+    <string name="update_player_name">Update player name</string>
 </resources>
