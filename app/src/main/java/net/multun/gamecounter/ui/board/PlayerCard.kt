@@ -54,16 +54,6 @@ fun Player(
     ) {
         BoxWithConstraints {
             val counterScale = counterScale(this.maxWidth, this.maxHeight)
-            if (isEditing) {
-                PlayerCardSettings(
-                    currentPlayerColor = player.color,
-                    onExit = { isEditing = false },
-                    onDelete = onDelete,
-                    onSetColor = onSetColor,
-                )
-                return@BoxWithConstraints
-            }
-
             when (player) {
                 is RollCardUIState -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -81,6 +71,16 @@ fun Player(
                     }
                 }
                 is CounterCardUIState -> {
+                    if (isEditing) {
+                        PlayerCardSettings(
+                            currentPlayerColor = player.color,
+                            onExit = { isEditing = false },
+                            onDelete = onDelete,
+                            onSetColor = onSetColor,
+                        )
+                        return@BoxWithConstraints
+                    }
+
                     if (player.counter == null) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             WithScaledFontSize(counterScale, SUB_CARD_TEXT) {
