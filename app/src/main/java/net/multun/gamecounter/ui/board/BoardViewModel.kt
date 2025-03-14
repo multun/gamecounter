@@ -123,7 +123,7 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
         }
     }
 
-    fun clearRoll() {
+    fun clearMode() {
         boardState.update { BoardCounters }
     }
 

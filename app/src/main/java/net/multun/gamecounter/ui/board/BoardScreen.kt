@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
@@ -42,7 +41,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -96,7 +94,7 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
             when (boardUI) {
                 is RollUI -> RollBottomBar(
                     onRoll = remember { { viewModel.roll() } },
-                    onClear = remember { { viewModel.clearRoll() } },
+                    onClear = remember { { viewModel.clearMode() } },
                     onSelectDice = remember { { viewModel.selectDice(it) } },
                     initialSelectedDice = remember { boardUI.selectedDice },
                 )
@@ -105,7 +103,7 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                     onOpenSettings = { modalState = ModalSettings },
                 )
                 is PlayerNameBoardUI -> PlayerNamesBottomBar(
-                    onClear = remember { { viewModel.clearRoll() } },
+                    onClear = remember { { viewModel.clearMode() } },
                 )
             }
         },
