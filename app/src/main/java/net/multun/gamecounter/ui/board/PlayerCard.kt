@@ -43,7 +43,7 @@ val MAIN_CARD_TEXT = FontSizeClass(base = 45.dp, max = 112.5.dp)
 val ORDINAL_CARD_TEXT = FontSizeClass(base = 30.dp, max = 75.dp)
 val SUB_CARD_TEXT = FontSizeClass(base = 18.dp, max = 28.dp)
 val EXP_CARD_TEXT = FontSizeClass(base = 18.dp, max = 45.dp)
-val NAME_CARD_TEXT = FontSizeClass(base = 14.dp, max = 35.dp)
+val NAME_CARD_TEXT = FontSizeClass(base = 14.dp, max = 20.dp)
 
 
 @Composable
