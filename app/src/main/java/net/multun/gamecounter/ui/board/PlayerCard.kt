@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -67,6 +68,10 @@ fun Player(
             when (player) {
                 is RollCardUIState -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        PlayerName(counterScale, player.name, modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .fillMaxWidth())
+
                         val baseStyle = LocalTextStyle.current
                         val digitsFontSize = counterScale.apply(MAIN_CARD_TEXT)
                         val ordFontSize = counterScale.apply(ORDINAL_CARD_TEXT)
