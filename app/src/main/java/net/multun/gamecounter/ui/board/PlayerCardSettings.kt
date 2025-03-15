@@ -167,9 +167,9 @@ fun PlayerMenuItem(icon: ImageVector, text: String, onClick: () -> Unit) {
             .padding(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon, contentDescription = text)
+        Icon(icon, contentDescription = text, modifier = Modifier.size(20.dp))
         Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-        Text(text, fontSize = 18.sp, lineHeight = 18.sp * 1.2f)
+        Text(text, fontSize = 16.sp, lineHeight = 16.sp * 1.2f)
     }
 }
 
