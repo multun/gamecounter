@@ -20,16 +20,12 @@ import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -37,7 +33,6 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
-import net.multun.gamecounter.ui.theme.Typography
 
 
 @Composable
@@ -46,28 +41,23 @@ fun CounterSelector(
     counterName: String,
     onPrev: () -> Unit,
     onNext: () -> Unit,
-    showControls: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        if (showControls) {
-            IconButton(onClick = onPrev) {
-                Icon(
-                    Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                    stringResource(R.string.previous_counter)
-                )
-            }
+        IconButton(onClick = onPrev) {
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                stringResource(R.string.previous_counter)
+            )
         }
         WithScaledFontSize(counterScale, SUB_CARD_TEXT) {
             Text(text = counterName)
         }
-        if (showControls) {
-            IconButton(onClick = onNext) {
-                Icon(
-                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    stringResource(R.string.next_counter)
-                )
-            }
+        IconButton(onClick = onNext) {
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                stringResource(R.string.next_counter)
+            )
         }
     }
 }
@@ -150,14 +140,15 @@ fun PlayerCounter(
             )
         }
 
-        CounterSelector(
-            counterScale = counterScale,
-            counterName = counter.counterName,
-            onPrev = onPreviousCounter,
-            onNext = onNextCounter,
-            showControls = counter.hasMultipleCounters,
-            modifier = Modifier.layoutId("counterSelector")
-        )
+        if (counter.hasMultipleCounters) {
+            CounterSelector(
+                counterScale = counterScale,
+                counterName = counter.counterName,
+                onPrev = onPreviousCounter,
+                onNext = onNextCounter,
+                modifier = Modifier.layoutId("counterSelector")
+            )
+        }
     }
 }
 
