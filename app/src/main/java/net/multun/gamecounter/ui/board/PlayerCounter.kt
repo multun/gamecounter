@@ -9,7 +9,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -22,10 +27,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -65,7 +72,7 @@ fun CounterSelector(
 
 @Composable
 fun PlayerCounter(
-    name: String?,
+    name: String,
     counter: PlayerCounterUIState,
     onUpdateCounter: (CounterId, Int) -> Unit,
     onNextCounter: () -> Unit,
@@ -75,6 +82,28 @@ fun PlayerCounter(
     counterScale: FontScale,
 ) {
     ConstraintLayout(playerCounterLayout(), modifier = modifier) {
+        // the top row, with the player name at the left and edit button at the right
+        Row(
+            modifier = Modifier
+                .layoutId("topRow")
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            // adding a weight causes the row item size to be measured after unweighted items,
+            // which allows the edit button to keep its size despite being after the player name
+            PlayerName(counterScale, name, modifier = Modifier.weight(1f))
+
+            val settingsColor = IconButtonDefaults.iconButtonColors().copy(
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            IconButton(onClick = onEdit, colors = settingsColor) {
+                Icon(
+                    Icons.Outlined.PersonOutline,
+                    contentDescription = stringResource(R.string.player_settings)
+                )
+            }
+        }
+
         // minus
         CounterUpdateButton(
             onUpdateCounter = { onUpdateCounter(counter.id, -it.stepSize()) },
@@ -105,15 +134,6 @@ fun PlayerCounter(
             )
         }
 
-        // name
-        WithScaledFontSize(counterScale, NAME_CARD_TEXT, lineHeight = 1f) {
-            Text(
-                text = name ?: "",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.layoutId("name")
-            )
-        }
-
         // combo counter
         AnimatedContent(
             label = "combo animation",
@@ -130,16 +150,6 @@ fun PlayerCounter(
             }
         }
 
-        val settingsColor = IconButtonDefaults.iconButtonColors().copy(
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        IconButton(onClick = onEdit, colors = settingsColor, modifier = Modifier.layoutId("edit")) {
-            Icon(
-                Icons.Outlined.PersonOutline,
-                contentDescription = stringResource(R.string.player_settings)
-            )
-        }
-
         if (counter.hasMultipleCounters) {
             CounterSelector(
                 counterScale = counterScale,
@@ -152,6 +162,24 @@ fun PlayerCounter(
     }
 }
 
+@Composable
+fun PlayerName(scale: FontScale, name: String, modifier: Modifier = Modifier) {
+    WithScaledFontSize(scale, NAME_CARD_TEXT, lineHeight = 1f) {
+        Text(
+            text = name,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis,
+            modifier = modifier
+                .padding(start = 14.dp)
+                // this is done to match the height of the edit button
+                .minimumInteractiveComponentSize()
+                .wrapContentHeight(align = Alignment.CenterVertically)
+        )
+    }
+}
+
 private fun playerCounterLayout(): ConstraintSet {
     return ConstraintSet {
         val decr = createRefFor("decr")
@@ -159,8 +187,7 @@ private fun playerCounterLayout(): ConstraintSet {
         val counterValue = createRefFor("counterValue")
         val combo = createRefFor("combo")
         val counterSelector = createRefFor("counterSelector")
-        val edit = createRefFor("edit")
-        val name = createRefFor("name")
+        val topRow = createRefFor("topRow")
 
         createHorizontalChain(decr, counterValue, incr, chainStyle = ChainStyle.Spread)
 
@@ -184,14 +211,8 @@ private fun playerCounterLayout(): ConstraintSet {
             end.linkTo(counterValue.end, margin = -(10.dp))
         }
 
-        constrain(edit) {
+        constrain(topRow) {
             top.linkTo(parent.top, margin = 0.dp)
-            end.linkTo(parent.end, margin = 0.dp)
-        }
-
-        constrain(name) {
-            centerVerticallyTo(edit)
-            start.linkTo(parent.start, margin = 15.dp)
         }
     }
 }
