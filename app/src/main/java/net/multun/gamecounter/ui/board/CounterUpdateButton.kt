@@ -24,7 +24,7 @@ data object BigCounterUpdate : CounterUpdateEvent
 
 fun CounterUpdateEvent.stepSize(): Int {
     return when (this) {
-        BigCounterUpdate -> 5
+        BigCounterUpdate -> 10
         SmallCounterUpdate -> 1
     }
 }
