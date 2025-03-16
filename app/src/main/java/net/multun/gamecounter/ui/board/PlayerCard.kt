@@ -54,8 +54,7 @@ fun Player(
     onSetColor: (Color) -> Unit,
     onEditName: () -> Unit,
     onUpdateCounter: (CounterId, Int) -> Unit,
-    onNextCounter: () -> Unit,
-    onPreviousCounter: () -> Unit,
+    onSelectCounter: (CounterId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var isEditing by rememberSaveable { mutableStateOf(false) }
@@ -97,24 +96,12 @@ fun Player(
                         return@BoxWithConstraints
                     }
 
-                    if (player.counter == null) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            WithScaledFontSize(counterScale, SUB_CARD_TEXT) {
-                                Text(text = stringResource(R.string.no_counter))
-                            }
-                        }
-                        return@BoxWithConstraints
-                    }
-
-                    val counter = player.counter
                     PlayerCounter(
-                        name = player.name,
+                        player = player,
                         modifier = Modifier.fillMaxSize(),
-                        counter = counter,
                         counterScale = counterScale,
                         onUpdateCounter = onUpdateCounter,
-                        onNextCounter = onNextCounter,
-                        onPreviousCounter = onPreviousCounter,
+                        onSelectCounter = onSelectCounter,
                         onEdit = { isEditing = true }
                     )
                 }
@@ -223,17 +210,13 @@ fun PlayerCardPreview() {
             id = PlayerId(0),
             color = PaletteColor.Blue.color,
             name = "Alice",
-            counter = PlayerCounterUIState(
-                id = CounterId(0),
-                combo = 1,
-                counterName = "test",
-                hasMultipleCounters = true,
-                counterValue = 100,
+            counters = listOf(
+                CounterUIState(CounterId(0), "test", 100, 1)
             ),
+            selectedCounter = CounterId(0),
         ),
         onUpdateCounter = { _, _ -> },
-        onNextCounter = {},
-        onPreviousCounter = {},
+        onSelectCounter = {},
         onDelete = {},
         onSetColor = {},
         onEditName = {}

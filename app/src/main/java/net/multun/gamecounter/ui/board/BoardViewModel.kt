@@ -36,14 +36,6 @@ data class CounterBoardUI(override val players: ImmutableList<CounterCardUIState
 data class PlayerNameBoardUI(override val players: ImmutableList<PlayerNameUIState>) : BoardUI
 
 
-data class PlayerCounterUIState(
-    val id: CounterId,
-    val hasMultipleCounters: Boolean,
-    val counterValue: Int,
-    val counterName: String,
-    val combo: Int?,
-)
-
 sealed interface CardUIState {
     val id: PlayerId
     val color: Color
@@ -54,8 +46,16 @@ data class CounterCardUIState(
     override val id: PlayerId,
     override val color: Color,
     override val name: String,
-    val counter: PlayerCounterUIState?,
+    val selectedCounter: CounterId,
+    val counters: List<CounterUIState>,
 ) : CardUIState
+
+data class CounterUIState(
+    val id: CounterId,
+    val name: String,
+    val value: Int,
+    val combo: Int,
+)
 
 data class PlayerNameUIState(
     override val id: PlayerId,
@@ -142,16 +142,15 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
                         id = player.id,
                         color = player.color,
                         name = player.name,
-                        counter = player.selectedCounter?.let {
-                                counterId ->
-                            PlayerCounterUIState(
-                                id = player.selectedCounter,
-                                hasMultipleCounters = appState.counters.size > 1,
-                                counterValue = player.counters[counterId]!!,
-                                counterName = appState.counters.find { it.id == counterId }!!.name,
-                                combo = combos[ComboCounterId(player.id, counterId)],
+                        counters = appState.counters.map {
+                            CounterUIState(
+                                id = it.id,
+                                name = it.name,
+                                value = player.counters[it.id]!!,
+                                combo = combos[ComboCounterId(player.id, it.id)] ?: 0
                             )
                         },
+                        selectedCounter = player.selectedCounter ?: appState.counters[0].id
                     )
                 }.toPersistentList(),
             )
@@ -217,15 +216,9 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
         }
     }
 
-    fun nextCounter(playerId: PlayerId) {
+    fun selectCounter(playerId: PlayerId, counterId: CounterId) {
         viewModelScope.launch {
-            repository.changeCounterSelection(playerId, 1)
-        }
-    }
-
-    fun previousCounter(playerId: PlayerId) {
-        viewModelScope.launch {
-            repository.changeCounterSelection(playerId, -1)
+            repository.selectCounter(playerId, counterId)
         }
     }
 

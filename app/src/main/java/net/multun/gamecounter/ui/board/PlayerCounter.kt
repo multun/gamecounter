@@ -1,5 +1,6 @@
 package net.multun.gamecounter.ui.board
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
@@ -15,10 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.outlined.PersonOutline
@@ -29,8 +27,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,6 +39,8 @@ import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
+import com.sd.lib.compose.wheel_picker.FHorizontalWheelPicker
+import com.sd.lib.compose.wheel_picker.rememberFWheelPickerState
 import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
 
@@ -45,26 +48,30 @@ import net.multun.gamecounter.store.CounterId
 @Composable
 fun CounterSelector(
     counterScale: FontScale,
-    counterName: String,
-    onPrev: () -> Unit,
-    onNext: () -> Unit,
+    selectedCounterId: CounterId,
+    counters: List<CounterUIState>,
+    onSelectCounter: (CounterId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onPrev) {
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                stringResource(R.string.previous_counter)
-            )
-        }
-        WithScaledFontSize(counterScale, SUB_CARD_TEXT) {
-            Text(text = counterName)
-        }
-        IconButton(onClick = onNext) {
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                stringResource(R.string.next_counter)
-            )
+    val state = rememberFWheelPickerState(counters.indexOfFirst { it.id == selectedCounterId })
+
+    LaunchedEffect(state, counters.map { it.id }) {
+        snapshotFlow { state.currentIndex }
+            .collect {
+                if (it != -1)
+                   onSelectCounter(counters[it].id)
+            }
+    }
+
+    val fontSize = counterScale.applyDp(SUB_CARD_TEXT)
+    val fontSizeSp = with(LocalDensity.current) { fontSize.toSp() }
+    WithFontSize(fontSizeSp) {
+        FHorizontalWheelPicker(
+            modifier = modifier.height(fontSize * 1.4f),
+            state = state,
+            count = counters.size,
+        ) { index ->
+            Text(counters[index].name)
         }
     }
 }
@@ -72,16 +79,16 @@ fun CounterSelector(
 
 @Composable
 fun PlayerCounter(
-    name: String,
-    counter: PlayerCounterUIState,
+    player: CounterCardUIState,
     onUpdateCounter: (CounterId, Int) -> Unit,
-    onNextCounter: () -> Unit,
-    onPreviousCounter: () -> Unit,
+    onSelectCounter: (CounterId) -> Unit,
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
     counterScale: FontScale,
 ) {
     ConstraintLayout(playerCounterLayout(), modifier = modifier) {
+        val counter = player.counters.find { it.id == player.selectedCounter }!!
+
         // the top row, with the player name at the left and edit button at the right
         Row(
             modifier = Modifier
@@ -91,7 +98,7 @@ fun PlayerCounter(
         ) {
             // adding a weight causes the row item size to be measured after unweighted items,
             // which allows the edit button to keep its size despite being after the player name
-            PlayerName(counterScale, name, modifier = Modifier.weight(1f))
+            PlayerName(counterScale, player.name, modifier = Modifier.weight(1f))
 
             val settingsColor = IconButtonDefaults.iconButtonColors().copy(
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -106,7 +113,7 @@ fun PlayerCounter(
 
         // minus
         CounterUpdateButton(
-            onUpdateCounter = { onUpdateCounter(counter.id, -it.stepSize()) },
+            onUpdateCounter = { onUpdateCounter(player.selectedCounter, -it.stepSize()) },
             modifier = Modifier.layoutId("decr"),
         ) {
             Icon(
@@ -117,7 +124,7 @@ fun PlayerCounter(
 
         // plus
         CounterUpdateButton(
-            onUpdateCounter = { onUpdateCounter(counter.id, it.stepSize()) },
+            onUpdateCounter = { onUpdateCounter(player.selectedCounter, it.stepSize()) },
             modifier = Modifier.layoutId("incr"),
         ) {
             Icon(
@@ -129,7 +136,7 @@ fun PlayerCounter(
         // counter
         WithScaledFontSize(counterScale, MAIN_CARD_TEXT, lineHeight = 1f) {
             Text(
-                text = formatInteger(counter.counterValue),
+                text = formatInteger(counter.value),
                 modifier = Modifier.layoutId("counterValue")
             )
         }
@@ -142,7 +149,7 @@ fun PlayerCounter(
             targetState = counter.combo,
             transitionSpec = { comboCounterAnimation() },
         ) { targetCount ->
-            if (targetCount != null) {
+            if (targetCount != 0) {
                 val comboText = formatCombo(targetCount)
                 WithScaledFontSize(counterScale, EXP_CARD_TEXT) {
                     Text(text = comboText)
@@ -150,12 +157,12 @@ fun PlayerCounter(
             }
         }
 
-        if (counter.hasMultipleCounters) {
+        if (player.counters.size > 1) {
             CounterSelector(
                 counterScale = counterScale,
-                counterName = counter.counterName,
-                onPrev = onPreviousCounter,
-                onNext = onNextCounter,
+                selectedCounterId = player.selectedCounter,
+                counters = player.counters,
+                onSelectCounter = onSelectCounter,
                 modifier = Modifier.layoutId("counterSelector")
             )
         }
@@ -217,10 +224,8 @@ private fun playerCounterLayout(): ConstraintSet {
     }
 }
 
-fun AnimatedContentTransitionScope<Int?>.comboCounterAnimation(): ContentTransform {
-    val initial = initialState
-    val target = targetState
-    return if ((initial != null && target != null && target > initial) || initial == null) {
+fun AnimatedContentTransitionScope<Int>.comboCounterAnimation(): ContentTransform {
+    return if (targetState > initialState) {
         // If the target number is larger, it slides up and fades in
         // while the initial (smaller) number slides up and fades out.
         slideInVertically { height -> height } + fadeIn() togetherWith

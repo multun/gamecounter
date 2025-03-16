@@ -126,8 +126,7 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                     onDelete = remember { { viewModel.removePlayer(player.id) } },
                     onSetColor = remember { { color -> viewModel.setPlayerColor(player.id, color) } },
                     onUpdateCounter = remember { { counterId, delta -> viewModel.updateCounter(player.id, counterId, delta) } },
-                    onNextCounter = remember { { viewModel.nextCounter(player.id) } },
-                    onPreviousCounter = remember { { viewModel.previousCounter(player.id) } },
+                    onSelectCounter = remember { { counterId -> viewModel.selectCounter(player.id, counterId) } },
                     onEditName = remember { { modalState = ModalEditPlayerName(player.id) } },
                     modifier = slotModifier.wrapContentSize(),
                 )

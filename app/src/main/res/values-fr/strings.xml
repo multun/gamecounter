@@ -19,11 +19,8 @@
     <string name="player_settings">Paramètres du joueur</string>
     <string name="increase_counter">Augmenter la valeur</string>
     <string name="decrease_counter">Diminuer la valeur</string>
-    <string name="previous_counter">Compteur précédent</string>
-    <string name="next_counter">Compteur suivant</string>
     <string name="delete">Supprimer</string>
     <string name="color">Couleur</string>
-    <string name="no_counter">Pas de compteur</string>
     <string name="add_new_player">Nouveau joueur</string>
     <string name="reset_game">Réinitialiser la partie</string>
     <string name="leave_to_main_menu">Retour au menu principal</string>

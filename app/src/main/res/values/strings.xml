@@ -18,11 +18,8 @@
     <string name="player_settings">Player settings</string>
     <string name="increase_counter">Increase counter</string>
     <string name="decrease_counter">Decrease counter</string>
-    <string name="previous_counter">Previous counter</string>
-    <string name="next_counter">Next counter</string>
     <string name="delete">Delete</string>
     <string name="color">Color</string>
-    <string name="no_counter">No counter</string>
     <string name="add_new_player">Add new player</string>
     <string name="reset_game">Reset game</string>
     <string name="leave_to_main_menu">Leave to main menu</string>

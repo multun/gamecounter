@@ -211,22 +211,11 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
         }
     }
 
-    suspend fun changeCounterSelection(playerId: PlayerId, direction: Int) {
+    suspend fun selectCounter(playerId: PlayerId, counterId: CounterId) {
         updatePlayer(playerId) {
-                oldState, oldPlayer ->
-            // find the index of the previously selected counter
-            val counterIndex = oldState.counterList.indexOfFirst { it.id == oldPlayer.selectedCounter }
-            if (counterIndex == -1)
-                return@updatePlayer oldPlayer
-
-            // compute the index of the new selected counter
-            val count = oldState.counterCount
-            val newCounterIndex = ((counterIndex + direction) + count) % count
-            val newCounterId = oldState.getCounter(newCounterIndex).id
-
-            // update the player
+                _, oldPlayer ->
             oldPlayer.copy {
-                this.selectedCounter = newCounterId
+                this.selectedCounter = counterId.value
             }
         }
     }
