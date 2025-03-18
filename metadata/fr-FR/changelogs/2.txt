@@ -1,0 +1,7 @@
+- sélection des compteurs des joueurs avec une roue plutôt que des flèches
+- support des noms de joueurs
+- incrément rapide de 10 en 10 plutôt que de 5 en 5
+- le nom du compteur est caché quand il n'y en a qu'un seul
+- meilleur écran de démarrage, pas de flash blanc en mode sombre
+- palette de couleur modifiée, meilleur contraste
+- corrections de problèmes de rendu mineur 

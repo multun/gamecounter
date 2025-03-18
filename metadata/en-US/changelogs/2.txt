@@ -1,0 +1,7 @@
+- select player counters using a wheel instead of arrows
+- support player names
+- increase large update step to 10
+- don't show the counter name when it's the only counter
+- improve the splashscreen, avoiding a white flash on dark mode
+- slightly improve the color palette for better contrast
+- fix various minor rendering bugs
