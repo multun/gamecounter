@@ -9,9 +9,11 @@ An app for counting points at board, card, or role playing games:
  - players can change card colors
  - roll dices of any size, or pick player order
 
-# Screenshots
+# Preview
 
-![](metadata/en-US/images/featureGraphic.png)
+<p align="center">
+    <img src="metadata/en-US/images/phoneScreenshots/board_dark.png" alt="board screenshot" />
+</p>
 
 # Build
 
