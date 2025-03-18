@@ -34,6 +34,10 @@ android {
             dimension = "target"
             applicationIdSuffix = ".fdroid"
         }
+        create("dev") {
+            dimension = "target"
+            applicationIdSuffix = ".dev"
+        }
     }
 
     buildTypes {

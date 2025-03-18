@@ -17,13 +17,14 @@ An app for counting points at board, card, or role playing games:
 
 ```sh
 # build a signed debug package
-./gradlew assembleDebug
+./gradlew assembleDevDebug
 
 # sign the release binary with the debug key
-./gradlew assembleRelease -PdebugSignRelease=true
+./gradlew assembleDevRelease -PdebugSignRelease=true
 ```
 
 # Install
+
 ```sh
-adb install ./app/build/outputs/apk/release/app-release.apk
+adb install ./app/build/outputs/apk/dev/release/app-dev-release.apk
 ```
