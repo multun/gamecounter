@@ -126,6 +126,37 @@ fun List<String>.selectorWidth(
     return itemWidth
 }
 
+@Composable
+fun PlayerTopRowButton(onClick: () -> Unit, muted: Boolean = true, content: @Composable () -> Unit) {
+    var colors = IconButtonDefaults.iconButtonColors()
+    if (muted) {
+        colors = colors.copy(
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+    IconButton(onClick = onClick, colors = colors, content = content)
+}
+
+@Composable
+fun PlayerTopRow(
+    playerName: String,
+    counterScale: FontScale,
+    modifier: Modifier = Modifier,
+    buttons: @Composable () -> Unit
+) {
+    // the top row, with the player name at the left and edit button at the right
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        // adding a weight causes the row item size to be measured after unweighted items,
+        // which allows the edit button to keep its size despite being after the player name
+        PlayerName(counterScale, playerName, modifier = Modifier.weight(1f))
+
+        buttons()
+    }
+}
+
 
 @Composable
 fun PlayerCounter(
@@ -140,20 +171,8 @@ fun PlayerCounter(
         val counter = player.counters.find { it.id == player.selectedCounter }!!
 
         // the top row, with the player name at the left and edit button at the right
-        Row(
-            modifier = Modifier
-                .layoutId("topRow")
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            // adding a weight causes the row item size to be measured after unweighted items,
-            // which allows the edit button to keep its size despite being after the player name
-            PlayerName(counterScale, player.name, modifier = Modifier.weight(1f))
-
-            val settingsColor = IconButtonDefaults.iconButtonColors().copy(
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            IconButton(onClick = onEdit, colors = settingsColor) {
+        PlayerTopRow(player.name, counterScale, Modifier.layoutId("topRow")) {
+            PlayerTopRowButton(onClick = onEdit) {
                 Icon(
                     Icons.Outlined.PersonOutline,
                     contentDescription = stringResource(R.string.player_settings)
