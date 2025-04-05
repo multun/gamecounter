@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -163,6 +164,7 @@ fun PlayerCounter(
     player: CounterCardUIState,
     onUpdateCounter: (CounterId, Int) -> Unit,
     onSelectCounter: (CounterId) -> Unit,
+    onEditCounter: () -> Unit,
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
     counterScale: FontScale,
@@ -206,7 +208,7 @@ fun PlayerCounter(
         WithScaledFontSize(counterScale, MAIN_CARD_TEXT, lineHeight = 1f) {
             Text(
                 text = formatInteger(counter.value),
-                modifier = Modifier.layoutId("counterValue")
+                modifier = Modifier.layoutId("counterValue").clickable(onClick = onEditCounter)
             )
         }
 
