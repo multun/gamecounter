@@ -9,6 +9,10 @@ An app for counting points at board, card, or role playing games:
  - players can change card colors
  - roll dices of any size, or pick player order
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/net.multun.gamecounter.fdroid/)
+
 # Preview
 
 <p align="center">
