@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
     alias(libs.plugins.protobuf)
+    alias(libs.plugins.aboutlibraries)
 }
 
 android {
@@ -38,6 +39,10 @@ android {
             dimension = "target"
             applicationIdSuffix = ".dev"
         }
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -97,6 +102,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material3.icons.extended)
     implementation(libs.androidx.lifecycle.runtime.compose.android)
+    implementation(libs.aboutlibraries.core)
+    implementation(libs.aboutlibraries.compose.m3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

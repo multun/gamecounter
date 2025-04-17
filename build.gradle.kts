@@ -6,4 +6,5 @@ plugins {
     alias(libs.plugins.protobuf) apply false
     alias(libs.plugins.hilt) apply false
     alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.aboutlibraries) apply false
 }

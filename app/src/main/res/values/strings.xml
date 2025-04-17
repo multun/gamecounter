@@ -38,4 +38,7 @@
     <string name="edit_player_names">Edit player names</string>
     <string name="player_name">Player name</string>
     <string name="update_player_name">Update player name</string>
+    <string name="about">About</string>
+    <string name="free_for_all_made_with_love">Free for all, made with Love</string>
+    <string name="source_code_is_available_under_the_terms_of_the_gplv3_license">Source code is available under the terms of the GPLv3 license.</string>
 </resources>

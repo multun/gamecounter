@@ -11,6 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -88,6 +92,13 @@ fun MainMenu(viewModel: MainMenuViewModel, navController: NavController, modifie
                         navController.navigate(Screens.NewGameMenu.route)
                     }
                 }
+            }
+
+            IconButton(
+                onClick = { navController.navigate(Screens.About.route) },
+                modifier = Modifier.padding(10.dp).align(Alignment.BottomEnd)
+            ) {
+                Icon(Icons.Filled.Info, stringResource(R.string.about))
             }
        }
     }

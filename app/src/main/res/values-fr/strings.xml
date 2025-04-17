@@ -39,4 +39,7 @@
     <string name="edit_player_names">Éditer les noms des joueurs</string>
     <string name="player_name">Nom du joueur</string>
     <string name="update_player_name">Mettre à jour le nom du joueur</string>
+    <string name="about">À propos</string>
+    <string name="free_for_all_made_with_love">Gratuit pour tous, fait avec amour</string>
+    <string name="source_code_is_available_under_the_terms_of_the_gplv3_license">Code source disponible sous la license GPLv3</string>
 </resources>

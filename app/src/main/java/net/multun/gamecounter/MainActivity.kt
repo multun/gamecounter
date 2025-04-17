@@ -14,7 +14,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import dagger.hilt.android.AndroidEntryPoint
+import net.multun.gamecounter.ui.AboutScreen
 import net.multun.gamecounter.ui.board.BoardScreen
 import net.multun.gamecounter.ui.board.BoardViewModel
 import net.multun.gamecounter.ui.counter_settings.CounterSettingsScreen
@@ -34,6 +36,7 @@ sealed class Screens(val route: String) {
     data object CounterSettings: Screens("counter_settings")
     // the counter settings of the not yet started game
     data object NewGameCounterSettings: Screens("new_game_counter_settings")
+    data object About: Screens("about")
 }
 
 @AndroidEntryPoint
@@ -82,6 +85,9 @@ class MainActivity : ComponentActivity() {
                         composable(route = Screens.NewGameCounterSettings.route) {
                             val counters by newGameCounterSettingsViewModel.settingsUIState.collectAsStateWithLifecycle()
                             CounterSettingsScreen(counters, newGameCounterSettingsViewModel, controller)
+                        }
+                        composable(route = Screens.About.route) {
+                            AboutScreen(controller)
                         }
                     }
                 }
