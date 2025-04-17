@@ -1,0 +1,2 @@
+- support large updates by clicking the counter value
+- add an about page

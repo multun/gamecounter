@@ -1,0 +1,2 @@
+- support de grosses mises à jour en cliquant sur la valeur du compteur
+- ajout d'une page "À propos"
