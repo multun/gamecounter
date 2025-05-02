@@ -1,5 +1,5 @@
 > [!CAUTION]
-> The "Game Counter" app on Google Play is fraudulent, obsolete, and laced with advertising.
+> The "Game Counter" app on Google Play is [fraudulent](./COPYING), obsolete, and laced with advertising.
 > Use it at your own risk. This app is NOT available on google play. [Get it on F-Droid](https://f-droid.org/packages/net.multun.gamecounter.fdroid/).
 
 <p align="center">
