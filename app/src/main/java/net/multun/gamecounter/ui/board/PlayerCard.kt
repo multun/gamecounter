@@ -9,15 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -30,7 +24,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -151,60 +144,10 @@ fun Player(
                     }
 
                     if (modal == PlayerModal.COUNTER_UPDATE) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            PlayerTopRow(player.name, counterScale, Modifier.align(Alignment.TopStart)) {
-                                PlayerTopRowButton(muted = false, onClick = { modal = null }) {
-                                    Icon(
-                                        Icons.Filled.Clear,
-                                        contentDescription = null // TODO
-                                    )
-                                }
-                            }
-
-                            val digits = (0 until 4).map { rememberFWheelPickerState(cyclicalStartingPoint(10)) }
-                            WithScaledFontSize(counterScale, UPDATE_CARD_TEXT, lineHeight = 1f) {
-                                val fontSizeDp = with(LocalDensity.current) { LocalTextStyle.current.fontSize.toDp() }
-                                val fontWidthDp = fontSizeDp * 0.66f // TODO: actually measure width ?
-
-                                Row {
-                                    FCyclicalVerticalWheelPicker(
-                                        state = sign,
-                                        itemHeight = fontSizeDp,
-                                        unfocusedCount = 1,
-                                        focus = {},
-                                        modifier = Modifier.width(fontWidthDp)
-                                    ) { index ->
-                                        Text(if (index % 2 == 0) "+" else "-")
-                                    }
-
-                                    for (i in digits.indices) {
-                                        FCyclicalVerticalWheelPicker(
-                                            state = digits[i],
-                                            itemHeight = fontSizeDp,
-                                            unfocusedCount = 1,
-                                            focus = {},
-                                            modifier = Modifier.width(fontWidthDp)
-                                        ) { index ->
-                                            Text(formatInteger(index % 10))
-                                        }
-                                    }
-                                }
-                            }
-
-                            IconButton(onClick = {
-                                var total = 0
-                                for (digit in digits) {
-                                    total = total * 10 + digit.currentIndex % 10
-                                }
-                                if ((sign.currentIndex % 2) != 0)
-                                    total = -total
-                                onUpdateCounter(player.selectedCounter, total)
-                                modal = null
-                            }, Modifier.align(Alignment.BottomEnd)) {
-                                Icon(Icons.Filled.Check, null)
-                            }
-
-                        }
+                        PlayerCounterUpdateMenu(
+                            sign, player, counterScale,
+                            onUpdateCounter, onClose = { modal = null }
+                        )
                         return@BoxWithConstraints
                     }
 
