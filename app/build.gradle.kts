@@ -36,6 +36,7 @@ android {
             applicationIdSuffix = ".fdroid"
         }
         create("dev") {
+            isDefault = true
             dimension = "target"
             applicationIdSuffix = ".dev"
         }
