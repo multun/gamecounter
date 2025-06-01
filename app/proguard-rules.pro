@@ -19,3 +19,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Skip runtime check for isOnAndroidDevice().
+# One line to make it easy to remove with sed.
+-assumevalues class com.google.protobuf.Android { static boolean ASSUME_ANDROID return true; }
+
+-keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {
+  <fields>;
+}
