@@ -23,6 +23,11 @@ An app for counting points at board, card, or role playing games:
     <img src="metadata/en-US/images/phoneScreenshots/board_dark.png" alt="board screenshot" />
 </p>
 
+# Privacy policy
+
+- No personal or device information is collected
+- No permissions are required. Most notably, the application does not require access to the internet.
+
 # Build
 
 ```sh
