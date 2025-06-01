@@ -28,7 +28,7 @@ An app for counting points at board, card, or role playing games:
 
 ```sh
 # build a signed debug package
-./gradlew assembleDevRelease // or assembleDevDebug
+./gradlew assembleDevRelease # or assembleDevDebug
 ```
 
 # Install
