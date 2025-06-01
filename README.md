@@ -20,7 +20,7 @@ An app for counting points at board, card, or role playing games:
 # Preview
 
 <p align="center">
-    <img src="metadata/en-US/images/phoneScreenshots/board_dark.png" alt="board screenshot" />
+    <img src="fastlane/metadata/en-US/images/phoneScreenshots/board_dark.png" alt="board screenshot" />
 </p>
 
 # Privacy policy
