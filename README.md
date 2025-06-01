@@ -1,7 +1,3 @@
-> [!CAUTION]
-> This app is NOT available on google play. [Get it on F-Droid](https://f-droid.org/packages/net.multun.gamecounter.fdroid/).
-> Use the google play counterfeit at your own risk: it's laced with adds, obsolete, and source is not available.
-
 <p align="center">
     <img src="./app/src/main/res/mipmap-xxhdpi/ic_launcher.webp" alt="gamecounter logo" />
 </p>
