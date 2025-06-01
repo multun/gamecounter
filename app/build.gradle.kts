@@ -1,6 +1,9 @@
 import com.google.protobuf.gradle.*
 import org.gradle.internal.extensions.stdlib.capitalized
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.util.Properties
+import java.io.FileInputStream
+
 
 plugins {
     alias(libs.plugins.ksp)
@@ -12,7 +15,27 @@ plugins {
     alias(libs.plugins.aboutlibraries)
 }
 
+
+// load the keystore if present
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val hasKeystore = keystorePropertiesFile.exists()
+if (hasKeystore) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
+    signingConfigs {
+        if (hasKeystore) {
+            create("playstore") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
+    }
+
     namespace = "net.multun.gamecounter"
     compileSdk = 35
 
@@ -35,10 +58,20 @@ android {
             dimension = "target"
             applicationIdSuffix = ".fdroid"
         }
+
+        create("playstore") {
+            dimension = "target"
+            applicationIdSuffix = ".playstore"
+            if (hasKeystore) {
+                signingConfig = signingConfigs.getByName("playstore")
+            }
+        }
+
         create("dev") {
             isDefault = true
             dimension = "target"
             applicationIdSuffix = ".dev"
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
@@ -53,10 +86,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            val debugSignRelease = providers.gradleProperty("debugSignRelease")
-            if (debugSignRelease.getOrNull() == "true") {
-                signingConfig = signingConfigs.getByName("debug")
-            }
         }
     }
 
