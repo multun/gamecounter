@@ -9,3 +9,5 @@
 .cxx
 local.properties
 /keystore.properties
+/gamecounter-fastlane.json
+report.xml
