@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -111,7 +112,7 @@ fun RollBottomBar(
         }
 
         IconButton(onClick = onRoll) {
-            Icon(Icons.Filled.Casino, contentDescription = stringResource(R.string.roll_dice))
+            Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.roll_dice))
         }
 
         FHorizontalWheelPicker(
