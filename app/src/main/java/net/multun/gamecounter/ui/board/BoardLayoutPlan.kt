@@ -133,10 +133,26 @@ fun planLayout(alwaysUprightMode: Boolean, itemCount: Int, maxWidth: Dp, maxHeig
     if (alwaysUprightMode) {
         val availableWidth = maxWidth - padding * 2
         val availableHeight = maxHeight - padding * 2
-        val itemsPerRow = fitItems(availableWidth, PLAYER_MIN_WIDTH, padding)
-        assert(itemsPerRow > 0)
+        val maxItemsPerRow = fitItems(availableWidth, PLAYER_MIN_WIDTH, padding)
+        assert(maxItemsPerRow > 0)
 
-        val rowCount = (itemCount + itemsPerRow - 1) / itemsPerRow
+        val rowCount = (itemCount + maxItemsPerRow - 1) / maxItemsPerRow
+        var itemsPerRow = maxItemsPerRow
+
+        while (true) {
+            // can we take an item off the end of each full row, and shove it into the last row
+            // without making the last row bigger than the others?
+            val fullRowsCount = itemCount / itemsPerRow
+            val lastRowSize = itemCount % itemsPerRow
+            if (lastRowSize == 0)
+                break
+
+            val newRowSize = itemsPerRow - 1
+            if (lastRowSize + fullRowsCount > newRowSize)
+                break
+            itemsPerRow = newRowSize
+        }
+
         val heightPerRow = availableHeight / rowCount
         val minimumRowHeight = PLAYER_MIN_HEIGHT + padding * 2
 
