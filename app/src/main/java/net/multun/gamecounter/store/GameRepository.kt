@@ -257,6 +257,27 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
         }
     }
 
+    suspend fun movePlayer(playerId: PlayerId, direction: Int) {
+        appStateStore.updateData { oldState ->
+            // find the current index of the counter
+            val playerIndex = oldState.playerList.indexOfFirst { it.id == playerId.value }
+            if (playerIndex == -1)
+                return@updateData oldState
+            val player = oldState.getPlayer(playerIndex)
+
+            var newPlayerIndex = playerIndex + direction
+            if (newPlayerIndex < 0)
+                newPlayerIndex = 0
+            if (newPlayerIndex > (oldState.playerCount - 1))
+                newPlayerIndex = oldState.playerCount - 1
+
+            oldState.toBuilder()
+                .removePlayer(playerIndex)
+                .addPlayer(newPlayerIndex, player)
+                .build()
+        }
+    }
+
     suspend fun selectDice(diceSize: Int) {
         appStateStore.updateData { oldState ->
             oldState.copy {

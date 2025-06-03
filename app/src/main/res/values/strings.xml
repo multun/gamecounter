@@ -2,7 +2,7 @@
     <string name="app_name">Game Counter</string>
     <string name="start_game">Start game</string>
     <string name="player_count">Player count</string>
-    <string name="counter_settings">Counter settings</string>
+    <string name="counters_settings">Counter settings</string>
     <string name="cannot_start_game_without_counter">Cannot start game without counter</string>
     <string name="new_game">New game</string>
     <string name="continue_">Continue</string>
@@ -10,6 +10,7 @@
     <string name="add">Add</string>
     <string name="save">Save</string>
     <string name="confirm_delete_counter">Do you really want to delete counter %1$s?</string>
+    <string name="confirm_delete_player">Do you really want to delete player %1$s?</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
     <string name="name">Name</string>
@@ -30,8 +31,8 @@
     <string name="roll_dice">Roll dice</string>
     <string name="settings">Settings</string>
     <string name="delete_counter">Delete counter</string>
-    <string name="move_counter_down">Move counter down</string>
-    <string name="move_counter_up">Move counter up</string>
+    <string name="move_down">Move down</string>
+    <string name="move_up">Move up</string>
     <string name="edit_a_counter">Edit counter</string>
     <string name="clear_player_names">Clear player names</string>
     <string name="edit_player_name">Edit player name</string>
@@ -41,4 +42,6 @@
     <string name="about">About</string>
     <string name="free_for_all_made_with_love">Free for all, made with Love</string>
     <string name="source_code_is_available_under_the_terms_of_the_gplv3_license">Source code is available under the terms of the GPLv3 license.</string>
+    <string name="players_settings">Player settings</string>
+    <string name="delete_player">Delete player</string>
 </resources>

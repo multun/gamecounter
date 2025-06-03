@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package net.multun.gamecounter.ui.counter_settings
+package net.multun.gamecounter.ui.player_settings
+
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -35,8 +35,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -44,54 +44,54 @@ import androidx.navigation.NavController
 import kotlinx.collections.immutable.ImmutableList
 import net.multun.gamecounter.PaletteColor
 import net.multun.gamecounter.R
-import net.multun.gamecounter.store.CounterId
+import net.multun.gamecounter.store.PlayerId
 import net.multun.gamecounter.ui.GameCounterTopBar
+import net.multun.gamecounter.ui.board.GameCard
 import net.multun.gamecounter.ui.board.GameIconButton
 import net.multun.gamecounter.ui.theme.Typography
 
-data class CounterSettingsUIState(
-    val id: CounterId,
+data class PlayerSettingsUIState(
+    val id: PlayerId,
     val name: String,
-    val defaultValue: Int,
+    val color: Color,
 )
 
-interface CounterSettingsActions {
-    fun addCounter(counterName: String, defaultValue: Int)
-    fun deleteCounter(counterId: CounterId)
-    fun moveCounterUp(counterId: CounterId)
-    fun moveCounterDown(counterId: CounterId)
-    fun updateCounter(counterId: CounterId, name: String, defaultVal: Int)
+interface PlayerSettingsActions {
+    fun addPlayer()
+    fun deletePlayer(playerId: PlayerId)
+    fun setPlayerName(playerId: PlayerId, name: String)
+    fun movePlayerUp(playerId: PlayerId)
+    fun movePlayerDown(playerId: PlayerId)
 }
 
-sealed class CounterSettingsDialog
-data object AddDialog : CounterSettingsDialog()
-data class EditDialog(val counter: CounterSettingsUIState) : CounterSettingsDialog()
-data class ConfirmDeleteDialog(val counter: CounterSettingsUIState) : CounterSettingsDialog()
+sealed class PlayerSettingsDialog
+data class EditDialog(val player: PlayerSettingsUIState) : PlayerSettingsDialog()
+data class ConfirmDeleteDialog(val player: PlayerSettingsUIState) : PlayerSettingsDialog()
 
 @Composable
-fun CounterSettingsScreen(
-    counters: ImmutableList<CounterSettingsUIState>,
-    viewModel: CounterSettingsActions,
+fun PlayerSettingsScreen(
+    players: ImmutableList<PlayerSettingsUIState>,
+    viewModel: PlayerSettingsActions,
     navController: NavController,
 ) {
-    var dialog by remember { mutableStateOf<CounterSettingsDialog?>(null) }
+    var dialog by remember { mutableStateOf<PlayerSettingsDialog?>(null) }
     Scaffold(
         topBar = {
-            GameCounterTopBar(stringResource(R.string.counters_settings), navController)
+            GameCounterTopBar(stringResource(R.string.players_settings), navController)
         },
         floatingActionButton = {
             GameIconButton(
                 PaletteColor.Indigo.color,
-                onClick = remember { { dialog = AddDialog } }
+                onClick = remember { { viewModel.addPlayer() } }
             ) {
-                Icon(Icons.Filled.Add, stringResource(R.string.new_counter))
+                Icon(Icons.Filled.Add, stringResource(R.string.add_new_player))
             }
         }
     ) { contentPadding ->
-        CounterSettingsList(
-            counters = counters,
-            onMoveUp = remember { { viewModel.moveCounterUp(it)} },
-            onMoveDown = remember { { viewModel.moveCounterDown(it) } },
+        PlayerSettingsList(
+            players = players,
+            onMoveUp = remember { { viewModel.movePlayerUp(it)} },
+            onMoveDown = remember { { viewModel.movePlayerDown(it) } },
             onDialog = remember { { dialog = it } },
             modifier = Modifier.padding(contentPadding),
         )
@@ -99,41 +99,41 @@ fun CounterSettingsScreen(
 
     val curDialog = dialog
     if (curDialog != null) {
-        CounterSettingsDialog(
+        PlayerSettingsDialog(
             curDialog,
-            onDelete = remember { { viewModel.deleteCounter(it) } },
-            onAddCounter = remember { { name, defaultVal -> viewModel.addCounter(name, defaultVal) } },
-            onUpdateCounter = remember { { id, name, defaultVal -> viewModel.updateCounter(id, name, defaultVal) } },
+            onDelete = remember { { viewModel.deletePlayer(it) } },
+            onSetName = remember { { id, name -> viewModel.setPlayerName(id, name) } },
             onClearDialog = remember { { dialog = null } },
         )
     }
 }
 
 @Composable
-fun CounterSettingsList(
-    counters: ImmutableList<CounterSettingsUIState>,
-    onMoveUp: (CounterId) -> Unit,
-    onMoveDown: (CounterId) -> Unit,
-    onDialog: (CounterSettingsDialog) -> Unit,
+fun PlayerSettingsList(
+    players: ImmutableList<PlayerSettingsUIState>,
+    onMoveUp: (PlayerId) -> Unit,
+    onMoveDown: (PlayerId) -> Unit,
+    onDialog: (PlayerSettingsDialog) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = modifier.padding(10.dp),
     ) {
-        for (counterIndex in 0 until counters.size) {
-            val counter = counters[counterIndex]
-            val isFirst = counterIndex == 0
-            val isLast = counterIndex == counters.size - 1
-            item(counter.id.value) {
-                CounterSettingsLine(
-                    counter.name,
+        for (playerIndex in 0 until players.size) {
+            val player = players[playerIndex]
+            val isFirst = playerIndex == 0
+            val isLast = playerIndex == players.size - 1
+            item(player.id.value) {
+                PlayerSettingsLine(
+                    player.name,
+                    player.color,
                     isFirst,
                     isLast,
-                    onEdit = { onDialog(EditDialog(counter)) },
-                    onMoveUp = remember { { onMoveUp(counter.id) } },
-                    onMoveDown = remember { { onMoveDown(counter.id) } },
-                    onDelete = { onDialog(ConfirmDeleteDialog(counter)) },
+                    onEdit = { onDialog(EditDialog(player)) },
+                    onMoveUp = remember { { onMoveUp(player.id) } },
+                    onMoveDown = remember { { onMoveDown(player.id) } },
+                    onDelete = { onDialog(ConfirmDeleteDialog(player)) },
                     modifier = Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
                 )
             }
@@ -142,32 +142,20 @@ fun CounterSettingsList(
 }
 
 @Composable
-fun CounterSettingsDialog(
-    dialog: CounterSettingsDialog,
-    onDelete: (CounterId) -> Unit,
-    onAddCounter: (String, Int) -> Unit,
-    onUpdateCounter: (CounterId, String, Int) -> Unit,
+fun PlayerSettingsDialog(
+    dialog: PlayerSettingsDialog,
+    onDelete: (PlayerId) -> Unit,
+    onSetName: (PlayerId, String) -> Unit,
     onClearDialog: () -> Unit,
 ) {
     when (dialog) {
-        AddDialog -> CounterChangeDialog(
-            title = stringResource(R.string.new_counter),
-            action = stringResource(R.string.add),
-            onDismissRequest = onClearDialog,
-            onCounterAdded = remember { { name, defaultValue ->
-                onAddCounter(name, defaultValue)
-                onClearDialog()
-            } }
-        )
-        is EditDialog -> CounterChangeDialog(
-            title = stringResource(R.string.edit_a_counter),
+        is EditDialog -> PlayerChangeDialog(
+            title = stringResource(R.string.player_settings),
             action = stringResource(R.string.save),
-            initialName = dialog.counter.name,
-            initialDefaultValue = dialog.counter.defaultValue,
+            initialName = dialog.player.name,
             onDismissRequest = onClearDialog,
-            onCounterAdded = remember { { name, defaultValue ->
-                val counterId = dialog.counter.id
-                onUpdateCounter(counterId, name, defaultValue)
+            onSetName = remember { { name ->
+                onSetName(dialog.player.id, name)
                 onClearDialog()
             } }
         )
@@ -176,15 +164,15 @@ fun CounterSettingsDialog(
             text = {
                 Text(
                     stringResource(
-                        R.string.confirm_delete_counter,
-                        dialog.counter.name
+                        R.string.confirm_delete_player,
+                        dialog.player.name
                     )
                 )
             },
             onDismissRequest = onClearDialog,
             confirmButton = {
                 TextButton(onClick = remember { {
-                    onDelete(dialog.counter.id)
+                    onDelete(dialog.player.id)
                     onClearDialog()
                 } }) {
                     Text(stringResource(R.string.confirm))
@@ -200,17 +188,14 @@ fun CounterSettingsDialog(
 
 
 @Composable
-fun CounterChangeDialog(
+fun PlayerChangeDialog(
     title: String,
     action: String,
     onDismissRequest: () -> Unit,
-    onCounterAdded: (String, Int) -> Unit,
+    onSetName: (String) -> Unit,
     initialName: String = "",
-    initialDefaultValue: Int? = null,
 ) {
-    var counterName by remember { mutableStateOf(initialName) }
-    var counterDefaultValue by remember { mutableStateOf(initialDefaultValue?.toString() ?: "") }
-    val parsedDefaultValue = counterDefaultValue.toIntOrNull()
+    var playerName by remember { mutableStateOf(initialName) }
 
     Dialog(onDismissRequest = onDismissRequest) {
         Card(shape = RoundedCornerShape(16.dp), modifier = Modifier.width(IntrinsicSize.Min)) {
@@ -221,23 +206,13 @@ fun CounterChangeDialog(
             ) {
                 Text(title, style = Typography.bodyLarge)
 
-                val nameError = counterName.isBlank()
-                val defaultValueError = parsedDefaultValue == null
+                val nameError = playerName.isBlank()
 
                 OutlinedTextField(
-                    value = counterName,
+                    value = playerName,
                     isError = nameError,
-                    onValueChange = { counterName = it },
+                    onValueChange = { playerName = it },
                     label = { Text(stringResource(R.string.name)) },
-                    singleLine = true,
-                )
-
-                OutlinedTextField(
-                    value = counterDefaultValue,
-                    onValueChange = { counterDefaultValue = it },
-                    label = { Text(stringResource(R.string.counter_default_value)) },
-                    isError = defaultValueError,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                 )
 
@@ -249,8 +224,8 @@ fun CounterChangeDialog(
                         Text(stringResource(R.string.cancel))
                     }
                     TextButton(
-                        enabled = !(nameError || defaultValueError),
-                        onClick = { onCounterAdded(counterName.trim(), parsedDefaultValue!!) },
+                        enabled = !nameError,
+                        onClick = { onSetName(playerName.trim()) },
                         modifier = Modifier.padding(8.dp),
                     ) {
                         Text(action)
@@ -262,8 +237,9 @@ fun CounterChangeDialog(
 }
 
 @Composable
-fun CounterSettingsLine(
+fun PlayerSettingsLine(
     name: String,
+    color: Color,
     isFirst: Boolean,
     isLast: Boolean,
     onEdit: () -> Unit,
@@ -272,7 +248,7 @@ fun CounterSettingsLine(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(modifier = modifier
+    GameCard(color, modifier = modifier
         .height(50.dp)
         .fillMaxWidth()) {
         Row(
@@ -289,7 +265,7 @@ fun CounterSettingsLine(
 
             Row(horizontalArrangement = Arrangement.End) {
                 IconButton(onClick = onEdit) {
-                    Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.edit_a_counter))
+                    Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.player_settings))
                 }
                 IconButton(enabled = !isFirst, onClick = onMoveUp) {
                     Icon(Icons.Filled.MoveUp, contentDescription = stringResource(R.string.move_up))
@@ -298,7 +274,7 @@ fun CounterSettingsLine(
                     Icon(Icons.Filled.MoveDown, contentDescription = stringResource(R.string.move_down))
                 }
                 IconButton(enabled = !(isFirst && isLast), onClick = onDelete) {
-                    Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.delete_counter))
+                    Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.delete_player))
                 }
             }
         }

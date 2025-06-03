@@ -21,6 +21,11 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Exposure
+import androidx.compose.material.icons.filled.Looks3
+import androidx.compose.material.icons.filled.LooksOne
+import androidx.compose.material.icons.filled.ManageAccounts
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
@@ -184,13 +189,18 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                         viewModel.editPlayerNames()
                     }
 
-                    SettingsItem(Icons.Filled.Replay, stringResource(R.string.reset_game)) {
-                        modalState = ModalConfirmGameReset
+                    SettingsItem(Icons.Filled.ManageAccounts, stringResource(R.string.players_settings)) {
+                        hideBottomSheet()
+                        navController.navigate(Screens.PlayerSettings.route)
                     }
 
-                    SettingsItem(Icons.Filled.Settings, stringResource(R.string.counter_settings)) {
+                    SettingsItem(Icons.Filled.Exposure, stringResource(R.string.counters_settings)) {
                         hideBottomSheet()
                         navController.navigate(Screens.CounterSettings.route)
+                    }
+
+                    SettingsItem(Icons.Filled.Replay, stringResource(R.string.reset_game)) {
+                        modalState = ModalConfirmGameReset
                     }
 
                     SettingsItem(Icons.AutoMirrored.Filled.ExitToApp,
