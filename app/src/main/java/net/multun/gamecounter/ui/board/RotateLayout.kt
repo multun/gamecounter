@@ -42,10 +42,10 @@ enum class Rotation(private val index: Int, val degrees: Float) {
  */
 fun Modifier.rotateLayout(rotation: Rotation): Modifier {
     return when (rotation) {
-        // rotate does not
-        Rotation.ROT_0, Rotation.ROT_180 -> this
-        Rotation.ROT_90, Rotation.ROT_270 -> then(HorizontalLayoutModifier)
-    }.rotate(rotation.degrees)
+        Rotation.ROT_0 -> this
+        Rotation.ROT_180 -> rotate(rotation.degrees)
+        Rotation.ROT_90, Rotation.ROT_270 -> then(HorizontalLayoutModifier).rotate(rotation.degrees)
+    }
 }
 
 /** Swap horizontal and vertical constraints */

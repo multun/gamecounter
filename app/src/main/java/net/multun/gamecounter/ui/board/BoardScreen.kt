@@ -3,14 +3,15 @@ package net.multun.gamecounter.ui.board
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,13 +23,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Exposure
-import androidx.compose.material.icons.filled.Looks3
-import androidx.compose.material.icons.filled.LooksOne
 import androidx.compose.material.icons.filled.ManageAccounts
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Replay
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
@@ -135,6 +133,7 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
         val players = boardUI.players
         BoardLayout(
             itemCount = players.size,
+            alwaysUprightMode = boardUI.alwaysUprightMode,
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
@@ -196,6 +195,17 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                     SettingsItem(Icons.Filled.Exposure, stringResource(R.string.counters_settings)) {
                         hideBottomSheet()
                         navController.navigate(Screens.CounterSettings.route)
+                    }
+
+                    SettingsItem({
+                        Checkbox(
+                            // the default size is huge due to minimumInteractiveComponentSize
+                            modifier = Modifier.size(30.dp),
+                            checked = boardUI.alwaysUprightMode,
+                            onCheckedChange = { viewModel.setUlwaysUprightMode(it) }
+                        )
+                    }, stringResource(R.string.always_up_tiles)) {
+                        viewModel.setUlwaysUprightMode(!boardUI.alwaysUprightMode)
                     }
 
                     SettingsItem(Icons.Filled.Replay, stringResource(R.string.reset_game)) {
@@ -262,15 +272,27 @@ fun PlayerNameDialog(
 
 @Composable
 fun SettingsItem(icon: ImageVector, text: String, onClick: () -> Unit) {
+    SettingsItem(
+        icon = { Icon(icon, contentDescription = null) },
+        text,
+        onClick = onClick,
+    )
+}
+
+
+@Composable
+fun SettingsItem(icon: @Composable () -> Unit, text: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(30.dp, 4.dp, 8.dp, 4.dp)
+            .padding(0.dp, 4.dp, 8.dp, 4.dp)
+            .sizeIn(minHeight = 35.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon, contentDescription = text)
-        Spacer(Modifier.size(30.dp))
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.width(60.dp)) {
+            icon()
+        }
         Text(text)
     }
 }

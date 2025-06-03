@@ -3,14 +3,19 @@
 package net.multun.gamecounter.ui.board
 
 import android.util.Log
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -44,16 +49,40 @@ fun FallbackLayout(
         for (itemIndex in 0 until itemCount)
             callback(itemIndex, Modifier.sizeIn(
                 minWidth = PLAYER_MIN_WIDTH,
-                maxWidth = PLAYER_PREFERRED_WIDTH,
+                maxWidth = PLAYER_MIN_WIDTH,
                 minHeight = PLAYER_MIN_HEIGHT,
-                maxHeight = PLAYER_PREFERRED_HEIGHT,
+                maxHeight = PLAYER_MIN_HEIGHT,
             ))
+    }
+}
+
+
+@Composable
+fun ListLayout(
+    plan: SequenceLayoutPlan,
+    callback: @Composable (Int, Modifier) -> Unit,
+    modifier: Modifier = Modifier,
+    padding: Dp = 8.dp,
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = modifier
+            .padding(padding)
+            .verticalScroll(rememberScrollState())
+        ) {
+            for (rowIndex in 0 until plan.rowCount)
+                Row(modifier = Modifier.height(plan.rowHeight)) {
+                    val rowOffset = rowIndex * plan.itemsPerRow
+                    val rowSize = (plan.itemCount - rowOffset).coerceAtMost(plan.itemsPerRow)
+                    for (itemIndex in rowOffset until rowOffset + rowSize)
+                        callback(itemIndex, Modifier.padding(padding).weight(1f))
+                }
+        }
     }
 }
 
 @Composable
 fun VerticalLayout(
-    plan: VerticalLayoutPlan,
+    plan: CircularLayoutPlan,
     modifier: Modifier = Modifier,
     padding: Dp = 8.dp,
     callback: @Composable (Int, Modifier) -> Unit,
@@ -87,21 +116,21 @@ fun VerticalLayout(
 
 @Composable
 fun HorizontalLayout(
-    plan: HorizontalLayoutPlan,
+    plan: CircularLayoutPlan,
     modifier: Modifier = Modifier,
     padding: Dp = 8.dp,
     callback: @Composable (Int, Modifier) -> Unit,
 ) {
     Row(modifier = modifier.padding(padding)) {
         var rowOffsetCursor = 0
-        for ((rowIndex, rowType) in plan.columns.withIndex()) {
+        for ((rowIndex, rowType) in plan.rows.withIndex()) {
             val rowOffset = rowOffsetCursor
             rowOffsetCursor += rowType.slotCount
 
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .weight(plan.columnWeights[rowIndex].value),
+                    .weight(plan.rowWeights[rowIndex].value),
                 verticalArrangement = Arrangement.SpaceAround,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -129,28 +158,65 @@ private const val TAG = "BoardLayout"
 fun BoardLayout(
     itemCount: Int,
     modifier: Modifier = Modifier,
+    alwaysUprightMode: Boolean = false,
     padding: Dp = 8.dp,
     callback: @Composable (Int, Modifier) -> Unit,
 ) {
     BoxWithConstraints(modifier = modifier) {
-        Log.i(TAG, "canvas dimensions: minWidth: ${this.minWidth} maxWidth: ${this.maxWidth} minHeight: ${this.minHeight} maxHeight: ${this.maxHeight}")
-        when (val layoutPlan = planLayout(itemCount, this.maxWidth, this.maxHeight, padding)) {
+        Log.d(TAG, "canvas dimensions: minWidth: ${this.minWidth} maxWidth: ${this.maxWidth} minHeight: ${this.minHeight} maxHeight: ${this.maxHeight}")
+        when (val layoutPlan = planLayout(alwaysUprightMode, itemCount, this.maxWidth, this.maxHeight, padding)) {
             FallbackPlan -> FallbackLayout(
                 itemCount = itemCount,
                 callback = callback,
                 modifier = Modifier.fillMaxSize(),
                 padding = padding
             )
-            is HorizontalLayoutPlan -> HorizontalLayout(
-                plan = layoutPlan,
-                padding = padding,
-                callback = callback,
-            )
-            is VerticalLayoutPlan -> VerticalLayout(
-                plan = layoutPlan,
-                padding = padding,
-                callback = callback,
-            )
+            is CircularLayoutPlan -> {
+                when (layoutPlan.direction) {
+                    LayoutDirection.HORIZONTAL -> {
+                        var layoutModifier: Modifier = Modifier
+                        var boxModifier: Modifier = Modifier
+                        if (layoutPlan.scrollingNeeded) {
+                            val minWidth = layoutPlan.rowWeights.reduce { acc, dp -> acc + dp }
+                            layoutModifier = Modifier.requiredWidth(minWidth)
+                            boxModifier = Modifier.horizontalScroll(rememberScrollState())
+                        }
+                        Box(modifier = boxModifier) {
+                            HorizontalLayout(
+                                plan = layoutPlan,
+                                padding = padding,
+                                callback = callback,
+                                modifier = layoutModifier,
+                            )
+                        }
+                    }
+                    LayoutDirection.VERTICAL -> {
+                        var layoutModifier: Modifier = Modifier
+                        var boxModifier: Modifier = Modifier
+                        if (layoutPlan.scrollingNeeded) {
+                            val minHeight = layoutPlan.rowWeights.reduce { acc, dp -> acc + dp }
+                            layoutModifier = Modifier.requiredHeight(minHeight)
+                            boxModifier = Modifier.verticalScroll(rememberScrollState())
+                        }
+                        Box(modifier = boxModifier) {
+                            VerticalLayout(
+                                plan = layoutPlan,
+                                padding = padding,
+                                callback = callback,
+                                modifier = layoutModifier,
+                            )
+                        }
+                    }
+                }
+            }
+            is SequenceLayoutPlan -> {
+                Log.i("ListLayout", layoutPlan.toString())
+                ListLayout(
+                    plan = layoutPlan,
+                    padding = padding,
+                    callback = callback,
+                )
+            }
         }
     }
 }

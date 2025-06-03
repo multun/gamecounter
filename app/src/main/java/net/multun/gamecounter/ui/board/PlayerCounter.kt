@@ -11,6 +11,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -229,14 +230,16 @@ fun PlayerCounter(
             }
         }
 
-        if (player.counters.size > 1) {
-            CounterSelector(
-                counterScale = counterScale,
-                selectedCounterId = player.selectedCounter,
-                counters = player.counters,
-                onSelectCounter = onSelectCounter,
-                modifier = Modifier.layoutId("counterSelector")
-            )
+        // the box is used to avoid this warning: "Nothing to measure for widget: counterSelector"
+        Box(Modifier.layoutId("counterSelector")) {
+            if (player.counters.size > 1) {
+                CounterSelector(
+                    counterScale = counterScale,
+                    selectedCounterId = player.selectedCounter,
+                    counters = player.counters,
+                    onSelectCounter = onSelectCounter,
+                )
+            }
         }
     }
 }

@@ -26,6 +26,7 @@ value class PlayerId(val value: Int)
 data class GameState(
     val isPlayable: Boolean,
     val selectedDice: Int, // either -1 for player order, or dice size
+    val alwaysUprightMode: Boolean,
     val players: ImmutableList<Player>,
     val counters: ImmutableList<Counter>,
 )
@@ -49,6 +50,7 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
         GameState(
             isPlayable = protoAppState.counterCount != 0,
             selectedDice = protoAppState.selectedDice,
+            alwaysUprightMode = protoAppState.alwaysUprightMode,
             players = protoAppState.playerList.map { protoPlayer ->
                 val selectedCounter = if (protoPlayer.selectedCounter == -1)
                     null
@@ -282,6 +284,14 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
         appStateStore.updateData { oldState ->
             oldState.copy {
                 selectedDice = diceSize
+            }
+        }
+    }
+
+    suspend fun setAlwaysUprightMode(alwaysUprightMode: Boolean) {
+        appStateStore.updateData { oldState ->
+            oldState.copy {
+                this.alwaysUprightMode = alwaysUprightMode
             }
         }
     }

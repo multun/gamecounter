@@ -44,4 +44,5 @@
     <string name="source_code_is_available_under_the_terms_of_the_gplv3_license">Source code is available under the terms of the GPLv3 license.</string>
     <string name="players_settings">Player settings</string>
     <string name="delete_player">Delete player</string>
+    <string name="always_up_tiles">Always upright tiles</string>
 </resources>

@@ -20,6 +20,6 @@ message Counter {
 message Game {
   repeated Player player = 1;
   repeated Counter counter = 2;
-  // TODO: bytes diceSizes = 3;
   int32 selectedDice = 4;
+  bool alwaysUprightMode = 5;
 }

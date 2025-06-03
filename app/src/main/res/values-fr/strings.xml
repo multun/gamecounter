@@ -45,4 +45,5 @@
     <string name="source_code_is_available_under_the_terms_of_the_gplv3_license">Code source disponible sous la license GPLv3</string>
     <string name="players_settings">Paramètres des joueurs</string>
     <string name="delete_player">Supprimer le joueur</string>
+    <string name="always_up_tiles">Tuiles toujours à l\'endroit</string>
 </resources>

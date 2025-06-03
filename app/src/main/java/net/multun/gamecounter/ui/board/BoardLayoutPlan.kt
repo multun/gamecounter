@@ -4,7 +4,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import kotlin.math.floor
+import kotlin.math.roundToInt
 
 
 val PLAYER_MIN_HEIGHT = 150.dp
@@ -46,62 +49,43 @@ enum class RowType(val orientations: ImmutableList<Rotation>) {
 }
 
 
-private val LAYOUTS = arrayOf(
-    persistentListOf(),
-    // 0
-    persistentListOf(RowType.SINGLE),
+fun makeLayoutRows(players: Int): ImmutableList<RowType> {
+    assert(players > 0)
 
-    // 0 1
-    persistentListOf(RowType.INVERTED_SINGLE, RowType.SINGLE),
+    if (players == 1)
+        return persistentListOf(RowType.SINGLE)
+    if (players == 2)
+        return persistentListOf(RowType.INVERTED_SINGLE, RowType.SINGLE)
 
-    // 0
-    // 1 2
-    persistentListOf(RowType.PAIR, RowType.SINGLE),
+    return buildList(players) {
+        for (i in 0 until players / 2)
+            add(RowType.PAIR)
+        if (players % 2 != 0)
+            add(RowType.SINGLE)
+    }.toImmutableList()
+}
 
-    // 0 2
-    // 1 3
-    persistentListOf(RowType.PAIR, RowType.PAIR),
-
-    // 0 2
-    // 1 3 4
-    persistentListOf(RowType.PAIR, RowType.PAIR, RowType.SINGLE),
-
-    // 0 2 4
-    // 1 3 5
-    persistentListOf(RowType.PAIR, RowType.PAIR, RowType.PAIR),
-
-    // 0 2 4
-    // 1 3 5 6
-    persistentListOf(RowType.PAIR, RowType.PAIR, RowType.PAIR, RowType.SINGLE),
-
-    // 0 2 4 6
-    // 1 3 5 7
-    persistentListOf(RowType.PAIR, RowType.PAIR, RowType.PAIR, RowType.PAIR),
-)
 
 // slot numbers => iterated in order during rendering
 // slot order => mapping from visual order to slot id
 // layout order => mapping from slot id to visual order
-
-fun slotToLayoutOrder(vararg slotOrder: Int): ImmutableList<Int> {
-    val layoutOrder = IntArray(slotOrder.size) { 0 }
+fun slotToLayoutOrder(slotOrder: List<Int>): ImmutableList<Int> {
+    val layoutOrder = IntArray(slotOrder.size)
     for (i in slotOrder.indices)
         layoutOrder[slotOrder[i]] = i
     return layoutOrder.toList().toPersistentList()
 }
 
-// a lookup table from slot index to item index
-private val LAYOUT_ORDER = arrayOf(
-    slotToLayoutOrder(),
-    slotToLayoutOrder(0),
-    slotToLayoutOrder(0, 1),
-    slotToLayoutOrder(0, 2, 1),
-    slotToLayoutOrder(0, 2, 3, 1),
-    slotToLayoutOrder(0, 2, 4, 3, 1),
-    slotToLayoutOrder(0, 2, 4, 5, 3, 1),
-    slotToLayoutOrder(0, 2, 4, 6, 5, 3, 1),
-    slotToLayoutOrder(0, 2, 4, 6, 7, 5, 3, 1),
-)
+
+fun makeLayoutOrder(players: Int): ImmutableList<Int> {
+    val slotOrder = buildList(players) {
+        for (even in 0 until players step 2)
+            add(even)
+        for (odd in (1 until players step 2).reversed())
+            add(odd)
+    }
+    return slotToLayoutOrder(slotOrder)
+}
 
 
 fun ImmutableList<RowType>.minWidth(padding: Dp): Dp {
@@ -118,63 +102,105 @@ fun ImmutableList<RowType>.minWidth(padding: Dp): Dp {
 
 sealed interface LayoutPlan
 
-data class VerticalLayoutPlan(
+data class SequenceLayoutPlan(
+    val itemCount: Int,
+    val itemsPerRow: Int,
+    val rowCount: Int,
+    val rowHeight: Dp,
+    // if no scrolling is needed, screen height is divided equally amongst rows
+    // otherwise, the row height is set and scrolling is enabled
+    val scrollingNeeded: Boolean,
+) : LayoutPlan
+
+
+enum class LayoutDirection {
+    HORIZONTAL,
+    VERTICAL,
+}
+
+data class CircularLayoutPlan(
+    val direction: LayoutDirection,
     val layoutOrder: ImmutableList<Int>,
     val rows: ImmutableList<RowType>,
     val rowWeights: List<Dp>,
-) : LayoutPlan
-
-data class HorizontalLayoutPlan(
-    val layoutOrder: ImmutableList<Int>,
-    val columns: ImmutableList<RowType>,
-    val columnWeights: List<Dp>,
+    val scrollingNeeded: Boolean,
 ) : LayoutPlan
 
 data object FallbackPlan : LayoutPlan
 
-fun planLayout(itemCount: Int, maxWidth: Dp, maxHeight: Dp, padding: Dp): LayoutPlan {
-    if (itemCount <= 0 || itemCount >= LAYOUTS.size)
-        return FallbackPlan
+fun planLayout(alwaysUprightMode: Boolean, itemCount: Int, maxWidth: Dp, maxHeight: Dp, padding: Dp): LayoutPlan {
+    // if the users want all tiles to point down, lay things out as a list instead of as a circle
+    if (alwaysUprightMode) {
+        val availableWidth = maxWidth - padding * 2
+        val availableHeight = maxHeight - padding * 2
+        val itemsPerRow = fitItems(availableWidth, PLAYER_MIN_WIDTH, padding)
+        assert(itemsPerRow > 0)
 
-    val layout = LAYOUTS[itemCount]
-    val layoutOrder = LAYOUT_ORDER[itemCount]
-    val layoutMinWidth = layout.minWidth(padding)
+        val rowCount = (itemCount + itemsPerRow - 1) / itemsPerRow
+        val heightPerRow = availableHeight / rowCount
+        val minimumRowHeight = PLAYER_MIN_HEIGHT + padding * 2
 
-    if (maxWidth <= maxHeight) {
-        // distribute handles the fallback if things don't work out on the vertical axis
-        // but not on the horizontal axis.
-        if (layoutMinWidth > maxWidth)
-            return FallbackPlan
-
-        val rowWeights = distribute(
-            layout.map { it.minHeight() },
-            layout.map { it.preferredHeight() },
-            maxHeight - padding * 2,
-            padding,
-        )
-        if (rowWeights == null)
-            return FallbackPlan
-        return VerticalLayoutPlan(layoutOrder, layout, rowWeights)
-    } else {
-        // HorizontalLayout handles the fallback if things don't work out on the horizontal axis
-        // but not on the vertical axis.
-        if (layoutMinWidth > maxHeight)
-            return FallbackPlan
-
-        val colWeights = distribute(
-            // height is used instead of width as layouts are
-            // primarily vertical
-            layout.map { it.minHeight() },
-            layout.map { it.preferredHeight() },
-            maxWidth - padding * 2,
-            padding,
-        )
-        if (colWeights == null)
-            return FallbackPlan
-        return HorizontalLayoutPlan(layoutOrder, layout, colWeights)
+        val scrollingNeeded = heightPerRow < minimumRowHeight
+        val rowHeight = if (scrollingNeeded) minimumRowHeight else heightPerRow
+        return SequenceLayoutPlan(itemCount, itemsPerRow, rowCount, rowHeight, scrollingNeeded)
     }
+
+    return planCircularLayout(itemCount, maxWidth, maxHeight, padding)
 }
 
+fun planCircularLayout(
+    itemCount: Int,
+    maxWidth: Dp,
+    maxHeight: Dp,
+    padding: Dp,
+): CircularLayoutPlan {
+    val layout = makeLayoutRows(itemCount)
+    val layoutOrder = makeLayoutOrder(itemCount)
+
+    val smallerDimension: LayoutDirection
+    val smallerDimensionSize: Dp
+    val biggerDimension: LayoutDirection
+    val biggerDimensionSize: Dp
+    if (maxWidth <= maxHeight) {
+        smallerDimension = LayoutDirection.HORIZONTAL
+        smallerDimensionSize = maxWidth
+        biggerDimension = LayoutDirection.VERTICAL
+        biggerDimensionSize = maxHeight
+    } else {
+        smallerDimension = LayoutDirection.VERTICAL
+        smallerDimensionSize = maxHeight
+        biggerDimension = LayoutDirection.HORIZONTAL
+        biggerDimensionSize = maxWidth
+    }
+
+    val layoutMinWidth = layout.minWidth(padding)
+    // if the layout width fits within the smallest dimension,
+    val mainAxis = if (layoutMinWidth <= smallerDimensionSize)
+        // align the layout with the larger dimension
+        biggerDimension
+    else
+        // otherwise, align the layout with the smaller dimension
+        smallerDimension
+
+    val distribution = distribute(
+        // height is used as layouts are assumed to be vertical
+        minimum = layout.map { it.minHeight() },
+        preferred = layout.map { it.preferredHeight() },
+        availableSpace = biggerDimensionSize - padding * 2,
+        padding = padding,
+    )
+    return CircularLayoutPlan(
+        mainAxis,
+        layoutOrder,
+        layout,
+        distribution.rowSizes,
+        distribution.overflows,
+    )
+}
+
+
+// if the distribution overflows, scrolling will be required to display all items
+data class Distribution(val overflows: Boolean, val rowSizes: List<Dp>)
 
 // given an available height, allocate room for each row. Rows can be at most as big as their
 // preferred size, and at least as big as their minimum size. When there isn't enough room for the
@@ -184,41 +210,56 @@ fun distribute(
     preferred: List<Dp>,
     availableSpace: Dp,
     padding: Dp, // padding is accounted for on each side of each item
-): List<Dp>? {
+): Distribution {
     assert(minimum.size == preferred.size)
-    val size = minimum.size
-    val itemsAvailableSpace = availableSpace - padding * (size * 2)
+    val itemCount = minimum.size
     val itemsMinimumSpace = minimum.reduce { acc, dp -> acc + dp }
+    var itemsAvailableSpace = availableSpace - (padding * 2) * itemCount
     val itemsPreferredSpace = preferred.reduce { acc, dp -> acc + dp }
 
-    if (itemsAvailableSpace < itemsMinimumSpace)
-        return null
+    // if there is not enough room, pretend there is enough
+    var overflows = false
+    if (itemsAvailableSpace < itemsMinimumSpace) {
+        itemsAvailableSpace = itemsMinimumSpace
+        overflows = true
+    }
 
     assert(itemsMinimumSpace < itemsPreferredSpace)
-    assert(itemsMinimumSpace < itemsAvailableSpace)
+    assert(itemsMinimumSpace <= itemsAvailableSpace)
 
     val spareRoom = itemsAvailableSpace - itemsPreferredSpace
     if (spareRoom >= 0.dp) {
         // distribute the extra spare room equally between all rows
-        val spareRoomPerItem = spareRoom / size
-        return preferred.map { it + spareRoomPerItem + padding * 2 }
-    } else {
-        // the available space is less than preferred but more than minimum.
-        // ---+         minimum
-        // --------+    available
-        // -----------+ preferred
-        //    +====+==+ ratio
-        // consider x, such that sum(lerp(item.min, item.preferred, x) for every item) == available
-
-        val ma = itemsAvailableSpace - itemsMinimumSpace
-        val mp = itemsPreferredSpace - itemsMinimumSpace
-        val x = ma / mp
-        val res = mutableListOf<Dp>()
-        for (rowIndex in 0 until size) {
-            val wiggleRoom = preferred[rowIndex] - minimum[rowIndex]
-            val corrected = minimum[rowIndex] + wiggleRoom * x
-            res.add(corrected + padding * 2)
-        }
-        return res
+        val spareRoomPerItem = spareRoom / itemCount
+        assert(!overflows) // we can't possibly have room to spare if we overflew
+        return Distribution(false, preferred.map { it + spareRoomPerItem + padding * 2 })
     }
+
+    // the available space is less than preferred but more than minimum.
+    // ---+         minimum
+    // --------+    available
+    // -----------+ preferred
+    //    +====+==+ ratio
+    // consider x, such that sum(lerp(item.min, item.preferred, x) for every item) == available
+
+    val ma = itemsAvailableSpace - itemsMinimumSpace
+    val mp = itemsPreferredSpace - itemsMinimumSpace
+    val x = ma / mp
+    val res = mutableListOf<Dp>()
+    for (rowIndex in 0 until itemCount) {
+        val wiggleRoom = preferred[rowIndex] - minimum[rowIndex]
+        val corrected = minimum[rowIndex] + wiggleRoom * x
+        res.add(corrected + padding * 2)
+    }
+    return Distribution(overflows, res)
+}
+
+// given the minimum space for an item, figure out how many such items fit within a row
+fun fitItems(
+    availableSpace: Dp,
+    minimumItemSize: Dp,
+    padding: Dp, // padding is accounted for on each side of each item
+): Int {
+    val itemMinPaddedSize = minimumItemSize + padding * 2
+    return floor(availableSpace / itemMinPaddedSize).roundToInt()
 }

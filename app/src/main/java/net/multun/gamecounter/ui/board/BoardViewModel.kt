@@ -28,12 +28,25 @@ sealed interface UIState
 data object StartupUI : UIState
 data object SetupRequired : UIState
 sealed interface BoardUI : UIState {
+    val alwaysUprightMode: Boolean
     val players: ImmutableList<CardUIState>
 }
-data class RollUI(val selectedDice: Int, override val players: ImmutableList<RollCardUIState>) :
-    BoardUI
-data class CounterBoardUI(override val players: ImmutableList<CounterCardUIState>) : BoardUI
-data class PlayerNameBoardUI(override val players: ImmutableList<PlayerNameUIState>) : BoardUI
+
+data class RollUI(
+    val selectedDice: Int,
+    override val alwaysUprightMode: Boolean,
+    override val players: ImmutableList<RollCardUIState>
+) : BoardUI
+
+data class CounterBoardUI(
+    override val alwaysUprightMode: Boolean,
+    override val players: ImmutableList<CounterCardUIState>
+) : BoardUI
+
+data class PlayerNameBoardUI(
+    override val alwaysUprightMode: Boolean,
+    override val players: ImmutableList<PlayerNameUIState>
+) : BoardUI
 
 
 sealed interface CardUIState {
@@ -137,6 +150,7 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
 
         when (boardState) {
             BoardCounters -> CounterBoardUI(
+                alwaysUprightMode = appState.alwaysUprightMode,
                 players = appState.players.map { player ->
                     CounterCardUIState(
                         id = player.id,
@@ -155,11 +169,13 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
                 }.toPersistentList(),
             )
             BoardPlayerNames -> PlayerNameBoardUI(
+                alwaysUprightMode = appState.alwaysUprightMode,
                 players = appState.players.map {
                     player -> PlayerNameUIState(player.id, player.color, player.name)
                 }.toImmutableList()
             )
             is BoardRoll -> RollUI(
+                alwaysUprightMode = appState.alwaysUprightMode,
                 players = boardState.result,
                 selectedDice = appState.selectedDice,
             )
@@ -184,12 +200,14 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
     }
 
     fun addPlayer() {
-        addPlayers(1)
+        viewModelScope.launch {
+            repository.addPlayers(1)
+        }
     }
 
-    fun addPlayers(count: Int) {
+    fun setUlwaysUprightMode(alwaysUprightMode: Boolean) {
         viewModelScope.launch {
-            repository.addPlayers(count)
+            repository.setAlwaysUprightMode(alwaysUprightMode)
         }
     }
 
@@ -231,12 +249,6 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
     fun setPlayerName(playerId: PlayerId, name: String) {
         viewModelScope.launch {
             repository.setPlayerName(playerId, name)
-        }
-    }
-
-    fun removePlayer(playerId: PlayerId) {
-        viewModelScope.launch {
-            repository.removePlayer(playerId)
         }
     }
 }
