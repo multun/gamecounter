@@ -44,15 +44,23 @@ class NewGameViewModel @Inject constructor(
     fun startGame() {
         viewModelScope.launch {
             val newGameSettings = newGame.appState.first()
-            currentGame.startGame(
-                playerCount = newGameSettings.playerCount,
-                counters = newGameSettings.counters.map {
+            val counters = if (newGameSettings.counters.isEmpty())
+                listOf(counter {
+                    this.id = 0
+                    this.name = "hp"
+                    this.defaultValue = 100
+                })
+            else
+                newGameSettings.counters.map {
                     counter {
                         this.id = it.id.value
                         this.name = it.name
                         this.defaultValue = it.defaultValue
                     }
-                },
+                }
+            currentGame.startGame(
+                playerCount = newGameSettings.playerCount,
+                counters = counters,
             )
         }
     }

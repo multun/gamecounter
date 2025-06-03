@@ -56,37 +56,15 @@ fun NewGameMenu(viewModel: NewGameViewModel, navController: NavController, modif
             }
     }
 
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-
     Scaffold(
         modifier = modifier,
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             GameCounterTopBar(stringResource(R.string.new_game), navController)
         },
         floatingActionButton = {
-            val context = LocalContext.current
             GameButton(baseColor = PaletteColor.Indigo.color, onClick = {
-                if (currentState.needsCounters) {
-                    scope.launch {
-                        val result = snackbarHostState
-                            .showSnackbar(
-                                message = context.getString(R.string.cannot_start_game_without_counter),
-                                actionLabel = context.getString(R.string.counter_settings),
-                                duration = SnackbarDuration.Long,
-                            )
-                        when (result) {
-                            SnackbarResult.ActionPerformed -> {
-                                navController.navigate(Screens.NewGameCounterSettings.route)
-                            }
-                            SnackbarResult.Dismissed -> {}
-                        }
-                    }
-                } else {
-                    viewModel.startGame()
-                    navController.navigate(Screens.Board.route)
-                }
+                viewModel.startGame()
+                navController.navigate(Screens.Board.route)
             }) {
                 Text(stringResource(R.string.start_game))
             }
