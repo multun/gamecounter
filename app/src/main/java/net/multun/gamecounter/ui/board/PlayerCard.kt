@@ -51,7 +51,7 @@ val NAME_CARD_TEXT = FontSizeClass(base = 14.dp, max = 20.dp)
 
 
 enum class PlayerModal {
-    SETTINGS,
+    PALETTE,
     COUNTER_UPDATE,
 }
 
@@ -95,7 +95,6 @@ fun FCyclicalVerticalWheelPicker(
 @Composable
 fun Player(
     player: CardUIState,
-    onDelete: () -> Unit,
     onSetColor: (Color) -> Unit,
     onEditName: () -> Unit,
     onUpdateCounter: (CounterId, Int) -> Unit,
@@ -132,13 +131,11 @@ fun Player(
                     }
                 }
                 is CounterCardUIState -> {
-                    if (modal == PlayerModal.SETTINGS) {
-                        PlayerCardSettings(
+                    if (modal == PlayerModal.PALETTE) {
+                        PlayerCardPalette(
                             currentPlayerColor = player.color,
                             onExit = { modal = null },
-                            onDelete = onDelete,
                             onSetColor = onSetColor,
-                            onEditName = onEditName,
                         )
                         return@BoxWithConstraints
                     }
@@ -158,7 +155,7 @@ fun Player(
                         onEditCounter = { modal = PlayerModal.COUNTER_UPDATE },
                         onUpdateCounter = onUpdateCounter,
                         onSelectCounter = onSelectCounter,
-                        onEdit = { modal = PlayerModal.SETTINGS }
+                        onEditColor = { modal = PlayerModal.PALETTE }
                     )
                 }
 
@@ -273,7 +270,6 @@ fun PlayerCardPreview() {
         ),
         onUpdateCounter = { _, _ -> },
         onSelectCounter = {},
-        onDelete = {},
         onSetColor = {},
         onEditName = {}
     )

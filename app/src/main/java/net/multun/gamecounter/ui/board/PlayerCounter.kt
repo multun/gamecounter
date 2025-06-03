@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -165,7 +166,7 @@ fun PlayerCounter(
     onUpdateCounter: (CounterId, Int) -> Unit,
     onSelectCounter: (CounterId) -> Unit,
     onEditCounter: () -> Unit,
-    onEdit: () -> Unit,
+    onEditColor: () -> Unit,
     modifier: Modifier = Modifier,
     counterScale: FontScale,
 ) {
@@ -174,9 +175,9 @@ fun PlayerCounter(
 
         // the top row, with the player name at the left and edit button at the right
         PlayerTopRow(player.name, counterScale, Modifier.layoutId("topRow")) {
-            PlayerTopRowButton(onClick = onEdit) {
+            PlayerTopRowButton(onClick = onEditColor) {
                 Icon(
-                    Icons.Outlined.PersonOutline,
+                    Icons.Outlined.Palette,
                     contentDescription = stringResource(R.string.player_settings)
                 )
             }

@@ -143,7 +143,6 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
             key(player.id.value) {
                 Player(
                     player,
-                    onDelete = remember { { viewModel.removePlayer(player.id) } },
                     onSetColor = remember { { color -> viewModel.setPlayerColor(player.id, color) } },
                     onUpdateCounter = remember { { counterId, delta -> viewModel.updateCounter(player.id, counterId, delta) } },
                     onSelectCounter = remember { { counterId -> viewModel.selectCounter(player.id, counterId) } },
