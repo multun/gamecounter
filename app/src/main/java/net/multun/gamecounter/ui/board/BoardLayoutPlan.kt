@@ -7,8 +7,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlin.math.absoluteValue
-import kotlin.math.floor
-import kotlin.math.roundToInt
 
 
 val PLAYER_MIN_HEIGHT = 150.dp
@@ -136,66 +134,67 @@ fun planLayout(alwaysUprightMode: Boolean, itemCount: Int, maxWidth: Dp, maxHeig
     return planCircularLayout(itemCount, maxWidth, maxHeight, padding)
 }
 
-fun planUprightLayout(itemCount: Int, maxWidth: Dp, maxHeight: Dp, padding: Dp): UprightLayoutPlan {
-    val availableWidth = maxWidth - padding * 2
-    val availableHeight = maxHeight - padding * 2
-    var rowCount = 1
-    var rowSize = 1
+data class GridSize(val rowCount: Int, val rowSize: Int) {
+    val capacity get() = rowCount * rowSize
 
-    while (true) {
-        val capacity = rowCount * rowSize
-        if (capacity >= itemCount)
-            break
-
-        // not enough capacity, either add a line or increase line size
-        val withMoreLines = deduceLayoutState(availableHeight, availableWidth, rowCount + 1, rowSize)
-        val withMoreCols = deduceLayoutState(availableHeight, availableWidth, rowCount, rowSize + 1)
-
-        // if we cannot add more columns while holding constraints,
-        // just add lines and stop
-        if (withMoreCols.slotWidth < PLAYER_MIN_WIDTH) {
-            val missingCapacity = itemCount - capacity
-            val requiredRows = (missingCapacity + rowSize - 1) / rowSize
-            rowCount += requiredRows
-            break
-        }
-
-        // prefer whatever option does not overflow, if it makes a difference
-        if (!withMoreCols.overflows && withMoreLines.overflows) {
-            rowSize += 1
-            continue
-        }
-        if (!withMoreLines.overflows && withMoreCols.overflows) {
-            rowCount += 1
-            continue
-        }
-
-        // otherwise, select the option with the better aspect ratio
-        val colsErr = (TARGET_ASPECT_RATIO - withMoreCols.aspectRatio(padding)).absoluteValue
-        val linesErr = (TARGET_ASPECT_RATIO - withMoreLines.aspectRatio(padding)).absoluteValue
-        if (colsErr < linesErr) {
-            rowSize += 1
-        } else {
-            rowCount += 1
-        }
+    fun addCol(): GridSize {
+        return GridSize(rowCount, rowSize + 1)
     }
 
-    val layoutState = deduceLayoutState(availableHeight, availableWidth, rowCount, rowSize)
-    return UprightLayoutPlan(
-        itemCount,
-        rowSize,
-        rowCount,
-        layoutState.lineHeight,
-        layoutState.overflows,
-    )
+    fun addRow(): GridSize {
+        return GridSize(rowCount + 1, rowSize)
+    }
+
+    fun balanceDimensions(): GridSize? {
+        if ((rowCount - rowSize).absoluteValue <= 1)
+            return null
+
+        val newGrid = if (rowCount > rowSize)
+            GridSize(rowCount - 1, rowSize + 1)
+        else
+            GridSize(rowCount + 1, rowSize - 1)
+        assert(newGrid.capacity > this.capacity)
+        return newGrid
+    }
+
+    fun layoutWithin(
+        availableHeight: Dp,
+        availableWidth: Dp,
+        padding: Dp,
+    ): LayoutResult {
+        var verticalOverflow = false
+        var lineHeight = availableHeight / rowCount
+
+        // when content overflows vertically, force the line height up
+        // the verticalOverflow flag causes scrolling to be setup
+        val playerMinHeight = PLAYER_MIN_HEIGHT + padding * 2
+        if (lineHeight < playerMinHeight) {
+            lineHeight = playerMinHeight
+            verticalOverflow = true
+        }
+
+        // horizontal overflow is a no-no
+        val slotWidth = availableWidth / rowSize
+        var horizontalOverflow = false
+        val playerMinWidth = PLAYER_MIN_WIDTH + padding * 2
+        if (slotWidth < playerMinWidth) {
+            horizontalOverflow = true
+        }
+
+        return LayoutResult(
+            lineHeight = lineHeight,
+            slotWidth = availableWidth / rowSize,
+            verticalOverflow = verticalOverflow,
+            horizontalOverflow = horizontalOverflow,
+        )
+    }
 }
 
-val TARGET_ASPECT_RATIO = PLAYER_PREFERRED_WIDTH / PLAYER_PREFERRED_HEIGHT
-
-data class LayoutState(
+data class LayoutResult(
     val lineHeight: Dp, // excluding padding
     val slotWidth: Dp, // excluding padding
-    val overflows: Boolean,
+    val verticalOverflow: Boolean,
+    val horizontalOverflow: Boolean,
 ) {
     fun aspectRatio(padding: Dp): Float {
         val height = lineHeight - padding * 2
@@ -204,25 +203,65 @@ data class LayoutState(
     }
 }
 
-fun deduceLayoutState(
-    availableHeight: Dp,
-    availableWidth: Dp,
-    rowCount: Int,
-    rowSize: Int,
-): LayoutState {
-    var overflows = false
-    var lineHeight = availableHeight / rowCount
-    if (lineHeight < PLAYER_MIN_HEIGHT) {
-        lineHeight = PLAYER_MIN_HEIGHT
-        overflows = true
+fun planUprightLayout(itemCount: Int, maxWidth: Dp, maxHeight: Dp, padding: Dp): UprightLayoutPlan {
+    val availableWidth = maxWidth - padding * 2
+    val availableHeight = maxHeight - padding * 2
+    var gridSize = GridSize(1, 1)
+
+    while (true) {
+        if (gridSize.capacity >= itemCount)
+            break
+
+        // not enough capacity, either add a line or increase line size
+        val decisions = mutableListOf(gridSize.addRow(), gridSize.addCol())
+        // sometimes, dimensions are already close enough to a square that
+        // it can't be more balanced
+        gridSize.balanceDimensions()?.let { decisions.add(it) }
+
+        data class DecisionProperties(
+            val decision: GridSize,
+            val layout: LayoutResult,
+            val aspectRatioError: Float,
+        )
+        val decisionProperties = decisions.mapNotNull {
+            // exclude the decision, as adopting it would make the last line empty
+            if (itemCount <= it.capacity - it.rowSize)
+                return@mapNotNull null
+
+            val layout = it.layoutWithin(availableHeight, availableWidth, padding)
+
+            // exclude the decision if it make slot too narrow. if the slot is too high,
+            // we can deal with it with scrolling
+            if (layout.horizontalOverflow)
+                return@mapNotNull null
+
+            val aspectRatioError = (TARGET_ASPECT_RATIO - layout.aspectRatio(padding)).absoluteValue
+            DecisionProperties(it, layout, aspectRatioError)
+        }.toMutableList()
+        assert(decisionProperties.isNotEmpty())
+
+        // prefer decisions which:
+        //  - do not trigger scrolling
+        //  - have a nice aspect ratio
+        decisionProperties.sortWith(
+            compareBy<DecisionProperties> { it.layout.verticalOverflow }
+            .thenBy { it.aspectRatioError }
+        )
+
+        gridSize = decisionProperties[0].decision
     }
 
-    return LayoutState(
-        lineHeight = lineHeight,
-        slotWidth = availableWidth / rowSize,
-        overflows = overflows,
+    val layoutState = gridSize.layoutWithin(availableHeight, availableWidth, padding)
+    return UprightLayoutPlan(
+        itemCount,
+        gridSize.rowSize,
+        gridSize.rowCount,
+        layoutState.lineHeight,
+        layoutState.verticalOverflow,
     )
 }
+
+val TARGET_ASPECT_RATIO = PLAYER_PREFERRED_WIDTH / PLAYER_PREFERRED_HEIGHT
 
 fun planCircularLayout(
     itemCount: Int,
@@ -328,14 +367,4 @@ fun distribute(
         res.add(corrected + padding * 2)
     }
     return Distribution(overflows, res)
-}
-
-// given the minimum space for an item, figure out how many such items fit within a row
-fun fitItems(
-    availableSpace: Dp,
-    minimumItemSize: Dp,
-    padding: Dp, // padding is accounted for on each side of each item
-): Int {
-    val itemMinPaddedSize = minimumItemSize + padding * 2
-    return floor(availableSpace / itemMinPaddedSize).roundToInt()
 }
