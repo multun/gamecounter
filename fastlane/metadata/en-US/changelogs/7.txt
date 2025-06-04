@@ -1,0 +1,3 @@
+- add an always upright tiles option
+- revamp the new game menu
+- consolidate most player settings in a separate mode

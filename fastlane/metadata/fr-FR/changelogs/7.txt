@@ -1,0 +1,3 @@
+- ajout d'un mode tuiles toujours à l'endroit
+- refonte du menu nouvelle partie
+- la plupart des paramètres par joueurs ont été rassemblés dans un mode séparé
