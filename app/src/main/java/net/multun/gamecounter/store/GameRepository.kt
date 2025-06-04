@@ -269,9 +269,9 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
 
             var newPlayerIndex = playerIndex + direction
             if (newPlayerIndex < 0)
-                newPlayerIndex = 0
-            if (newPlayerIndex > (oldState.playerCount - 1))
                 newPlayerIndex = oldState.playerCount - 1
+            if (newPlayerIndex > (oldState.playerCount - 1))
+                newPlayerIndex = 0
 
             oldState.toBuilder()
                 .removePlayer(playerIndex)
