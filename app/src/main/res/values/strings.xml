@@ -3,14 +3,12 @@
     <string name="start_game">Start game</string>
     <string name="player_count">Player count</string>
     <string name="counters_settings">Counter settings</string>
-    <string name="cannot_start_game_without_counter">Cannot start game without counter</string>
     <string name="new_game">New game</string>
     <string name="continue_">Continue</string>
     <string name="new_counter">New counter</string>
     <string name="add">Add</string>
     <string name="save">Save</string>
     <string name="confirm_delete_counter">Do you really want to delete counter %1$s?</string>
-    <string name="confirm_delete_player">Do you really want to delete player %1$s?</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
     <string name="name">Name</string>
@@ -35,8 +33,6 @@
     <string name="move_up">Move up</string>
     <string name="edit_a_counter">Edit counter</string>
     <string name="clear_player_names">Clear player names</string>
-    <string name="edit_player_name">Edit player name</string>
-    <string name="edit_player_names">Edit player names</string>
     <string name="player_name">Player name</string>
     <string name="update_player_name">Update player name</string>
     <string name="about">About</string>
