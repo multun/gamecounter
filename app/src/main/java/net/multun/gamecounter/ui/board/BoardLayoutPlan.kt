@@ -6,6 +6,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import kotlin.math.absoluteValue
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
@@ -102,7 +103,7 @@ fun ImmutableList<RowType>.minWidth(padding: Dp): Dp {
 
 sealed interface LayoutPlan
 
-data class SequenceLayoutPlan(
+data class UprightLayoutPlan(
     val itemCount: Int,
     val itemsPerRow: Int,
     val rowCount: Int,
@@ -130,38 +131,97 @@ data object FallbackPlan : LayoutPlan
 
 fun planLayout(alwaysUprightMode: Boolean, itemCount: Int, maxWidth: Dp, maxHeight: Dp, padding: Dp): LayoutPlan {
     // if the users want all tiles to point down, lay things out as a list instead of as a circle
-    if (alwaysUprightMode) {
-        val availableWidth = maxWidth - padding * 2
-        val availableHeight = maxHeight - padding * 2
-        val maxItemsPerRow = fitItems(availableWidth, PLAYER_MIN_WIDTH, padding)
-        assert(maxItemsPerRow > 0)
+    if (alwaysUprightMode)
+        return planUprightLayout(itemCount, maxWidth, maxHeight, padding)
+    return planCircularLayout(itemCount, maxWidth, maxHeight, padding)
+}
 
-        val rowCount = (itemCount + maxItemsPerRow - 1) / maxItemsPerRow
-        var itemsPerRow = maxItemsPerRow
+fun planUprightLayout(itemCount: Int, maxWidth: Dp, maxHeight: Dp, padding: Dp): UprightLayoutPlan {
+    val availableWidth = maxWidth - padding * 2
+    val availableHeight = maxHeight - padding * 2
+    var rowCount = 1
+    var rowSize = 1
 
-        while (true) {
-            // can we take an item off the end of each full row, and shove it into the last row
-            // without making the last row bigger than the others?
-            val fullRowsCount = itemCount / itemsPerRow
-            val lastRowSize = itemCount % itemsPerRow
-            if (lastRowSize == 0)
-                break
+    while (true) {
+        val capacity = rowCount * rowSize
+        if (capacity >= itemCount)
+            break
 
-            val newRowSize = itemsPerRow - 1
-            if (lastRowSize + fullRowsCount > newRowSize)
-                break
-            itemsPerRow = newRowSize
+        // not enough capacity, either add a line or increase line size
+        val withMoreLines = deduceLayoutState(availableHeight, availableWidth, rowCount + 1, rowSize)
+        val withMoreCols = deduceLayoutState(availableHeight, availableWidth, rowCount, rowSize + 1)
+
+        // if we cannot add more columns while holding constraints,
+        // just add lines and stop
+        if (withMoreCols.slotWidth < PLAYER_MIN_WIDTH) {
+            val missingCapacity = itemCount - capacity
+            val requiredRows = (missingCapacity + rowSize - 1) / rowSize
+            rowCount += requiredRows
+            break
         }
 
-        val heightPerRow = availableHeight / rowCount
-        val minimumRowHeight = PLAYER_MIN_HEIGHT + padding * 2
+        // prefer whatever option does not overflow, if it makes a difference
+        if (!withMoreCols.overflows && withMoreLines.overflows) {
+            rowSize += 1
+            continue
+        }
+        if (!withMoreLines.overflows && withMoreCols.overflows) {
+            rowCount += 1
+            continue
+        }
 
-        val scrollingNeeded = heightPerRow < minimumRowHeight
-        val rowHeight = if (scrollingNeeded) minimumRowHeight else heightPerRow
-        return SequenceLayoutPlan(itemCount, itemsPerRow, rowCount, rowHeight, scrollingNeeded)
+        // otherwise, select the option with the better aspect ratio
+        val colsErr = (TARGET_ASPECT_RATIO - withMoreCols.aspectRatio(padding)).absoluteValue
+        val linesErr = (TARGET_ASPECT_RATIO - withMoreLines.aspectRatio(padding)).absoluteValue
+        if (colsErr < linesErr) {
+            rowSize += 1
+        } else {
+            rowCount += 1
+        }
     }
 
-    return planCircularLayout(itemCount, maxWidth, maxHeight, padding)
+    val layoutState = deduceLayoutState(availableHeight, availableWidth, rowCount, rowSize)
+    return UprightLayoutPlan(
+        itemCount,
+        rowSize,
+        rowCount,
+        layoutState.lineHeight,
+        layoutState.overflows,
+    )
+}
+
+val TARGET_ASPECT_RATIO = PLAYER_PREFERRED_WIDTH / PLAYER_PREFERRED_HEIGHT
+
+data class LayoutState(
+    val lineHeight: Dp, // excluding padding
+    val slotWidth: Dp, // excluding padding
+    val overflows: Boolean,
+) {
+    fun aspectRatio(padding: Dp): Float {
+        val height = lineHeight - padding * 2
+        val width = slotWidth - padding * 2
+        return width / height
+    }
+}
+
+fun deduceLayoutState(
+    availableHeight: Dp,
+    availableWidth: Dp,
+    rowCount: Int,
+    rowSize: Int,
+): LayoutState {
+    var overflows = false
+    var lineHeight = availableHeight / rowCount
+    if (lineHeight < PLAYER_MIN_HEIGHT) {
+        lineHeight = PLAYER_MIN_HEIGHT
+        overflows = true
+    }
+
+    return LayoutState(
+        lineHeight = lineHeight,
+        slotWidth = availableWidth / rowSize,
+        overflows = overflows,
+    )
 }
 
 fun planCircularLayout(

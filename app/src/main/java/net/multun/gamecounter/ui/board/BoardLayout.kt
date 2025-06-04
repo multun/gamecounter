@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -59,24 +60,34 @@ fun FallbackLayout(
 
 @Composable
 fun ListLayout(
-    plan: SequenceLayoutPlan,
+    plan: UprightLayoutPlan,
     callback: @Composable (Int, Modifier) -> Unit,
     modifier: Modifier = Modifier,
     padding: Dp = 8.dp,
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = modifier
-            .padding(padding)
-            .verticalScroll(rememberScrollState())
-        ) {
-            for (rowIndex in 0 until plan.rowCount)
-                Row(modifier = Modifier.height(plan.rowHeight)) {
-                    val rowOffset = rowIndex * plan.itemsPerRow
-                    val rowSize = (plan.itemCount - rowOffset).coerceAtMost(plan.itemsPerRow)
-                    for (itemIndex in rowOffset until rowOffset + rowSize)
-                        callback(itemIndex, Modifier.padding(padding).weight(1f))
-                }
-        }
+    var colModifier = modifier.padding(padding)
+    colModifier = if (plan.scrollingNeeded) {
+        colModifier.verticalScroll(rememberScrollState())
+    } else {
+        colModifier.fillMaxSize()
+    }
+
+    Column(modifier = colModifier) {
+        val rowModifier = if (plan.scrollingNeeded)
+            Modifier.height(plan.rowHeight)
+        else
+            Modifier.weight(1f)
+
+        for (rowIndex in 0 until plan.rowCount)
+            Row(modifier = rowModifier) {
+                val rowOffset = rowIndex * plan.itemsPerRow
+                val rowSize = (plan.itemCount - rowOffset).coerceAtMost(plan.itemsPerRow)
+                for (itemIndex in rowOffset until rowOffset + rowSize)
+                    callback(itemIndex, Modifier
+                        .padding(padding)
+                        .fillMaxHeight()
+                        .weight(1f))
+            }
     }
 }
 
@@ -209,7 +220,7 @@ fun BoardLayout(
                     }
                 }
             }
-            is SequenceLayoutPlan -> {
+            is UprightLayoutPlan -> {
                 Log.i("ListLayout", layoutPlan.toString())
                 ListLayout(
                     plan = layoutPlan,
