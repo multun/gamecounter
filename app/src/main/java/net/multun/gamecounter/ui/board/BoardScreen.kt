@@ -98,7 +98,7 @@ data class ModalEditPlayerName(val playerId: PlayerId) : ModalState
 private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: NavController, modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
     var modalState by remember { mutableStateOf<ModalState?>(null) }
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     KeepScreenOn()
 
