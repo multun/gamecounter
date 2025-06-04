@@ -44,4 +44,7 @@
     <string name="move_left">Move left</string>
     <string name="move_right">Move right</string>
     <string name="confirm_remove_player">Are you sure you want to remove this player?</string>
+    <string name="players">Players</string>
+    <string name="counters">Counters</string>
+    <string name="add_counter">Add counter</string>
 </resources>

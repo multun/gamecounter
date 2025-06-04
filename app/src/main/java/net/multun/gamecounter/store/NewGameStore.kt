@@ -17,7 +17,9 @@ import kotlinx.coroutines.CoroutineScope
 import net.multun.gamecounter.di.AppDispatchers
 import net.multun.gamecounter.di.ApplicationScope
 import net.multun.gamecounter.di.Dispatcher
+import net.multun.gamecounter.proto.ProtoGame
 import net.multun.gamecounter.proto.ProtoNewGame
+import net.multun.gamecounter.proto.counter
 import java.io.InputStream
 import java.io.OutputStream
 import javax.inject.Singleton
@@ -44,8 +46,17 @@ object NewGameStoreProvider {
         }
 }
 
+fun makeDefaultCounter(): ProtoGame.Counter {
+    return counter {
+        this.id = 0
+        this.name = "hp"
+        this.defaultValue = 100
+    }
+}
+
 object NewGameSerializer : Serializer<ProtoNewGame.NewGame> {
-    override val defaultValue: ProtoNewGame.NewGame = ProtoNewGame.NewGame.newBuilder().build()
+    override val defaultValue: ProtoNewGame.NewGame = ProtoNewGame.NewGame.newBuilder()
+        .addCounter(makeDefaultCounter()).build()
 
     override suspend fun readFrom(input: InputStream): ProtoNewGame.NewGame {
         try {

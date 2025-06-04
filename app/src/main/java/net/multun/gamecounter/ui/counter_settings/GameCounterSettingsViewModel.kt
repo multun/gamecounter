@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 // the counter settings for the currently running game
 @HiltViewModel
-class GameCounterSettingsViewModel @Inject constructor(private val repository: GameRepository) : ViewModel(), CounterSettingsActions {
+class GameCounterSettingsViewModel @Inject constructor(private val repository: GameRepository) : ViewModel() {
     val settingsUIState = repository.appState.map { appState ->
         appState.counters.map {
             CounterSettingsUIState(it.id, it.name, it.defaultValue)
@@ -27,31 +27,31 @@ class GameCounterSettingsViewModel @Inject constructor(private val repository: G
         initialValue = persistentListOf(),
     )
 
-    override fun addCounter(counterName: String, defaultValue: Int) {
+    fun addCounter(counterName: String, defaultValue: Int) {
         viewModelScope.launch {
             repository.addCounter(defaultValue, counterName)
         }
     }
 
-    override fun deleteCounter(counterId: CounterId) {
+    fun deleteCounter(counterId: CounterId) {
         viewModelScope.launch {
             repository.removeCounter(counterId)
         }
     }
 
-    override fun moveCounterUp(counterId: CounterId) {
+    fun moveCounterUp(counterId: CounterId) {
         viewModelScope.launch {
             repository.moveCounter(counterId, -1)
         }
     }
 
-    override fun moveCounterDown(counterId: CounterId) {
+    fun moveCounterDown(counterId: CounterId) {
         viewModelScope.launch {
             repository.moveCounter(counterId, 1)
         }
     }
 
-    override fun updateCounter(counterId: CounterId, name: String, defaultVal: Int) {
+    fun updateCounter(counterId: CounterId, name: String, defaultVal: Int) {
         viewModelScope.launch {
             repository.updateCounter(counterId, name, defaultVal)
         }

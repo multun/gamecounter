@@ -55,14 +55,6 @@ data class CounterSettingsUIState(
     val defaultValue: Int,
 )
 
-interface CounterSettingsActions {
-    fun addCounter(counterName: String, defaultValue: Int)
-    fun deleteCounter(counterId: CounterId)
-    fun moveCounterUp(counterId: CounterId)
-    fun moveCounterDown(counterId: CounterId)
-    fun updateCounter(counterId: CounterId, name: String, defaultVal: Int)
-}
-
 sealed class CounterSettingsDialog
 data object AddDialog : CounterSettingsDialog()
 data class EditDialog(val counter: CounterSettingsUIState) : CounterSettingsDialog()
@@ -71,7 +63,7 @@ data class ConfirmDeleteDialog(val counter: CounterSettingsUIState) : CounterSet
 @Composable
 fun CounterSettingsScreen(
     counters: ImmutableList<CounterSettingsUIState>,
-    viewModel: CounterSettingsActions,
+    viewModel: GameCounterSettingsViewModel,
     navController: NavController,
 ) {
     var dialog by remember { mutableStateOf<CounterSettingsDialog?>(null) }

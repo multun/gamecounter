@@ -45,4 +45,7 @@
     <string name="move_left">Déplacer à gauche</string>
     <string name="move_right">Déplacer à droite</string>
     <string name="confirm_remove_player">Voulez-vous vraiment supprimer ce joueur?</string>
+    <string name="players">Joueurs</string>
+    <string name="counters">Compteurs</string>
+    <string name="add_counter">Ajouter un compteur</string>
 </resources>
