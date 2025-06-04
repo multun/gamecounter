@@ -9,9 +9,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -97,6 +103,8 @@ fun Player(
     player: CardUIState,
     onSetColor: (Color) -> Unit,
     onEditName: () -> Unit,
+    onDelete: () -> Unit,
+    onMove: (Int) -> Unit,
     onUpdateCounter: (CounterId, Int) -> Unit,
     onSelectCounter: (CounterId) -> Unit,
     modifier: Modifier = Modifier,
@@ -159,7 +167,7 @@ fun Player(
                     )
                 }
 
-                is PlayerNameUIState -> {
+                is PlayerSettingsUIState -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         WithScaledFontSize(counterScale, SUB_CARD_TEXT) {
                             Row(
@@ -182,6 +190,18 @@ fun Player(
                                     )
                                 }
                             }
+                        }
+
+                        IconButton(onClick = onDelete, modifier = Modifier.align(Alignment.TopEnd)) {
+                            Icon(Icons.Default.Delete, stringResource(R.string.delete_player))
+                        }
+
+                        IconButton(onClick = { onMove(-1) }, modifier = Modifier.align(Alignment.BottomStart)) {
+                            Icon(Icons.Default.ChevronLeft, stringResource(R.string.move_left))
+                        }
+
+                        IconButton(onClick = { onMove(1) }, modifier = Modifier.align(Alignment.BottomEnd)) {
+                            Icon(Icons.Default.ChevronRight, stringResource(R.string.move_right))
                         }
                     }
                 }
@@ -271,6 +291,8 @@ fun PlayerCardPreview() {
         onUpdateCounter = { _, _ -> },
         onSelectCounter = {},
         onSetColor = {},
-        onEditName = {}
+        onEditName = {},
+        onDelete = {},
+        onMove = { _ -> },
     )
 }

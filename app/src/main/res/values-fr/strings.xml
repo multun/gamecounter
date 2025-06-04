@@ -46,4 +46,7 @@
     <string name="players_settings">Paramètres des joueurs</string>
     <string name="delete_player">Supprimer le joueur</string>
     <string name="always_up_tiles">Tuiles toujours à l\'endroit</string>
+    <string name="move_left">Déplacer à gauche</string>
+    <string name="move_right">Déplacer à droite</string>
+    <string name="confirm_remove_player">Voulez-vous vraiment supprimer ce joueur?</string>
 </resources>

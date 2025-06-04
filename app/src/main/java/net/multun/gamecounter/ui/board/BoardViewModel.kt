@@ -43,11 +43,10 @@ data class CounterBoardUI(
     override val players: ImmutableList<CounterCardUIState>
 ) : BoardUI
 
-data class PlayerNameBoardUI(
+data class PlayerSettingsBoardUI(
     override val alwaysUprightMode: Boolean,
-    override val players: ImmutableList<PlayerNameUIState>
+    override val players: ImmutableList<PlayerSettingsUIState>
 ) : BoardUI
-
 
 sealed interface CardUIState {
     val id: PlayerId
@@ -70,7 +69,7 @@ data class CounterUIState(
     val combo: Int,
 )
 
-data class PlayerNameUIState(
+data class PlayerSettingsUIState(
     override val id: PlayerId,
     override val color: Color,
     override val name: String,
@@ -88,7 +87,7 @@ data class ComboCounterId(val player: PlayerId, val counter: CounterId)
 
 private sealed interface BoardState
 data object BoardCounters : BoardState
-data object BoardPlayerNames : BoardState
+data object BoardPlayerSettings : BoardState
 data class BoardRoll(val result: ImmutableList<RollCardUIState>) : BoardState
 
 @HiltViewModel
@@ -98,8 +97,8 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
     private val comboCountersTimers = UniqueJobPool<ComboCounterId>(viewModelScope)
     private val boardState = MutableStateFlow<BoardState>(BoardCounters)
 
-    fun editPlayerNames() {
-        boardState.update { BoardPlayerNames }
+    fun playerSettings() {
+        boardState.update { BoardPlayerSettings }
     }
 
     fun roll() {
@@ -136,6 +135,12 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
         }
     }
 
+    fun movePlayer(playerId: PlayerId, direction: Int) {
+        viewModelScope.launch {
+            repository.movePlayer(playerId, direction)
+        }
+    }
+
     fun clearMode() {
         boardState.update { BoardCounters }
     }
@@ -168,10 +173,10 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
                     )
                 }.toPersistentList(),
             )
-            BoardPlayerNames -> PlayerNameBoardUI(
+            BoardPlayerSettings -> PlayerSettingsBoardUI(
                 alwaysUprightMode = appState.alwaysUprightMode,
                 players = appState.players.map {
-                    player -> PlayerNameUIState(player.id, player.color, player.name)
+                    player -> PlayerSettingsUIState(player.id, player.color, player.name)
                 }.toImmutableList()
             )
             is BoardRoll -> RollUI(
@@ -237,6 +242,12 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
     fun selectCounter(playerId: PlayerId, counterId: CounterId) {
         viewModelScope.launch {
             repository.selectCounter(playerId, counterId)
+        }
+    }
+
+    fun removePlayer(playerId: PlayerId) {
+        viewModelScope.launch {
+            repository.removePlayer(playerId)
         }
     }
 

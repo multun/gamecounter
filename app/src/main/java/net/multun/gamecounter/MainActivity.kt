@@ -14,7 +14,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import dagger.hilt.android.AndroidEntryPoint
 import net.multun.gamecounter.ui.AboutScreen
 import net.multun.gamecounter.ui.board.BoardScreen
@@ -26,8 +25,6 @@ import net.multun.gamecounter.ui.main_menu.MainMenu
 import net.multun.gamecounter.ui.main_menu.MainMenuViewModel
 import net.multun.gamecounter.ui.new_game_menu.NewGameMenu
 import net.multun.gamecounter.ui.new_game_menu.NewGameViewModel
-import net.multun.gamecounter.ui.player_settings.GamePlayerSettingsViewModel
-import net.multun.gamecounter.ui.player_settings.PlayerSettingsScreen
 import net.multun.gamecounter.ui.theme.GamecounterTheme
 
 sealed class Screens(val route: String) {
@@ -36,7 +33,6 @@ sealed class Screens(val route: String) {
     data object Board: Screens("board")
     // current game settings
     data object CounterSettings: Screens("counter_settings")
-    data object PlayerSettings: Screens("player_settings")
     // new game settings
     data object NewGameCounterSettings: Screens("new_game_counter_settings")
     data object About: Screens("about")
@@ -46,7 +42,6 @@ sealed class Screens(val route: String) {
 class MainActivity : ComponentActivity() {
     private val boardViewModel: BoardViewModel by viewModels()
     private val gameCounterSettingsViewModel: GameCounterSettingsViewModel by viewModels()
-    private val gamePlayerSettingsViewModel: GamePlayerSettingsViewModel by viewModels()
     private val newGameCounterSettingsViewModel: NewGameCounterSettingsViewModel by viewModels()
     private val mainMenuViewModel: MainMenuViewModel by viewModels()
     private val newGameViewModel: NewGameViewModel by viewModels()
@@ -85,10 +80,6 @@ class MainActivity : ComponentActivity() {
                         composable(route = Screens.CounterSettings.route) {
                             val counters by gameCounterSettingsViewModel.settingsUIState.collectAsStateWithLifecycle()
                             CounterSettingsScreen(counters, gameCounterSettingsViewModel, controller)
-                        }
-                        composable(route = Screens.PlayerSettings.route) {
-                            val players by gamePlayerSettingsViewModel.settingsUIState.collectAsStateWithLifecycle()
-                            PlayerSettingsScreen(players, gamePlayerSettingsViewModel, controller)
                         }
                         composable(route = Screens.NewGameCounterSettings.route) {
                             val counters by newGameCounterSettingsViewModel.settingsUIState.collectAsStateWithLifecycle()

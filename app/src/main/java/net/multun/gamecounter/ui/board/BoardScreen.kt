@@ -1,6 +1,7 @@
 package net.multun.gamecounter.ui.board
 
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -92,6 +93,7 @@ private sealed interface ModalState
 data object ModalSettings : ModalState
 data object ModalConfirmGameReset : ModalState
 data class ModalEditPlayerName(val playerId: PlayerId) : ModalState
+data class ModalConfirmRemovePlayer(val playerId: PlayerId) : ModalState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -124,7 +126,7 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                     onRoll = { viewModel.roll() },
                     onOpenSettings = { modalState = ModalSettings },
                 )
-                is PlayerNameBoardUI -> PlayerNamesBottomBar(
+                is PlayerSettingsBoardUI -> PlayerNamesBottomBar(
                     onClear = remember { { viewModel.clearMode() } },
                 )
             }
@@ -143,14 +145,17 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                 Player(
                     player,
                     onSetColor = remember { { color -> viewModel.setPlayerColor(player.id, color) } },
+                    onDelete = remember { { modalState = ModalConfirmRemovePlayer(player.id) } },
                     onUpdateCounter = remember { { counterId, delta -> viewModel.updateCounter(player.id, counterId, delta) } },
                     onSelectCounter = remember { { counterId -> viewModel.selectCounter(player.id, counterId) } },
                     onEditName = remember { { modalState = ModalEditPlayerName(player.id) } },
                     modifier = slotModifier.wrapContentSize(),
+                    onMove = remember { { dir -> viewModel.movePlayer(player.id, dir) }}
                 )
             }
         }
 
+        Log.i("ModalState", modalState?.toString() ?: "null")
         when (val currentModalState = modalState) {
             null -> {}
             is ModalEditPlayerName -> {
@@ -163,6 +168,13 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                         modalState = null
                         viewModel.setPlayerName(currentModalState.playerId, newName)
                     }
+                )
+            }
+            is ModalConfirmRemovePlayer -> {
+                ConfirmDialog(
+                    dialogText = stringResource(R.string.confirm_remove_player),
+                    onDismissRequest = { modalState = null },
+                    onConfirmation = { modalState = null; viewModel.removePlayer(currentModalState.playerId) }
                 )
             }
             ModalConfirmGameReset -> ConfirmDialog(
@@ -182,14 +194,9 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                         viewModel.addPlayer()
                     }
 
-                    SettingsItem(Icons.Filled.Edit, stringResource(R.string.edit_player_names)) {
-                        hideBottomSheet()
-                        viewModel.editPlayerNames()
-                    }
-
                     SettingsItem(Icons.Filled.ManageAccounts, stringResource(R.string.players_settings)) {
                         hideBottomSheet()
-                        navController.navigate(Screens.PlayerSettings.route)
+                        viewModel.playerSettings()
                     }
 
                     SettingsItem(Icons.Filled.Exposure, stringResource(R.string.counters_settings)) {

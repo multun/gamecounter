@@ -45,4 +45,7 @@
     <string name="players_settings">Player settings</string>
     <string name="delete_player">Delete player</string>
     <string name="always_up_tiles">Always upright tiles</string>
+    <string name="move_left">Move left</string>
+    <string name="move_right">Move right</string>
+    <string name="confirm_remove_player">Are you sure you want to remove this player?</string>
 </resources>
