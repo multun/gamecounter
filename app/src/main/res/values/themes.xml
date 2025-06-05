@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.GameCounter" parent="android:Theme.Material.Light.NoActionBar"/>
+    <color name="splashScreenTransition">@color/lightBackground</color>
 
+    <style name="Theme.GameCounter" parent="android:Theme.Material.NoActionBar">
+        <!-- This is a workaround for a runtime bug in the default SplashScreen
+           exit transition. Since the introduction of jetpack compose, themes are
+           defined using kotlin code. However, when the app starts and the splash
+           screen fades out, the default transition fades through the window
+           background color from the xml theme, which is not the same as the one
+           defined using jetpack. We thus need to make the two match manually -->
+        <item name="android:windowBackground">@color/splashScreenTransition</item>
+    </style>
     <style name="Theme.GameCounter.SplashScreen" parent="Theme.SplashScreen.IconBackground">
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>>
         <item name="windowSplashScreenIconBackgroundColor">@color/ic_launcher_background</item>

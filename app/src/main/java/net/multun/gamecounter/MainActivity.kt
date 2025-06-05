@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -43,17 +44,7 @@ class MainActivity : ComponentActivity() {
     private val newGameViewModel: NewGameViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // the default splash screen does a weird flashing animation in dark mode
-        installSplashScreen().setOnExitAnimationListener { splashScreenViewProvider ->
-            val height = splashScreenViewProvider.view.width.toFloat()
-            splashScreenViewProvider.view
-                .animate()
-                .translationY(-height)
-                .alpha(0f)
-                .setDuration(400)
-                .withEndAction { splashScreenViewProvider.remove() }
-                .start()
-        }
+        installSplashScreen()
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -61,7 +52,7 @@ class MainActivity : ComponentActivity() {
             GamecounterTheme {
                 // the surface is used to provide a sane background during navigation transitions
                 // without it, navigation in dark mode will flash a light background
-                Surface {
+                Surface(color = MaterialTheme.colorScheme.background) {
                     val controller = rememberNavController()
                     NavHost(navController = controller, startDestination = Screens.MainMenu.route) {
                         composable(route = Screens.MainMenu.route) {
