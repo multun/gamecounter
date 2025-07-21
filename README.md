@@ -1,4 +1,8 @@
 <p align="center">
+<a alt="Get it on F-Droid" href="https://f-droid.org/packages/net.multun.gamecounter.fdroid/"><img width="160" src="assets/badges/fdroid.png"></a>
+<a alt="Get it on Google Play" href="https://play.google.com/store/apps/details?id=net.multun.gamecounter.playstore"><img width="160" src="assets/badges/google-play.png"></a>
+</p>
+<p align="center">
     <img src="./app/src/main/res/mipmap-xxhdpi/ic_launcher.webp" alt="gamecounter logo" />
 </p>
 
@@ -8,10 +12,6 @@ An app for counting points at board, card, or role playing games:
  - long press plus or minus for quick updates
  - players can change card colors
  - roll dices of any size, or pick player order
-
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-     alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/net.multun.gamecounter.fdroid/)
 
 # Preview
 
