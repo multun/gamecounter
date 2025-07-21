@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -174,21 +174,18 @@ fun PlayerCounter(
     ConstraintLayout(playerCounterLayout(), modifier = modifier) {
         val counter = player.counters.find { it.id == player.selectedCounter }!!
 
-        // the top row, with the player name at the left and edit button at the right
-        PlayerTopRow(player.name, counterScale, Modifier.layoutId("topRow")) {
-            PlayerTopRowButton(onClick = onEditColor) {
-                Icon(
-                    Icons.Outlined.Palette,
-                    contentDescription = stringResource(R.string.player_settings)
-                )
-            }
-        }
+        val minusButtonState = remember { UpdateButtonState {
+            onUpdateCounter(player.selectedCounter, -it.stepSize())
+        } }
+        val plusButtonState = remember { UpdateButtonState {
+            onUpdateCounter(player.selectedCounter, it.stepSize())
+        } }
+
+        minusButtonState.WatchLongPress()
+        plusButtonState.WatchLongPress()
 
         // minus
-        CounterUpdateButton(
-            onUpdateCounter = { onUpdateCounter(player.selectedCounter, -it.stepSize()) },
-            modifier = Modifier.layoutId("decr"),
-        ) {
+        CounterUpdateButton(minusButtonState, modifier = Modifier.layoutId("decrButton")) {
             Icon(
                 Icons.Default.Remove,
                 contentDescription = stringResource(R.string.decrease_counter)
@@ -196,10 +193,7 @@ fun PlayerCounter(
         }
 
         // plus
-        CounterUpdateButton(
-            onUpdateCounter = { onUpdateCounter(player.selectedCounter, it.stepSize()) },
-            modifier = Modifier.layoutId("incr"),
-        ) {
+        CounterUpdateButton(plusButtonState, modifier = Modifier.layoutId("incrButton")) {
             Icon(
                 Icons.Default.Add,
                 contentDescription = stringResource(R.string.increase_counter)
@@ -227,6 +221,19 @@ fun PlayerCounter(
                 WithScaledFontSize(counterScale, EXP_CARD_TEXT) {
                     Text(text = comboText)
                 }
+            }
+        }
+
+        CounterUpdatePad(minusButtonState, modifier = Modifier.layoutId("decrPad"))
+        CounterUpdatePad(plusButtonState, modifier = Modifier.layoutId("incrPad"))
+
+        // the top row, with the player name at the left and edit button at the right
+        PlayerTopRow(player.name, counterScale, Modifier.layoutId("topRow")) {
+            PlayerTopRowButton(onClick = onEditColor) {
+                Icon(
+                    Icons.Outlined.Palette,
+                    contentDescription = stringResource(R.string.player_settings)
+                )
             }
         }
 
@@ -264,16 +271,29 @@ fun PlayerName(scale: FontScale, name: String, modifier: Modifier = Modifier) {
 
 private fun playerCounterLayout(): ConstraintSet {
     return ConstraintSet {
-        val decr = createRefFor("decr")
-        val incr = createRefFor("incr")
+        val decrButton = createRefFor("decrButton")
+        val incrButton = createRefFor("incrButton")
+        val decrPad = createRefFor("decrPad")
+        val incrPad = createRefFor("incrPad")
         val counterValue = createRefFor("counterValue")
         val combo = createRefFor("combo")
         val counterSelector = createRefFor("counterSelector")
         val topRow = createRefFor("topRow")
 
-        createHorizontalChain(decr, counterValue, incr, chainStyle = ChainStyle.Spread)
+        val decrPadGuideline = createGuidelineFromStart(0.33f)
+        val incrPadGuideline = createGuidelineFromEnd(0.33f)
 
-        for (centeredItem in listOf(decr, incr, counterValue)) {
+        constrain(decrPad) {
+            end.linkTo(decrPadGuideline)
+        }
+
+        constrain(incrPad) {
+            start.linkTo(incrPadGuideline)
+        }
+
+        createHorizontalChain(decrButton, counterValue, incrButton, chainStyle = ChainStyle.Spread)
+
+        for (centeredItem in listOf(decrButton, incrButton, counterValue)) {
             constrain(centeredItem) {
                 centerVerticallyTo(parent)
             }
@@ -282,10 +302,6 @@ private fun playerCounterLayout(): ConstraintSet {
         constrain(counterSelector) {
             top.linkTo(counterValue.bottom)
             centerHorizontallyTo(parent)
-        }
-
-        constrain(counterValue) {
-            centerVerticallyTo(parent)
         }
 
         constrain(combo) {
