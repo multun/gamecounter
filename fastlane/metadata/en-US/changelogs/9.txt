@@ -1,0 +1,1 @@
+The interaction area for plus and minus button is now a lot bigger

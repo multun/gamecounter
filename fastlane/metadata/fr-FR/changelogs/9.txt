@@ -1,0 +1,1 @@
+La zone d'interaction des boutons plus et moins est maintenant beaucoup plus grande

@@ -43,8 +43,8 @@ android {
         applicationId = "net.multun.gamecounter"
         minSdk = 24
         targetSdk = 35
-        versionCode = 8
-        versionName = "2.4.1"
+        versionCode = 9
+        versionName = "2.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
