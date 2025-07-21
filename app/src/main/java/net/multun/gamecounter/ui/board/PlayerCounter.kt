@@ -13,7 +13,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -174,15 +173,11 @@ fun PlayerCounter(
     ConstraintLayout(playerCounterLayout(), modifier = modifier) {
         val counter = player.counters.find { it.id == player.selectedCounter }!!
 
-        val minusButtonState = remember { UpdateButtonState {
-            onUpdateCounter(player.selectedCounter, -it.stepSize())
-        } }
-        val plusButtonState = remember { UpdateButtonState {
-            onUpdateCounter(player.selectedCounter, it.stepSize())
-        } }
+        val minusButtonState = remember { UpdateButtonState() }
+        val plusButtonState = remember { UpdateButtonState() }
 
-        minusButtonState.WatchLongPress()
-        plusButtonState.WatchLongPress()
+        minusButtonState.WatchEvents { onUpdateCounter(player.selectedCounter, -it.stepSize()) }
+        plusButtonState.WatchEvents { onUpdateCounter(player.selectedCounter, it.stepSize()) }
 
         // minus
         CounterUpdateButton(minusButtonState, modifier = Modifier.layoutId("decrButton")) {

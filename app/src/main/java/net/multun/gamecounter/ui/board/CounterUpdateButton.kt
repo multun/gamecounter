@@ -1,14 +1,18 @@
 package net.multun.gamecounter.ui.board
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -33,32 +37,34 @@ fun CounterUpdateEvent.stepSize(): Int {
     }
 }
 
-@Stable
-class UpdateButtonState(val onUpdateCounter: (CounterUpdateEvent) -> Unit) {
+class UpdateButtonState {
     val interactionSource = MutableInteractionSource()
     private var longPressed by mutableStateOf(false)
 
     @Composable
-    fun WatchLongPress() {
+    fun WatchEvents(onEvent: (CounterUpdateEvent) -> Unit) {
         val isPressed by interactionSource.collectIsPressedAsState()
-        LaunchedEffect(isPressed) {
+        LaunchedEffect(isPressed, onEvent) {
             if (!isPressed)
                 return@LaunchedEffect
 
             delay(INITIAL_DELAY)
             longPressed = true
             while (true) {
-                onUpdateCounter(BigCounterUpdate)
+                onEvent(BigCounterUpdate)
                 delay(BUMP_DELAY)
             }
         }
-    }
 
-    fun onClick() {
-        if (longPressed) {
-            longPressed = false
-        } else {
-            onUpdateCounter(SmallCounterUpdate)
+        LaunchedEffect(onEvent) {
+            interactionSource.interactions.collect {
+                if (it is PressInteraction.Press) {
+                    if (longPressed) {
+                        longPressed = false
+                    }
+                    onEvent(SmallCounterUpdate)
+                }
+            }
         }
     }
 }
@@ -73,7 +79,7 @@ fun CounterUpdateButton(
         interactionSource = buttonState.interactionSource,
         modifier = modifier,
         content = content,
-        onClick = { buttonState.onClick() },
+        onClick = {},
     )
 }
 
@@ -87,7 +93,7 @@ fun CounterUpdatePad(
             modifier
                 .fillMaxSize()
                 .clickable(
-                    onClick = { buttonState.onClick() },
+                    onClick = {},
                     role = Role.Button,
                     interactionSource = buttonState.interactionSource,
                     indication = null
