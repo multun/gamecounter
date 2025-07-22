@@ -1,7 +1,6 @@
 package net.multun.gamecounter.ui.board
 
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Exposure
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Replay
@@ -155,7 +153,6 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
             }
         }
 
-        Log.i("ModalState", modalState?.toString() ?: "null")
         when (val currentModalState = modalState) {
             null -> {}
             is ModalEditPlayerName -> {
