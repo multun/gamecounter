@@ -176,8 +176,8 @@ fun PlayerCounter(
         val minusButtonState = remember { UpdateButtonState() }
         val plusButtonState = remember { UpdateButtonState() }
 
-        minusButtonState.WatchEvents { onUpdateCounter(player.selectedCounter, -it.stepSize()) }
-        plusButtonState.WatchEvents { onUpdateCounter(player.selectedCounter, it.stepSize()) }
+        minusButtonState.WatchEvents(onEvent = remember(player.selectedCounter) { { onUpdateCounter(player.selectedCounter, -it.stepSize()) } })
+        plusButtonState.WatchEvents(onEvent = remember(player.selectedCounter) { { onUpdateCounter(player.selectedCounter, it.stepSize()) } })
 
         // minus
         CounterUpdateButton(minusButtonState, modifier = Modifier.layoutId("decrButton")) {

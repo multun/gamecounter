@@ -38,10 +38,10 @@ class UpdateButtonState {
 
     @Composable
     fun WatchEvents(onEvent: (CounterUpdateEvent) -> Unit) {
-        var longPressed by remember { mutableStateOf(false) }
-        var isPressed by remember { mutableStateOf(false) }
+        var longPressed by remember(interactionSource) { mutableStateOf(false) }
+        var isPressed by remember(interactionSource) { mutableStateOf(false) }
 
-        LaunchedEffect(interactionSource) {
+        LaunchedEffect(interactionSource, onEvent) {
             val pressInteractions = mutableListOf<PressInteraction.Press>()
             interactionSource.interactions.collect { interaction ->
                 // if the button was released and this is not a long press, emit a short press
@@ -66,7 +66,7 @@ class UpdateButtonState {
             }
         }
 
-        LaunchedEffect(isPressed, onEvent) {
+        LaunchedEffect(interactionSource, onEvent, isPressed) {
             if (!isPressed)
                 return@LaunchedEffect
             delay(INITIAL_DELAY)
