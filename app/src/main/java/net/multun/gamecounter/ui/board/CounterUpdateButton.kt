@@ -1,6 +1,5 @@
 package net.multun.gamecounter.ui.board
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
@@ -9,12 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -24,7 +21,6 @@ import kotlin.time.Duration.Companion.milliseconds
 
 private val INITIAL_DELAY = 700.milliseconds
 private val BUMP_DELAY = 500.milliseconds
-
 
 sealed interface CounterUpdateEvent
 data object SmallCounterUpdate : CounterUpdateEvent
@@ -39,31 +35,45 @@ fun CounterUpdateEvent.stepSize(): Int {
 
 class UpdateButtonState {
     val interactionSource = MutableInteractionSource()
-    private var longPressed by mutableStateOf(false)
 
     @Composable
     fun WatchEvents(onEvent: (CounterUpdateEvent) -> Unit) {
-        val isPressed by interactionSource.collectIsPressedAsState()
+        var longPressed by remember { mutableStateOf(false) }
+        var isPressed by remember { mutableStateOf(false) }
+
+        LaunchedEffect(interactionSource) {
+            val pressInteractions = mutableListOf<PressInteraction.Press>()
+            interactionSource.interactions.collect { interaction ->
+                // if the button was released and this is not a long press, emit a short press
+                // this is lifted out of interactionSource.collectIsPressedAsState()
+                val wasPressed = pressInteractions.isNotEmpty()
+                when (interaction) {
+                    is PressInteraction.Press -> pressInteractions.add(interaction)
+                    is PressInteraction.Release -> pressInteractions.remove(interaction.press)
+                    is PressInteraction.Cancel -> pressInteractions.remove(interaction.press)
+                }
+
+                // when all press interactions are released, do a small counter update
+                // if there was no long press, or reset the long press flag
+                if (wasPressed && pressInteractions.isEmpty()) {
+                    if (longPressed) {
+                        longPressed = false
+                    } else {
+                        onEvent(SmallCounterUpdate)
+                    }
+                }
+                isPressed = pressInteractions.isNotEmpty()
+            }
+        }
+
         LaunchedEffect(isPressed, onEvent) {
             if (!isPressed)
                 return@LaunchedEffect
-
             delay(INITIAL_DELAY)
             longPressed = true
             while (true) {
                 onEvent(BigCounterUpdate)
                 delay(BUMP_DELAY)
-            }
-        }
-
-        LaunchedEffect(onEvent) {
-            interactionSource.interactions.collect {
-                if (it is PressInteraction.Press) {
-                    if (longPressed) {
-                        longPressed = false
-                    }
-                    onEvent(SmallCounterUpdate)
-                }
             }
         }
     }
