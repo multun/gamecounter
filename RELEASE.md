@@ -1,0 +1,4 @@
+- update versionCode and versionName in `app/build.gradle.kts`
+- build an aab from Android Studio
+- `bundle exec fastlane supply --aab app/playstore/release/app-playstore-release.aab`
+- push an annotated tag for F-Droid to pickup the release: `git tag -a v2.5.4 -m "release v2.5.4"`
