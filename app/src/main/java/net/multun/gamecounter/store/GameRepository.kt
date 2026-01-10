@@ -35,6 +35,8 @@ data class Counter(
     val id: CounterId,
     val defaultValue: Int,
     val name: String,
+    val step: Int,
+    val largeStep: Int,
 )
 
 data class Player(
@@ -72,6 +74,8 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
                     id = CounterId(protoCounter.id),
                     defaultValue = protoCounter.defaultValue,
                     name = protoCounter.name,
+                    step = protoCounter.step,
+                    largeStep = protoCounter.largeStep,
                 )
             }.toPersistentList(),
         )
@@ -92,7 +96,7 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
         }
     }
 
-    suspend fun addCounter(defaultValue: Int, name: String): CounterId {
+    suspend fun addCounter(defaultValue: Int, name: String, step: Int, largeStep: Int): CounterId {
         var counterId = 0
         appStateStore.updateData { oldState ->
             // allocate an ID
@@ -105,6 +109,8 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
                     this.id = counterId
                     this.defaultValue = defaultValue
                     this.name = name
+                    this.step = step
+                    this.largeStep = largeStep
                 })
 
                 // update all players to add the counter
@@ -222,7 +228,7 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
         }
     }
 
-    suspend fun updateCounter(counterId: CounterId, name: String, defaultValue: Int) {
+    suspend fun updateCounter(counterId: CounterId, name: String, defaultValue: Int, step: Int, largeStep: Int) {
         appStateStore.updateData { oldState ->
             val counterIndex = oldState.getCounterIndex(counterId)
             if (counterIndex == -1)
@@ -231,6 +237,8 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
             val newCounter = oldState.getCounter(counterIndex).copy {
                 this.name = name
                 this.defaultValue = defaultValue
+                this.step = step
+                this.largeStep = largeStep
             }
             val newState = oldState.toBuilder()
             newState.setCounter(counterIndex, newCounter)

@@ -67,6 +67,8 @@ data class CounterUIState(
     val name: String,
     val value: Int,
     val combo: Int,
+    val step: Int,
+    val largeStep: Int,
 )
 
 data class PlayerSettingsUIState(
@@ -166,7 +168,9 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
                                 id = it.id,
                                 name = it.name,
                                 value = player.counters[it.id]!!,
-                                combo = combos[ComboCounterId(player.id, it.id)] ?: 0
+                                combo = combos[ComboCounterId(player.id, it.id)] ?: 0,
+                                step = it.step,
+                                largeStep = it.largeStep,
                             )
                         },
                         selectedCounter = player.selectedCounter ?: appState.counters[0].id

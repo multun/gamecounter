@@ -13,6 +13,8 @@
     <string name="cancel">Cancel</string>
     <string name="name">Name</string>
     <string name="counter_default_value">Default value</string>
+    <string name="counter_step">Increment</string>
+    <string name="counter_big_step">Large increment</string>
     <string name="previous_screen">Previous screen</string>
     <string name="player_settings">Player settings</string>
     <string name="increase_counter">Increase counter</string>

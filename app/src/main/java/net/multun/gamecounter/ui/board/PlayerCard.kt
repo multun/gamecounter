@@ -284,7 +284,7 @@ fun PlayerCardPreview() {
             color = PaletteColor.Blue.color,
             name = "Alice",
             counters = listOf(
-                CounterUIState(CounterId(0), "test", 100, 1)
+                CounterUIState(CounterId(0), "test", 100, 1, 1, 10)
             ),
             selectedCounter = CounterId(0),
         ),
