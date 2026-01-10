@@ -53,6 +53,8 @@ data class CounterSettingsUIState(
     val id: CounterId,
     val name: String,
     val defaultValue: Int,
+    val step: Int,
+    val largeStep: Int,
 )
 
 sealed class CounterSettingsDialog
@@ -94,8 +96,8 @@ fun CounterSettingsScreen(
         CounterSettingsDialog(
             curDialog,
             onDelete = remember { { viewModel.deleteCounter(it) } },
-            onAddCounter = remember { { name, defaultVal -> viewModel.addCounter(name, defaultVal) } },
-            onUpdateCounter = remember { { id, name, defaultVal -> viewModel.updateCounter(id, name, defaultVal) } },
+            onAddCounter = remember { { name, defaultVal, step, largeStep -> viewModel.addCounter(name, defaultVal, step, largeStep) } },
+            onUpdateCounter = remember { { id, name, defaultVal, step, largeStep -> viewModel.updateCounter(id, name, defaultVal, step, largeStep) } },
             onClearDialog = remember { { dialog = null } },
         )
     }
@@ -137,8 +139,8 @@ fun CounterSettingsList(
 fun CounterSettingsDialog(
     dialog: CounterSettingsDialog,
     onDelete: (CounterId) -> Unit,
-    onAddCounter: (String, Int) -> Unit,
-    onUpdateCounter: (CounterId, String, Int) -> Unit,
+    onAddCounter: (String, Int, Int, Int) -> Unit,
+    onUpdateCounter: (CounterId, String, Int, Int, Int) -> Unit,
     onClearDialog: () -> Unit,
 ) {
     when (dialog) {
@@ -146,8 +148,8 @@ fun CounterSettingsDialog(
             title = stringResource(R.string.new_counter),
             action = stringResource(R.string.add),
             onDismissRequest = onClearDialog,
-            onCounterAdded = remember { { name, defaultValue ->
-                onAddCounter(name, defaultValue)
+            onCounterAdded = remember { { name, defaultValue, step, largeStep ->
+                onAddCounter(name, defaultValue, step, largeStep)
                 onClearDialog()
             } }
         )
@@ -156,10 +158,12 @@ fun CounterSettingsDialog(
             action = stringResource(R.string.save),
             initialName = dialog.counter.name,
             initialDefaultValue = dialog.counter.defaultValue,
+            initialStep = dialog.counter.step,
+            initialLargeStep = dialog.counter.largeStep,
             onDismissRequest = onClearDialog,
-            onCounterAdded = remember { { name, defaultValue ->
+            onCounterAdded = remember { { name, defaultValue, step, largeStep ->
                 val counterId = dialog.counter.id
-                onUpdateCounter(counterId, name, defaultValue)
+                onUpdateCounter(counterId, name, defaultValue, step, largeStep)
                 onClearDialog()
             } }
         )
@@ -196,13 +200,19 @@ fun CounterChangeDialog(
     title: String,
     action: String,
     onDismissRequest: () -> Unit,
-    onCounterAdded: (String, Int) -> Unit,
+    onCounterAdded: (String, Int, Int, Int) -> Unit,
     initialName: String = "",
     initialDefaultValue: Int? = null,
+    initialStep: Int? = null,
+    initialLargeStep: Int? = null,
 ) {
     var counterName by remember { mutableStateOf(initialName) }
     var counterDefaultValue by remember { mutableStateOf(initialDefaultValue?.toString() ?: "") }
+    var counterStep by remember { mutableStateOf(initialStep?.toString() ?: "1") }
+    var counterLargeStep by remember { mutableStateOf(initialLargeStep?.toString() ?: "10") }
     val parsedDefaultValue = counterDefaultValue.toIntOrNull()
+    val parsedStep = counterStep.toIntOrNull()
+    val parsedLargeStep = counterLargeStep.toIntOrNull()
 
     Dialog(onDismissRequest = onDismissRequest) {
         Card(shape = RoundedCornerShape(16.dp), modifier = Modifier.width(IntrinsicSize.Min)) {
@@ -215,6 +225,8 @@ fun CounterChangeDialog(
 
                 val nameError = counterName.isBlank()
                 val defaultValueError = parsedDefaultValue == null
+                val stepError = parsedStep == null || parsedStep <= 0
+                val largeStepError = parsedLargeStep == null || parsedLargeStep <= 0
 
                 OutlinedTextField(
                     value = counterName,
@@ -229,7 +241,25 @@ fun CounterChangeDialog(
                     onValueChange = { counterDefaultValue = it },
                     label = { Text(stringResource(R.string.counter_default_value)) },
                     isError = defaultValueError,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                )
+
+                OutlinedTextField(
+                    value = counterStep,
+                    onValueChange = { counterStep = it },
+                    label = { Text(stringResource(R.string.counter_step)) },
+                    isError = stepError,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                )
+
+                OutlinedTextField(
+                    value = counterLargeStep,
+                    onValueChange = { counterLargeStep = it },
+                    label = { Text(stringResource(R.string.counter_big_step)) },
+                    isError = largeStepError,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                 )
 
@@ -241,8 +271,8 @@ fun CounterChangeDialog(
                         Text(stringResource(R.string.cancel))
                     }
                     TextButton(
-                        enabled = !(nameError || defaultValueError),
-                        onClick = { onCounterAdded(counterName.trim(), parsedDefaultValue!!) },
+                        enabled = !(nameError || defaultValueError || stepError || largeStepError),
+                        onClick = { onCounterAdded(counterName.trim(), parsedDefaultValue!!, parsedStep!!, parsedLargeStep!!) },
                         modifier = Modifier.padding(8.dp),
                     ) {
                         Text(action)

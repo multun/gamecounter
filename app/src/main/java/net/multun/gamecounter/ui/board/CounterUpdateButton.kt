@@ -26,10 +26,10 @@ sealed interface CounterUpdateEvent
 data object SmallCounterUpdate : CounterUpdateEvent
 data object BigCounterUpdate : CounterUpdateEvent
 
-fun CounterUpdateEvent.stepSize(): Int {
+fun CounterUpdateEvent.stepSize(step: Int, largeStep: Int): Int {
     return when (this) {
-        BigCounterUpdate -> 10
-        SmallCounterUpdate -> 1
+        BigCounterUpdate -> largeStep
+        SmallCounterUpdate -> step
     }
 }
 

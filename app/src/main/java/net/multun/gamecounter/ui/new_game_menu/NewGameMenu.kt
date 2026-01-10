@@ -157,8 +157,8 @@ fun NewGameMenu(viewModel: NewGameViewModel, navController: NavController, modif
         CounterSettingsDialog(
             curDialog,
             onDelete = remember { { viewModel.deleteCounter(it) } },
-            onAddCounter = remember { { name, defaultVal -> viewModel.addCounter(name, defaultVal) } },
-            onUpdateCounter = remember { { id, name, defaultVal -> viewModel.updateCounter(id, name, defaultVal) } },
+            onAddCounter = remember { { name, defaultVal, step, largeStep -> viewModel.addCounter(name, defaultVal, step, largeStep) } },
+            onUpdateCounter = remember { { id, name, defaultVal, step, largeStep -> viewModel.updateCounter(id, name, defaultVal, step, largeStep) } },
             onClearDialog = remember { { dialog = null } },
         )
     }

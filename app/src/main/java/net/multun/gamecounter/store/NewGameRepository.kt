@@ -23,6 +23,8 @@ class NewGameRepository @Inject constructor(private val appStateStore: NewGameSt
                     id = CounterId(protoCounter.id),
                     defaultValue = protoCounter.defaultValue,
                     name = protoCounter.name,
+                    step = protoCounter.step,
+                    largeStep = protoCounter.largeStep,
                 )
             }.toPersistentList(),
         )
@@ -36,7 +38,7 @@ class NewGameRepository @Inject constructor(private val appStateStore: NewGameSt
         }
     }
 
-    suspend fun addCounter(defaultValue: Int, name: String): CounterId {
+    suspend fun addCounter(defaultValue: Int, name: String, step: Int, largeStep: Int): CounterId {
         var counterId = 0
         appStateStore.updateData { oldState ->
             // allocate an ID
@@ -49,6 +51,8 @@ class NewGameRepository @Inject constructor(private val appStateStore: NewGameSt
                     this.id = counterId
                     this.defaultValue = defaultValue
                     this.name = name
+                    this.step = step
+                    this.largeStep = largeStep
                 })
             }
         }
@@ -66,7 +70,7 @@ class NewGameRepository @Inject constructor(private val appStateStore: NewGameSt
         }
     }
 
-    suspend fun updateCounter(counterId: CounterId, name: String, defaultValue: Int) {
+    suspend fun updateCounter(counterId: CounterId, name: String, defaultValue: Int, step: Int, largeStep: Int) {
         appStateStore.updateData { oldState ->
             val counterIndex = oldState.getCounterIndex(counterId)
             if (counterIndex == -1)
@@ -75,6 +79,8 @@ class NewGameRepository @Inject constructor(private val appStateStore: NewGameSt
             val newCounter = oldState.getCounter(counterIndex).copy {
                 this.name = name
                 this.defaultValue = defaultValue
+                this.step = step
+                this.largeStep = largeStep
             }
             val newState = oldState.toBuilder()
             newState.setCounter(counterIndex, newCounter)

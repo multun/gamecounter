@@ -15,6 +15,8 @@ message Counter {
   int32 id = 1;
   string name = 2;
   int32 defaultValue = 3;
+  int32 step = 4;
+  int32 largeStep = 5;
 }
 
 message Game {

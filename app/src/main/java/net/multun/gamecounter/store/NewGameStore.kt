@@ -51,6 +51,8 @@ fun makeDefaultCounter(): ProtoGame.Counter {
         this.id = 0
         this.name = "hp"
         this.defaultValue = 100
+        this.step = 1
+        this.largeStep = 10
     }
 }
 
