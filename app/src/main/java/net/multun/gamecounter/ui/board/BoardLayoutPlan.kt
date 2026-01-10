@@ -128,6 +128,8 @@ data class CircularLayoutPlan(
 data object FallbackPlan : LayoutPlan
 
 fun planLayout(alwaysUprightMode: Boolean, itemCount: Int, maxWidth: Dp, maxHeight: Dp, padding: Dp): LayoutPlan {
+    if (itemCount <= 0)
+        return FallbackPlan
     // if the users want all tiles to point down, lay things out as a list instead of as a circle
     if (alwaysUprightMode)
         return planUprightLayout(itemCount, maxWidth, maxHeight, padding)
