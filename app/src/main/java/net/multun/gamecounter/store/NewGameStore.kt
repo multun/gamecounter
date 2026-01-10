@@ -25,7 +25,30 @@ import java.io.OutputStream
 import javax.inject.Singleton
 
 
+import androidx.datastore.core.DataMigration
+import net.multun.gamecounter.proto.copy
+import net.multun.gamecounter.proto.counter
+
 typealias NewGameStore = DataStore<ProtoNewGame.NewGame>
+
+private object NewGameMigration : DataMigration<ProtoNewGame.NewGame> {
+    override suspend fun shouldMigrate(currentData: ProtoNewGame.NewGame): Boolean =
+        currentData.counterList.any { it.step == 0 || it.largeStep == 0 }
+
+    override suspend fun migrate(currentData: ProtoNewGame.NewGame): ProtoNewGame.NewGame =
+        currentData.copy {
+            val updatedCounters = counter.map { c ->
+                c.copy {
+                    if (step == 0) step = 1
+                    if (largeStep == 0) largeStep = 10
+                }
+            }
+            counter.clear()
+            counter.addAll(updatedCounters)
+        }
+
+    override suspend fun cleanUp() {}
+}
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -40,7 +63,7 @@ object NewGameStoreProvider {
         DataStoreFactory.create(
             serializer = NewGameSerializer,
             scope = CoroutineScope(scope.coroutineContext + ioDispatcher),
-            migrations = listOf(),
+            migrations = listOf(NewGameMigration),
         ) {
             context.dataStoreFile("new_game.pb")
         }
