@@ -44,6 +44,7 @@ import com.sd.lib.compose.wheel_picker.rememberFWheelPickerState
 import net.multun.gamecounter.PaletteColor
 import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
+import net.multun.gamecounter.store.CounterUpdate
 import net.multun.gamecounter.store.PlayerId
 import net.multun.gamecounter.toDisplayColor
 
@@ -105,7 +106,7 @@ fun Player(
     onEditName: () -> Unit,
     onDelete: () -> Unit,
     onMove: (Int) -> Unit,
-    onUpdateCounter: (CounterId, Int) -> Unit,
+    onUpdateCounter: (CounterId, CounterUpdate) -> Unit,
     onSelectCounter: (CounterId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -284,7 +285,7 @@ fun PlayerCardPreview() {
             color = PaletteColor.Blue.color,
             name = "Alice",
             counters = listOf(
-                CounterUIState(CounterId(0), "test", 100, 1, 1, 10)
+                CounterUIState(CounterId(0), "test", 100, 1)
             ),
             selectedCounter = CounterId(0),
         ),

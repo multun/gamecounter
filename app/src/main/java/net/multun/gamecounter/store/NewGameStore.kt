@@ -31,25 +31,6 @@ import net.multun.gamecounter.proto.counter
 
 typealias NewGameStore = DataStore<ProtoNewGame.NewGame>
 
-private object NewGameMigration : DataMigration<ProtoNewGame.NewGame> {
-    override suspend fun shouldMigrate(currentData: ProtoNewGame.NewGame): Boolean =
-        currentData.counterList.any { it.step == 0 || it.largeStep == 0 }
-
-    override suspend fun migrate(currentData: ProtoNewGame.NewGame): ProtoNewGame.NewGame =
-        currentData.copy {
-            val updatedCounters = counter.map { c ->
-                c.copy {
-                    if (step == 0) step = 1
-                    if (largeStep == 0) largeStep = 10
-                }
-            }
-            counter.clear()
-            counter.addAll(updatedCounters)
-        }
-
-    override suspend fun cleanUp() {}
-}
-
 @Module
 @InstallIn(SingletonComponent::class)
 object NewGameStoreProvider {
@@ -63,7 +44,7 @@ object NewGameStoreProvider {
         DataStoreFactory.create(
             serializer = NewGameSerializer,
             scope = CoroutineScope(scope.coroutineContext + ioDispatcher),
-            migrations = listOf(NewGameMigration),
+            migrations = listOf(),
         ) {
             context.dataStoreFile("new_game.pb")
         }
@@ -74,8 +55,6 @@ fun makeDefaultCounter(): ProtoGame.Counter {
         this.id = 0
         this.name = "hp"
         this.defaultValue = 100
-        this.step = 1
-        this.largeStep = 10
     }
 }
 

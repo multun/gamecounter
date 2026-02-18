@@ -8,6 +8,7 @@ import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.flow.map
+import net.multun.gamecounter.DefaultSettings
 import net.multun.gamecounter.PaletteColor
 import net.multun.gamecounter.proto.ProtoGame
 import net.multun.gamecounter.proto.copy
@@ -18,6 +19,11 @@ import javax.inject.Inject
 @JvmInline
 @Immutable
 value class CounterId(val value: Int)
+
+sealed interface CounterUpdate
+data class FixedUpdate(val isLarge: Boolean, val sign: Int) : CounterUpdate
+data class CustomUpdate(val delta: Int) : CounterUpdate
+
 
 @JvmInline
 @Immutable
@@ -35,8 +41,8 @@ data class Counter(
     val id: CounterId,
     val defaultValue: Int,
     val name: String,
-    val step: Int,
-    val largeStep: Int,
+    val smallStep: Int?,
+    val largeStep: Int?,
 )
 
 data class Player(
@@ -74,8 +80,8 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
                     id = CounterId(protoCounter.id),
                     defaultValue = protoCounter.defaultValue,
                     name = protoCounter.name,
-                    step = protoCounter.step,
-                    largeStep = protoCounter.largeStep,
+                    smallStep = if (protoCounter.step == 0) null else protoCounter.step,
+                    largeStep = if (protoCounter.largeStep == 0) null else protoCounter.largeStep,
                 )
             }.toPersistentList(),
         )
@@ -96,7 +102,7 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
         }
     }
 
-    suspend fun addCounter(defaultValue: Int, name: String, step: Int, largeStep: Int): CounterId {
+    suspend fun addCounter(defaultValue: Int, name: String, step: Int?, largeStep: Int?): CounterId {
         var counterId = 0
         appStateStore.updateData { oldState ->
             // allocate an ID
@@ -109,8 +115,8 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
                     this.id = counterId
                     this.defaultValue = defaultValue
                     this.name = name
-                    this.step = step
-                    this.largeStep = largeStep
+                    this.step = step ?: 0
+                    this.largeStep = largeStep ?: 0
                 })
 
                 // update all players to add the counter
@@ -191,14 +197,32 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
         }
     }
 
-    suspend fun updatePlayerCounter(playerId: PlayerId, counterId: CounterId, difference: Int) {
+    suspend fun updatePlayerCounter(playerId: PlayerId, counterId: CounterId, counterUpdate: CounterUpdate): Int {
+        var updateSize = 0
         updatePlayer(playerId) {
-            _, oldPlayer ->
+            game, oldPlayer ->
+            val counterIndex = game.getCounterIndex(counterId)
+            if (counterIndex == -1)
+                return@updatePlayer oldPlayer
+            val counter = game.getCounter(counterIndex)
+            updateSize = when (counterUpdate) {
+                is FixedUpdate -> {
+                    val step = if (!counterUpdate.isLarge) {
+                        if (counter.step == 0) DefaultSettings.DEFAULT_SMALL_STEP else counter.step
+                    } else {
+                        if (counter.largeStep == 0) DefaultSettings.DEFAULT_LARGE_STEP else counter.largeStep
+                    }
+                    step * counterUpdate.sign
+                }
+                is CustomUpdate -> counterUpdate.delta
+            }
+
             oldPlayer.copy {
                 val oldCounter = counters[counterId.value]!!
-                this.counters.put(counterId.value, oldCounter + difference)
+                this.counters.put(counterId.value, oldCounter + updateSize)
             }
         }
+        return updateSize
     }
 
     suspend fun setPlayerColor(playerId: PlayerId, color: Color) {
@@ -228,7 +252,7 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
         }
     }
 
-    suspend fun updateCounter(counterId: CounterId, name: String, defaultValue: Int, step: Int, largeStep: Int) {
+    suspend fun updateCounter(counterId: CounterId, name: String, defaultValue: Int, step: Int?, largeStep: Int?) {
         appStateStore.updateData { oldState ->
             val counterIndex = oldState.getCounterIndex(counterId)
             if (counterIndex == -1)
@@ -237,8 +261,8 @@ class GameRepository @Inject constructor(private val appStateStore: GameStore) {
             val newCounter = oldState.getCounter(counterIndex).copy {
                 this.name = name
                 this.defaultValue = defaultValue
-                this.step = step
-                this.largeStep = largeStep
+                this.step = step ?: 0
+                this.largeStep = largeStep ?: 0
             }
             val newState = oldState.toBuilder()
             newState.setCounter(counterIndex, newCounter)

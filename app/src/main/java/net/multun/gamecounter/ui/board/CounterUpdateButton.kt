@@ -3,7 +3,6 @@ package net.multun.gamecounter.ui.board
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.IconButton
@@ -22,22 +21,13 @@ import kotlin.time.Duration.Companion.milliseconds
 private val INITIAL_DELAY = 700.milliseconds
 private val BUMP_DELAY = 500.milliseconds
 
-sealed interface CounterUpdateEvent
-data object SmallCounterUpdate : CounterUpdateEvent
-data object BigCounterUpdate : CounterUpdateEvent
-
-fun CounterUpdateEvent.stepSize(step: Int, largeStep: Int): Int {
-    return when (this) {
-        BigCounterUpdate -> largeStep
-        SmallCounterUpdate -> step
-    }
-}
 
 class UpdateButtonState {
     val interactionSource = MutableInteractionSource()
 
+    // on event, returns whether the button was long pressed
     @Composable
-    fun WatchEvents(onEvent: (CounterUpdateEvent) -> Unit) {
+    fun WatchEvents(onEvent: (Boolean) -> Unit) {
         var longPressed by remember(interactionSource) { mutableStateOf(false) }
         var isPressed by remember(interactionSource) { mutableStateOf(false) }
 
@@ -59,7 +49,8 @@ class UpdateButtonState {
                     if (longPressed) {
                         longPressed = false
                     } else {
-                        onEvent(SmallCounterUpdate)
+                        // short press
+                        onEvent(false)
                     }
                 }
                 isPressed = pressInteractions.isNotEmpty()
@@ -72,7 +63,8 @@ class UpdateButtonState {
             delay(INITIAL_DELAY)
             longPressed = true
             while (true) {
-                onEvent(BigCounterUpdate)
+                // long press
+                onEvent(true)
                 delay(BUMP_DELAY)
             }
         }

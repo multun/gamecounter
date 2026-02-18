@@ -19,7 +19,7 @@ import javax.inject.Inject
 class GameCounterSettingsViewModel @Inject constructor(private val repository: GameRepository) : ViewModel() {
     val settingsUIState = repository.appState.map { appState ->
         appState.counters.map {
-            CounterSettingsUIState(it.id, it.name, it.defaultValue, it.step, it.largeStep)
+            CounterSettingsUIState(it.id, it.name, it.defaultValue, it.smallStep, it.largeStep)
         }.toImmutableList()
     }.stateIn(
         scope = viewModelScope,
@@ -27,7 +27,7 @@ class GameCounterSettingsViewModel @Inject constructor(private val repository: G
         initialValue = persistentListOf(),
     )
 
-    fun addCounter(counterName: String, defaultValue: Int, step: Int, largeStep: Int) {
+    fun addCounter(counterName: String, defaultValue: Int, step: Int?, largeStep: Int?) {
         viewModelScope.launch {
             repository.addCounter(defaultValue, counterName, step, largeStep)
         }
@@ -51,7 +51,7 @@ class GameCounterSettingsViewModel @Inject constructor(private val repository: G
         }
     }
 
-    fun updateCounter(counterId: CounterId, name: String, defaultVal: Int, step: Int, largeStep: Int) {
+    fun updateCounter(counterId: CounterId, name: String, defaultVal: Int, step: Int?, largeStep: Int?) {
         viewModelScope.launch {
             repository.updateCounter(counterId, name, defaultVal, step, largeStep)
         }
