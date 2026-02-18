@@ -144,7 +144,7 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                     player,
                     onSetColor = remember { { color -> viewModel.setPlayerColor(player.id, color) } },
                     onDelete = remember { { modalState = ModalConfirmRemovePlayer(player.id) } },
-                    onUpdateCounter = remember { { counterId, delta -> viewModel.updateCounter(player.id, counterId, delta) } },
+                    onUpdateCounter = remember { { counterId, counterUpdate -> viewModel.updateCounter(player.id, counterId, counterUpdate) } },
                     onSelectCounter = remember { { counterId -> viewModel.selectCounter(player.id, counterId) } },
                     onEditName = remember { { modalState = ModalEditPlayerName(player.id) } },
                     modifier = slotModifier.wrapContentSize(),
@@ -206,10 +206,10 @@ private fun Board(boardUI: BoardUI, viewModel: BoardViewModel, navController: Na
                             // the default size is huge due to minimumInteractiveComponentSize
                             modifier = Modifier.size(30.dp),
                             checked = boardUI.alwaysUprightMode,
-                            onCheckedChange = { viewModel.setUlwaysUprightMode(it) }
+                            onCheckedChange = { viewModel.setAlwaysUprightMode(it) }
                         )
                     }, stringResource(R.string.always_up_tiles)) {
-                        viewModel.setUlwaysUprightMode(!boardUI.alwaysUprightMode)
+                        viewModel.setAlwaysUprightMode(!boardUI.alwaysUprightMode)
                     }
 
                     SettingsItem(Icons.Filled.Replay, stringResource(R.string.reset_game)) {

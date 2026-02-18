@@ -51,6 +51,8 @@ import com.sd.lib.compose.wheel_picker.FHorizontalWheelPicker
 import com.sd.lib.compose.wheel_picker.rememberFWheelPickerState
 import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
+import net.multun.gamecounter.store.CounterUpdate
+import net.multun.gamecounter.store.FixedUpdate
 
 
 @Composable
@@ -163,7 +165,7 @@ fun PlayerTopRow(
 @Composable
 fun PlayerCounter(
     player: CounterCardUIState,
-    onUpdateCounter: (CounterId, Int) -> Unit,
+    onUpdateCounter: (CounterId, CounterUpdate) -> Unit,
     onSelectCounter: (CounterId) -> Unit,
     onEditCounter: () -> Unit,
     onEditColor: () -> Unit,
@@ -176,8 +178,8 @@ fun PlayerCounter(
         val minusButtonState = remember { UpdateButtonState() }
         val plusButtonState = remember { UpdateButtonState() }
 
-        minusButtonState.WatchEvents(onEvent = remember(player.selectedCounter, counter.id, counter.step, counter.largeStep) { { onUpdateCounter(player.selectedCounter, -it.stepSize(counter.step, counter.largeStep)) } })
-        plusButtonState.WatchEvents(onEvent = remember(player.selectedCounter, counter.id, counter.step, counter.largeStep) { { onUpdateCounter(player.selectedCounter, it.stepSize(counter.step, counter.largeStep)) } })
+        minusButtonState.WatchEvents(onEvent = remember(player.selectedCounter, counter.id) { { longPress -> onUpdateCounter(player.selectedCounter, FixedUpdate(longPress, -1)) } })
+        plusButtonState.WatchEvents(onEvent = remember(player.selectedCounter, counter.id) { { longPress -> onUpdateCounter(player.selectedCounter, FixedUpdate(longPress, 1)) } })
 
         // minus
         CounterUpdateButton(minusButtonState, modifier = Modifier.layoutId("decrButton")) {

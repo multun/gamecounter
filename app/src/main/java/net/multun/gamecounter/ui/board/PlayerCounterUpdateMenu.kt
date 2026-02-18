@@ -21,11 +21,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.em
 import com.sd.lib.compose.wheel_picker.FWheelPickerState
 import com.sd.lib.compose.wheel_picker.rememberFWheelPickerState
 import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
+import net.multun.gamecounter.store.CounterUpdate
+import net.multun.gamecounter.store.CustomUpdate
 import kotlin.math.max
 
 @Composable
@@ -33,7 +34,7 @@ fun PlayerCounterUpdateMenu(
     signState: FWheelPickerState,
     player: CounterCardUIState,
     counterScale: FontScale,
-    onUpdateCounter: (CounterId, Int) -> Unit,
+    onUpdateCounter: (CounterId, CounterUpdate) -> Unit,
     onClose: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -97,7 +98,7 @@ fun PlayerCounterUpdateMenu(
             }
             if ((signState.currentIndex % 2) != 0)
                 total = -total
-            onUpdateCounter(player.selectedCounter, total)
+            onUpdateCounter(player.selectedCounter, CustomUpdate(total))
             onClose()
         }, Modifier.align(Alignment.BottomEnd)) {
             Icon(Icons.Filled.Check, null)

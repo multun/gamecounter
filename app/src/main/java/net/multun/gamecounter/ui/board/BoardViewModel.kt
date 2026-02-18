@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.multun.gamecounter.store.CounterId
+import net.multun.gamecounter.store.CounterUpdate
 import net.multun.gamecounter.store.PlayerId
 import net.multun.gamecounter.store.GameRepository
 import javax.inject.Inject
@@ -67,8 +68,6 @@ data class CounterUIState(
     val name: String,
     val value: Int,
     val combo: Int,
-    val step: Int,
-    val largeStep: Int,
 )
 
 data class PlayerSettingsUIState(
@@ -169,8 +168,6 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
                                 name = it.name,
                                 value = player.counters[it.id]!!,
                                 combo = combos[ComboCounterId(player.id, it.id)] ?: 0,
-                                step = it.step,
-                                largeStep = it.largeStep,
                             )
                         },
                         selectedCounter = player.selectedCounter ?: appState.counters[0].id
@@ -214,16 +211,16 @@ class BoardViewModel @Inject constructor(private val repository: GameRepository)
         }
     }
 
-    fun setUlwaysUprightMode(alwaysUprightMode: Boolean) {
+    fun setAlwaysUprightMode(alwaysUprightMode: Boolean) {
         viewModelScope.launch {
             repository.setAlwaysUprightMode(alwaysUprightMode)
         }
     }
 
-    fun updateCounter(playerId: PlayerId, counterId: CounterId, counterDelta: Int) {
+    fun updateCounter(playerId: PlayerId, counterId: CounterId, counterUpdate: CounterUpdate) {
         viewModelScope.launch {
             // update the counter
-            repository.updatePlayerCounter(playerId, counterId, counterDelta)
+            val counterDelta = repository.updatePlayerCounter(playerId, counterId, counterUpdate)
 
             val counterKey = ComboCounterId(playerId, counterId)
             // update the combo counter

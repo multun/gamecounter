@@ -57,8 +57,8 @@ class NewGameViewModel @Inject constructor(
                         this.id = it.id.value
                         this.name = it.name
                         this.defaultValue = it.defaultValue
-                        this.step = it.step
-                        this.largeStep = it.largeStep
+                        this.step = it.smallStep ?: 0
+                        this.largeStep = it.largeStep ?: 0
                     }
                 }
             currentGame.startGame(
@@ -70,7 +70,7 @@ class NewGameViewModel @Inject constructor(
 
     val counterSettingsUI = newGame.appState.map { appState ->
         appState.counters.map {
-            CounterSettingsUIState(it.id, it.name, it.defaultValue, it.step, it.largeStep)
+            CounterSettingsUIState(it.id, it.name, it.defaultValue, it.smallStep, it.largeStep)
         }.toImmutableList()
     }.stateIn(
         scope = viewModelScope,
@@ -78,7 +78,7 @@ class NewGameViewModel @Inject constructor(
         initialValue = persistentListOf(),
     )
 
-    fun addCounter(counterName: String, defaultValue: Int, step: Int, largeStep: Int) {
+    fun addCounter(counterName: String, defaultValue: Int, step: Int?, largeStep: Int?) {
         viewModelScope.launch {
             newGame.addCounter(defaultValue, counterName, step, largeStep)
         }
@@ -102,7 +102,7 @@ class NewGameViewModel @Inject constructor(
         }
     }
 
-    fun updateCounter(counterId: CounterId, name: String, defaultVal: Int, step: Int, largeStep: Int) {
+    fun updateCounter(counterId: CounterId, name: String, defaultVal: Int, step: Int?, largeStep: Int?) {
         viewModelScope.launch {
             newGame.updateCounter(counterId, name, defaultVal, step, largeStep)
         }

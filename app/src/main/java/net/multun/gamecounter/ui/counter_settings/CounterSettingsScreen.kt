@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import kotlinx.collections.immutable.ImmutableList
+import net.multun.gamecounter.DefaultSettings
 import net.multun.gamecounter.PaletteColor
 import net.multun.gamecounter.R
 import net.multun.gamecounter.store.CounterId
@@ -53,8 +54,8 @@ data class CounterSettingsUIState(
     val id: CounterId,
     val name: String,
     val defaultValue: Int,
-    val step: Int,
-    val largeStep: Int,
+    val smallStep: Int?,
+    val largeStep: Int?,
 )
 
 sealed class CounterSettingsDialog
@@ -139,8 +140,8 @@ fun CounterSettingsList(
 fun CounterSettingsDialog(
     dialog: CounterSettingsDialog,
     onDelete: (CounterId) -> Unit,
-    onAddCounter: (String, Int, Int, Int) -> Unit,
-    onUpdateCounter: (CounterId, String, Int, Int, Int) -> Unit,
+    onAddCounter: (String, Int, Int?, Int?) -> Unit,
+    onUpdateCounter: (CounterId, String, Int, Int?, Int?) -> Unit,
     onClearDialog: () -> Unit,
 ) {
     when (dialog) {
@@ -158,7 +159,7 @@ fun CounterSettingsDialog(
             action = stringResource(R.string.save),
             initialName = dialog.counter.name,
             initialDefaultValue = dialog.counter.defaultValue,
-            initialStep = dialog.counter.step,
+            initialSmallStep = dialog.counter.smallStep,
             initialLargeStep = dialog.counter.largeStep,
             onDismissRequest = onClearDialog,
             onCounterAdded = remember { { name, defaultValue, step, largeStep ->
@@ -200,18 +201,18 @@ fun CounterChangeDialog(
     title: String,
     action: String,
     onDismissRequest: () -> Unit,
-    onCounterAdded: (String, Int, Int, Int) -> Unit,
+    onCounterAdded: (String, Int, Int?, Int?) -> Unit,
     initialName: String = "",
     initialDefaultValue: Int? = null,
-    initialStep: Int? = null,
+    initialSmallStep: Int? = null,
     initialLargeStep: Int? = null,
 ) {
     var counterName by remember { mutableStateOf(initialName) }
     var counterDefaultValue by remember { mutableStateOf(initialDefaultValue?.toString() ?: "") }
-    var counterStep by remember { mutableStateOf(initialStep?.toString() ?: "1") }
-    var counterLargeStep by remember { mutableStateOf(initialLargeStep?.toString() ?: "10") }
+    var counterSmallStep by remember { mutableStateOf(initialSmallStep?.toString() ?: "") }
+    var counterLargeStep by remember { mutableStateOf(initialLargeStep?.toString() ?: "") }
     val parsedDefaultValue = counterDefaultValue.toIntOrNull()
-    val parsedStep = counterStep.toIntOrNull()
+    val parsedSmallStep = counterSmallStep.toIntOrNull()
     val parsedLargeStep = counterLargeStep.toIntOrNull()
 
     Dialog(onDismissRequest = onDismissRequest) {
@@ -225,8 +226,8 @@ fun CounterChangeDialog(
 
                 val nameError = counterName.isBlank()
                 val defaultValueError = parsedDefaultValue == null
-                val stepError = parsedStep == null || parsedStep <= 0
-                val largeStepError = parsedLargeStep == null || parsedLargeStep <= 0
+                val smallStepError = counterSmallStep.isNotEmpty() && (parsedSmallStep == null || parsedSmallStep <= 0)
+                val largeStepError = counterLargeStep.isNotEmpty() && (parsedLargeStep == null || parsedLargeStep <= 0)
 
                 OutlinedTextField(
                     value = counterName,
@@ -246,10 +247,11 @@ fun CounterChangeDialog(
                 )
 
                 OutlinedTextField(
-                    value = counterStep,
-                    onValueChange = { counterStep = it },
+                    value = counterSmallStep,
+                    onValueChange = { counterSmallStep = it },
                     label = { Text(stringResource(R.string.counter_step)) },
-                    isError = stepError,
+                    isError = smallStepError,
+                    placeholder = { Text(DefaultSettings.DEFAULT_SMALL_STEP.toString()) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                 )
@@ -258,6 +260,7 @@ fun CounterChangeDialog(
                     value = counterLargeStep,
                     onValueChange = { counterLargeStep = it },
                     label = { Text(stringResource(R.string.counter_big_step)) },
+                    placeholder = { Text(DefaultSettings.DEFAULT_LARGE_STEP.toString()) },
                     isError = largeStepError,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
@@ -271,8 +274,8 @@ fun CounterChangeDialog(
                         Text(stringResource(R.string.cancel))
                     }
                     TextButton(
-                        enabled = !(nameError || defaultValueError || stepError || largeStepError),
-                        onClick = { onCounterAdded(counterName.trim(), parsedDefaultValue!!, parsedStep!!, parsedLargeStep!!) },
+                        enabled = !(nameError || defaultValueError || smallStepError || largeStepError),
+                        onClick = { onCounterAdded(counterName.trim(), parsedDefaultValue!!, parsedSmallStep, parsedLargeStep) },
                         modifier = Modifier.padding(8.dp),
                     ) {
                         Text(action)
