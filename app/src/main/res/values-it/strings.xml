@@ -13,8 +13,9 @@
         <string name="confirm">Conferma</string>  
         <string name="cancel">Annulla</string>  
         <string name="name">Nome</string>  
-        <string name="counter_default_value">Valore predefinito</string>  
-        <string name="previous_screen">Schermata precedente</string>  
+        <string name="counter_default_value">Valore predefinito</string>
+        <string name="counter_big_step">Grande incremento</string>
+        <string name="previous_screen">Schermata precedente</string>
         <string name="player_settings">Impostazioni giocatore</string>  
         <string name="increase_counter">Aumenta contatore</string>  
         <string name="decrease_counter">Diminuisci contatore</string>  
@@ -47,5 +48,6 @@
         <string name="confirm_remove_player">Sei sicuro di voler rimuovere questo giocatore?</string>  
         <string name="players">Giocatori</string>  
         <string name="counters">Contatori</string>  
-        <string name="add_counter">Aggiungi contatore</string>  
-    </resources>
+        <string name="add_counter">Aggiungi contatore</string>
+    <string name="counter_step">"Piccolo incremento "</string>
+</resources>
