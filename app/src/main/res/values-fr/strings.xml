@@ -14,6 +14,7 @@
     <string name="cancel">Annuler</string>
     <string name="name">Nom</string>
     <string name="counter_default_value">Valeur initiale</string>
+    <string name="counter_big_step">Grand incrément</string>
     <string name="previous_screen">Page précédente</string>
     <string name="player_settings">Paramètres du joueur</string>
     <string name="increase_counter">Augmenter la valeur</string>
@@ -48,4 +49,5 @@
     <string name="players">Joueurs</string>
     <string name="counters">Compteurs</string>
     <string name="add_counter">Ajouter un compteur</string>
+    <string name="counter_step">Petit incrément</string>
 </resources>
