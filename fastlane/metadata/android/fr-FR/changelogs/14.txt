@@ -1,0 +1,4 @@
+- Rend l'incrément des boutons configurable par compteur
+- Ajout d'une traduction en Espagnol
+
+Ces améliorations ont été contribuées par @valonsodev, merci beaucoup!

@@ -1,0 +1,4 @@
+- button increment size is now configurable per counter
+- add a spanish translation
+
+Both of these improvements were contributed by @valonsodev, thank you!
